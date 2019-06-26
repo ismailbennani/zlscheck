@@ -1,0 +1,23 @@
+let pi = 3.14159265359
+let rtod = 57.29578    (* rad to deg coefficient *)
+let dtor = 1.745329e-2 (* deg to rad coefficient *)
+
+(* subf16_morelli.zls *)
+
+let xcg = 0.35
+let s = 300.
+let b = 30.
+let cbar = 11.32
+let rm = 1.57e-3
+let xcgr = 0.35
+let he = 160.0
+let c1 = -0.770
+let c2 = 0.02755
+let c3 = 1.055e-4
+let c4 = 1.642e-6
+let c5 = 0.9604
+let c6 = 1.759e-2
+let c7 = 1.792e-5
+let c8 = -0.7336
+let c9 = 1.587e-5
+let g = 32.17

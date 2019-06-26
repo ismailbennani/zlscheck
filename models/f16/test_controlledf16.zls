@@ -1,0 +1,29 @@
+open Constants
+open Types
+
+open Staliro_global
+
+let get_initial_cond () =
+    {
+        f16 = {
+            vt = 540.;
+            alpha = 2.1215 *. dtor; beta = 0.;
+            p = 0.; q = 0.; r = 0.;
+            x9 = 0.; x10 = 0.;
+            alt = 4040.; power = 9.;
+
+            phi = get_global "phi";
+            theta = get_global "theta";
+            psi = get_global "psi";
+        };
+        nz = 0.; ps = 0.; ny_r = 0.
+    }
+
+let hybrid model () =
+    let init tmp = Random.self_init () in
+    let der t = 1. init 0. in
+    let init initial_cond = get_initial_cond () in
+    let init tmp = print_endline (string_of_state initial_cond) in
+    let ctrlLimits = defaultCtrlLimits in
+    let u, u_ref, state, state_der = Controlledf16.model (initial_cond, ctrlLimits) in
+    let res = state.f16.alt in res

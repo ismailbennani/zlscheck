@@ -1,0 +1,2 @@
+val set_global : string -> float -> unit
+val get_global : string -> float

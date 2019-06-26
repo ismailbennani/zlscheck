@@ -1,0 +1,117 @@
+
+VERSION = @VERSION@
+
+# configure variables
+bindir = @bindir@
+libdir = @libdir@/zelus
+
+# options
+gtktargets = @gtktargets@
+targets    = @targets@
+
+# programs used
+
+OCAML     ?= @OCAMLBIN@ocaml
+OCAMLC    ?= @OCAMLBIN@ocamlc
+OCAMLLEX  ?= @OCAMLBIN@ocamllex
+OCAMLYACC ?= @OCAMLBIN@ocamlyacc
+OCAMLOPT  ?= @OCAMLBIN@ocamlopt
+OCAMLDEP  ?= @OCAMLBIN@ocamldep
+OCAMLRUN  ?= @OCAMLBIN@ocamlrun
+OCAMLFIND ?= @OCAMLFIND@
+MENHIR    ?= @OCAMLBIN@menhir
+OTAGS	    ?= otags
+
+ZLLIB = $(libdir)
+
+OCAMLFLAGS    ?=
+
+BIN = zeluc
+TARGET ?= $(word 1, $(targets))
+
+ZELUC = $(BIN)
+
+UNIX  = unix.cma
+UNIXX = unix.cmxa
+
+GLMLITE_ENABLED = @GLMLITE_ENABLED@
+GLMLITE = -I @GLMLITE_INCL@
+
+LABLGTK2 = -I @LABLGTK2_PATH@
+
+MENHIRLIB = @MENHIRLIB@
+MENHIRFLAGS = --table
+
+MATLAB = @MATLAB@
+MATLABFLAGS = -nodesktop -nosplash
+
+PTOLEMY = @PTOLEMY@
+PTOLEMYFLAGS =
+
+SUNDIALS=@SUNDIALSML_INCL@
+ifneq ($(SUNDIALS),)
+SUNDIALS_CVODE = sundials.cma
+OPTIONAL_SOLVER_OBJS = solvers/sundials_cvode.cmo
+DISTOPTION = -sundials
+else
+DISTOPTION = -nosundials
+endif
+
+ZLSTDLIBS = bigarray.cma unix.cma $(SUNDIALS) $(SUNDIALS_CVODE)
+ZLEXTRALIBS = zllib.cma
+ZLGTKLIBS = $(LABLGTK2) lablgtk.cma zllibgtk.cma
+
+DIRECTORIES = global parsing typing analysis rewrite gencode verif main
+
+# colours (used in tests)
+
+ifdef NOCOLOR
+    S_BLUE   = ""
+    S_GREEN  = ""
+    S_RED    = ""
+    S_NORMAL = ""
+else
+    S_BLUE   = "\\033[34m"
+    S_GREEN  = "\\033[32m"
+    S_RED    = "\\033[31m"
+    S_NORMAL = "\\033[0m"
+endif
+
+# implicit rules
+
+.SUFFIXES : .mli .ml .cmi .cmo .cmx .mll .mly .zli .zli .byte .opt
+
+%.cmi: %.mli
+	$(OCAMLC) $(OCAMLFLAGS) -c $(INCLUDES) $<
+
+%.cmo %.cmi: %.ml
+	$(OCAMLC) $(OCAMLFLAGS) -c -I $(ZLLIB) $(INCLUDES) $<
+
+%.cmx %.cmi: %.ml
+	$(OCAMLOPT) $(OCAMLOPTFLAGS) -I $(ZLLIB) -c $(INCLUDES:.cma=.cmxa) $<
+
+%.zci: %.zli
+	$(ZELUC) $(ZELUCFLAGS) $<
+
+%.ml %.zci: %.zls
+	$(ZELUC) $(ZELUCFLAGS) $<
+
+%.ml: %.mll
+	$(OCAMLLEX) $<
+
+%.ml %.mli: %.mly
+	$(MENHIR) $(MENHIRFLAGS) $<
+
+# set ZLEXTRALIBS to ZLGTKLIBS to compile examples that use gtk
+%.byte: %.ml
+	$(OCAMLC) $(OCAMLFLAGS) -o $@ \
+	    -I $(ZLLIB) $(ZLSTDLIBS) $(ZLEXTRALIBS) \
+      $(INCLUDES) \
+	    $< $(<:.ml=_main.ml)
+
+# set ZLEXTRALIBS to ZLGTKLIBS to compile examples that use gtk
+%.opt: %.ml
+	$(OCAMLOPT) $(OCAMLOPTFLAGS) -o $@ \
+	    -I $(ZLLIB) $(ZLSTDLIBS:.cma=.cmxa) $(ZLEXTRALIBS:.cma=.cmxa) \
+      $(INCLUDES) \
+	    $< $(<:.ml=_main.ml)

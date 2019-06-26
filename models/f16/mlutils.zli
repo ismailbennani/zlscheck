@@ -1,0 +1,6 @@
+val exit : int -AD-> 'a
+val adc : float * float -> float * float
+val tgear : float -> float
+val thrust : float * float * float -> float
+val dampp : float -> float * float * float * float * float * float * float * float * float
+val rtau : float -> float
