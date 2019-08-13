@@ -1,50 +1,40 @@
 include ../config
 
-OBJ ?=
-ZCI ?=
+INCLUDES += -I $(shell zeluc -where)
 
-all: byte
+dirs = $(shell find * -type d)
+INCLUDES += $(dirs:%=-I %)
 
-# ----------------
-# SAMPLING
-# ----------------
+# find all .ml files in subdirectories
+ml = $(shell find * -name "*.ml")
 
-OBJ += sampling/sampler.cmo
-OBJ += sampling/dumper.cmo
+sorted_ml = $(shell ocamldep -sort $(ml))
+cmo = $(sorted_ml:.ml=.cmo)
 
-sampling/dumper.cmo: INCLUDES =
+lib = zlscheck.cma
 
-sampling/sampler.cmo: INCLUDES += -I sampling dumper.cmo
-sampling/sampler.cmo: sampling/dumper.cmo
+all: $(lib)
+	@mkdir -p ../lib
+	@# copy all .cmi files in subdirectories to lib
+	find * -mindepth 2 -name "*.cmi" -exec cp -t ../lib {} +
+	@# copy .cma to lib
+	cp -f $(lib) ../lib
 
-# ----------------
-# S-Taliro
-# ----------------
 
-OBJ += S-Taliro/SA_Taliro.cmo S-Taliro/staliro_global.cmo
-ZCI += S-Taliro/staliro_global.zci
+$(lib): $(cmo)
+	@# build .cma
+	ocamlc -a -o $(lib) \
+		$(INCLUDES) \
+		$(cmo)
 
-S-Taliro/SA_Taliro.cmo: INCLUDES += -I S-Taliro staliro_types.cmo staliro_utils.cmo
-S-Taliro/SA_Taliro.cmo: S-Taliro/staliro_types.cmo S-Taliro/staliro_utils.cmo
-
-# ----------------
-#
-# ----------------
-
-OBJ += sim.cmo
-
-# ----------------
-# MAIN
-# ----------------
-
-byte: $(OBJ) $(ZCI)
-
-show_obj:
-	@echo $(OBJ)
+# CLEANING STUFF
 
 clean:
-	-@rm -rf *.cm[iox] *.annot
-	-@rm -rf sampling/*.cm[iox] sampling/*.annot
-	-@rm -rf S-Taliro/*.cm[iox] S-Taliro/*.annot
+	-@find * -mindepth 2 -name "*.cm[xoia]" -delete
+	-@rm .depend
+realclean cleanall: clean
+	-@find * -name "*.cm[xoia]" -delete
 
-cleanall realclean: clean
+-include .depend
+.depend:
+	-@ocamldep $(INCLUDES) $(shell find * -name "*.ml") > .depend

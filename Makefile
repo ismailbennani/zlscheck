@@ -1,3 +1,4 @@
+.PHONY: src models
 
 all: src
 
@@ -11,10 +12,14 @@ models:
 	$(MAKE) -C models all
 
 clean:
-	touch config
 	$(MAKE) -C models clean
 	$(MAKE) -C src clean
 	-@rm -rf config.log
 
-distclean: clean
+cleanall realclean: clean
+	$(MAKE) -C models cleanall
+	$(MAKE) -C src cleanall
+	-@rm -rf lib
+
+distclean: cleanall
 	-@rm -rf config META
