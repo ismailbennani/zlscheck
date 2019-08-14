@@ -37,4 +37,4 @@ realclean cleanall: clean
 
 -include .depend
 .depend:
-	-@ocamldep $(INCLUDES) $(shell find * -name "*.ml") > .depend
+	ocamldep $(INCLUDES) $(shell find * -name "*.ml") > .depend
