@@ -2,30 +2,18 @@
 *.cmo
 *.cma
 *.cmi
+*.zci
 *.a
 *.o
 *.cmx
 *.cmxs
 *.cmxa
-*.depend
-
-# ocamlbuild working directory
-_build/
-
-# ocamlbuild targets
 *.byte
-*.native
+*.opt
 
-# oasis generated files
-setup.data
-setup.log
-
-# Merlin configuring file for Vim and Emacs
 .merlin
 
 META
-config
 config.log
 
-models/test
-models/test_sa_taliro
+!zelus/**

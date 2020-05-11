@@ -9,7 +9,7 @@ type alg_params = ur_params
 let string_of_params _ = "()"
 
 type input = float array
-type output = float
+type output = float * float array
 type optim_step_params = unit
 
 let get_params () = ()
@@ -21,7 +21,7 @@ let ur_step step_params incr_runs fn =
   let max_n_runs = params.max_n_runs in
   let verbose = params.verbose || params.vverbose in
 
-  let old_sample, old_val = step_params.last_result in
+  let old_sample, (old_val, _) = step_params.last_result in
 
   if verbose then
     Printf.printf "Run %i/%i\n" (step_params.n_runs+1) max_n_runs;
@@ -31,7 +31,7 @@ let ur_step step_params incr_runs fn =
 
   if verbose then begin
     Printf.printf "New point : %a\n" Misc_printers.print_float_array new_sample;
-    Printf.printf "New value : %.2e\n" new_val;
+    Printf.printf "New value : %.2e\n" (fst new_val);
   end;
 
   incr_runs ();
@@ -43,7 +43,7 @@ let ur_step step_params incr_runs fn =
   step_params.history <- (new_sample, new_val) :: step_params.history;
   step_params.last_result <- (new_sample, new_val)
 
-let get_rob_from_output rob = rob
+let get_rob_from_output (rob, _) = rob
 
 let step = ur_step
 

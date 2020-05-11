@@ -6,10 +6,11 @@ type interval = float * float
 type strict = bool
 
 type unop  = Neg | Sin | Cos
-type binop = Add | Sub | Mul
+type binop = Add | Sub | Mul | Eq | Neq
 
 type e =
   | Econst of value
+  | Ebool of bool
   | Evar of variable
   | Eunop of unop * e
   | Ebinop of binop * e * e
@@ -74,11 +75,12 @@ let print_unop ff op =
 let print_binop ff op =
   Format.fprintf ff "%s" (
     match op with
-    | Add -> "+" | Sub -> "-" | Mul -> "*"
+    | Add -> "+" | Sub -> "-" | Mul -> "*" | Eq -> "=" | Neq -> "<>"
   )
 
 let rec print_expr ff = function
   | Econst v -> Format.fprintf ff "%a" print_value v
+  | Ebool b -> Format.fprintf ff "%b" b
   | Evar v -> Format.fprintf ff "%a" print_var v
   | Eunop (op, e) -> Format.fprintf ff "%a %a" print_unop op print_expr e
   | Ebinop (op, e1, e2) ->
@@ -118,6 +120,7 @@ let top = Econst infinity
 let bot = Econst neg_infinity
 let var v = Evar v
 let const f = Econst f
+let bool b = Ebool b
 let neg e = Eunop (Neg, e)
 let sin e = Eunop (Sin, e)
 let cos e = Eunop (Cos, e)
@@ -125,17 +128,21 @@ let add e1 e2 = Ebinop (Add, e1, e2)
 let sub e1 e2 = Ebinop (Sub, e1, e2)
 let mul e1 e2 = Ebinop (Mul, e1, e2)
 
-
 let gt e f = Predicate (Ebinop (Sub, e, Econst f))
 let lt e f = Predicate (Ebinop (Sub, Econst f, e))
 let gt_zero e = Predicate e
 let lt_zero e = Predicate (Eunop (Neg, e))
+let eq e1 e2 = Predicate (Ebinop (Eq, e1, e2))
+let neq e1 e2 = Predicate (Ebinop (Neq, e1, e2))
 let not f = Not f
 let conj f1 f2 = And (f1, f2)
 let disj f1 f2 = Or (f1, f2)
+let imply f1 f2 = disj (not f1) f2
 let until f1 i f2 = Until(f1, i, f2)
 let since f1 i f2 = Since(f1, i, f2)
 let fev i f = Feventually (i, f)
 let falw i f = Falways (i, f)
+let ev i f = fev i f
+let alw i f = falw i f
 let pev i f = Peventually (i, f)
 let palw i f = Palways (i, f)

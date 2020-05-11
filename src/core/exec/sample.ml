@@ -13,7 +13,6 @@ open Ztypes
 
 module Discrete(Type : sig type t end) =
 struct
-
   let max_steps = ref (-1)
   let set_max_steps i = max_steps := i
   let get_max_steps () = !max_steps
@@ -29,6 +28,4 @@ struct
     let mem = alloc () in
     reset mem;
     aux [] mem (get_max_steps ())
-
-
 end

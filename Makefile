@@ -1,25 +1,30 @@
-.PHONY: src models
+include config
 
-all: src
-
-config:
-	./configure
+all: src lib
 
 src:
-	$(MAKE) -C src all
+	$(MAKE) -C src
 
-models:
-	$(MAKE) -C models all
+# lib
+
+lib:
+	rm -rf lib
+	mkdir -p lib
+	-cp src/*.zci lib
+	-cp src/*.cmi lib
+	# -cp src/*.cmx lib
+	-cp src/*.o lib
+	-cp src/*.a lib
+	-cp src/*.cma lib
+	-cp src/*.cmxa lib
+
+# CLEANING STUFF
 
 clean:
-	$(MAKE) -C models clean
-	$(MAKE) -C src clean
-	-@rm -rf config.log
+	-@$(MAKE) -C src clean
 
-cleanall realclean: clean
-	$(MAKE) -C models cleanall
-	$(MAKE) -C src cleanall
+realclean cleanall:
+	-@$(MAKE) -C src cleanall
 	-@rm -rf lib
 
-distclean: cleanall
-	-@rm -rf config META
+.PHONY: src lib

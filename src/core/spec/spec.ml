@@ -9,4 +9,4 @@ module Monitor(FormulaType : Monitor.OnlineFormulaType) =
 
 (* Common monitors and checkers *)
 
-module CheckStl = Check(Stl.Type)
+module CheckStl = Check(Stl)

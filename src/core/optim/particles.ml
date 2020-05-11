@@ -2,31 +2,34 @@ open Zlscheck_utils
 open Optim_types
 open Optim_utils
 
-let name = "UR"
+let name = "Particles"
 
-type alg_params = ur_params
+type alg_params = particle_params
 
-let string_of_params _ = "()"
+let string_of_params { n } = Printf.sprintf "{ n = %d }" n
 
 type input = float array
 type output = float
-type optim_step_params = unit
 
-let get_params () = ()
-let mk_step_params () = ()
+type particle_step_params = {
+  mutable distribution : input Distribution.t;
+}
+let mk_step_params () = {
+  distribution = Distribution.uniform_sample Optim_globals.params.bounds;
+}
 
-let ur_step step_params incr_runs fn =
+let ur_step step_params incr_runs fn history
+    (old_sample, old_val) =
   let params = Optim_globals.params in
   let bounds = params.bounds in
   let max_n_runs = params.max_n_runs in
-  let verbose = params.verbose || params.vverbose in
-
-  let old_sample, old_val = step_params.last_result in
+  let n = params.meth.particle.n in
+  let verbose = params.verbose in
 
   if verbose then
     Printf.printf "Run %i/%i\n" (step_params.n_runs+1) max_n_runs;
 
-  let new_sample = ur_sample bounds in
+  (* let new_sample = ur_sample bounds in
   let new_val = fn new_sample in
 
   if verbose then begin
@@ -40,11 +43,10 @@ let ur_step step_params incr_runs fn =
     print_newline (); flush stdout
   end;
 
-  step_params.history <- (new_sample, new_val) :: step_params.history;
-  step_params.last_result <- (new_sample, new_val)
+  (new_sample, new_val) :: history, (new_sample, new_val) *)
+
+  failwith "not implemented"
 
 let get_rob_from_output rob = rob
-
-let step = ur_step
 
 (* let run = run_optim ur_step mk_step_params float_array_dist get_rob_from_output *)

@@ -7,9 +7,9 @@ module type PeriodicFun = sig
   val periodic_fun : acc option -> Ztypes.time -> values -> acc option
 end
 
-module Make(Fun : PeriodicFun) =
+module Make(Fun : PeriodicFun) (SSolver : Zls.STATE_SOLVER) =
 struct
-  module Solver = Zlsolve.Make(Defaultsolver)(Illinois)
+  module Solver = Zlsolve.Make(SSolver)(Illinois)
 
   type 'a timed = { mutable cur_time : float; mutable cur_hor : float; mem : 'a }
   let timed_fn f mem = f mem.mem
@@ -27,7 +27,7 @@ struct
   let set_period t = period := Some t
   let get_period () =
     match !period with
-    | None -> Printf.eprintf "No period has been set\n"; assert false
+    | None -> !max_time
     | Some period -> period
 
   let sample
@@ -63,7 +63,9 @@ struct
       mem, main_step mem.mem cvec dvec zinvec time
     in
 
-    if get_max_time () > 0. then Solver.set_max_sim_time (get_max_time ());
+    (* TODO 
+      if get_max_time () > 0. then Solver.set_max_sim_time (get_max_time ());
+    *)
 
     let stepfn = Solver.step
         new_alloc

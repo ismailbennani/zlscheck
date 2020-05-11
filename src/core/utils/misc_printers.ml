@@ -19,3 +19,7 @@ let print_float_array ff a =
 
 let print_floatfloat_array ff a =
   Printf.fprintf ff "%a" (print_array print_floatfloat) a
+
+let string_of_float_array a =
+  Printf.sprintf "[%s]"
+    (String.concat "; " (Array.to_list (Array.map (fun f -> Printf.sprintf "%g" f) a)))

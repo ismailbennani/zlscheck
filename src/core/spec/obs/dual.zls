@@ -1,0 +1,99 @@
+(* representation of a dual number a + b * ε *)
+
+type dual = float * float
+
+let make (re, im) = re, im
+let re (re, _) = re
+let im (_, im) = im
+
+(* END OF REPRESENTATION *)
+
+let split d = re d, im d
+
+let discrete eq (d1, d2) = (re d1) = (re d2)
+let discrete neq (d1, d2) = (re d1) <> (re d2)
+let discrete lt (d1, d2) = (re d1) < (re d2)
+let discrete le (d1, d2) = (re d1) <= (re d2)
+let discrete gt (d1, d2) = (re d1) > (re d2)
+let discrete ge (d1, d2) = (re d1) >= (re d2)
+
+let neg d = (-. (re d),  -. (im d))
+
+let add (d1, d2) = ((re d1) +. (re d2),  (im d1) +. (im d2))
+let sub (d1, d2) = ((re d1) -. (re d2),  (im d1) -. (im d2))
+let mul (d1, d2) =
+  ((re d1) *. (re d2),
+   (re d1) *. (im d2) +. (im d1) *. (re d2))
+let div (d1, d2) =
+  ((re d1) /. (re d2),
+    ((re d1) *. (im d2) +. (im d1) *. (re d2)) /. ((re d2) *. (re d2)))
+let pow (d, k) =
+  ((re d) ** k,
+   k *. (im d) *. (re d) ** (k -. 1.))
+let scale (d, f) = (f *. re d, f *. im d)
+let translate (d, f) = (re d +. f, im d)
+
+let sqrt d = (sqrt (re d),  (im d) /. (2. *. sqrt (re d)))
+let exp d = (exp (re d),  (im d) *. exp (re d))
+let log d = (log (re d),  (im d) /. (re d))
+let log10 d = (log10 (re d),  (im d) /. (Stdlib.log 10. *. (re d)))
+let cos d = (cos (re d),  -. (im d) *. sin (re d))
+let sin d = (sin (re d),  (im d) *. Stdlib.cos (re d))
+let tan d =
+  (tan (re d),  (im d) /. (Stdlib.cos (re d) *. Stdlib.cos (re d)))
+let acos d =
+  (acos (re d),  -. (im d) /. (Stdlib.sqrt (1. -. (re d) *. (re d))))
+let asin d =
+  (asin (re d),  (im d) /. (Stdlib.sqrt (1. -. (re d) *. (re d))))
+let atan d =
+  (atan (re d),  (im d) /. (1. +. (re d) *. (re d)))
+let cosh d =
+  (cosh (re d),  (im d) *. (sinh (re d)))
+let sinh d =
+  (sinh (re d),  (im d) *. (Stdlib.cosh (re d)))
+let tanh d =
+  (tanh (re d),  (im d) *. ((Stdlib.cosh (re d)) *. (Stdlib.cosh (re d))))
+let abs d =
+  (abs_float (re d), (re d /. (abs_float (re d))) *. (im d))
+
+let discrete ceil d = (ceil (re d),  (im d))
+let discrete floor d = (floor (re d),  (im d))
+
+let frexp d = Assert.failwith "Dual frexp not implemented"
+let ldexp d = Assert.failwith "Dual ldexp not implemented"
+let modf d = Assert.failwith "Dual modf not implemented"
+let atan2 d1 d2 = Assert.failwith "Dual atan2 not implemented"
+let mod_dual d1 d2 = Assert.failwith "Dual mod not implemented"
+
+let dual_of_int i = make (float i,  0.)
+let dual_of_float f = make (f,  0.)
+let float_of_dual d = re d
+let discrete truncate d = truncate (re d)
+
+let zero = dual_of_float 0.
+let one = dual_of_float 1.
+let infinity = dual_of_float infinity
+let neg_infinity = dual_of_float neg_infinity
+let nan = dual_of_float nan
+let epsilon = dual_of_float epsilon_float
+let max_dual = dual_of_float max_float
+let min_dual = dual_of_float min_float
+
+let dual f = dual_of_float f
+let discrete int_of_dual d = truncate d
+
+let max (d1, d2) = scale(add(add(d1, d2), abs(sub(d1, d2))), 0.5)
+let min (d1, d2) = scale(sub(add(d1, d2), abs(sub(d1, d2))), 0.5)
+
+(**)
+
+hybrid integrate(y, x0) =
+    let der a = y init x0 in
+    make (a, y)
+
+hybrid integrate_dual (d, v0) =
+    let v = re d in
+    let der new_v = v init v0 in
+    make (new_v, v)
+
+(**)
