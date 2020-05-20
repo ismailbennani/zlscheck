@@ -1,0 +1,38 @@
+autotransd.cmo : \
+    ../../common/zc.cmo \
+    ../../common/myOp.cmo \
+    ../../common/discrete_obs_fad.cmo \
+    common.cmo
+autotransd.cmx : \
+    ../../common/zc.cmx \
+    ../../common/myOp.cmx \
+    ../../common/discrete_obs_fad.cmx \
+    common.cmx
+autotransd_modes.cmo : \
+    ../../common/myOp.cmo \
+    ../../common/discrete_obs_fad.cmo \
+    common.cmo
+autotransd_modes.cmx : \
+    ../../common/myOp.cmx \
+    ../../common/discrete_obs_fad.cmx \
+    common.cmx
+autotransd_modes_main.cmo : \
+    autotransd_modes.cmo
+autotransd_modes_main.cmx : \
+    autotransd_modes.cmx
+common.cmo : \
+    utils.cmo \
+    ../../common/myOp.cmo \
+    consts.cmo
+common.cmx : \
+    utils.cmx \
+    ../../common/myOp.cmx \
+    consts.cmx
+consts.cmo : \
+    ../../common/myOp.cmo
+consts.cmx : \
+    ../../common/myOp.cmx
+utils.cmo : \
+    ../../common/myOp.cmo
+utils.cmx : \
+    ../../common/myOp.cmx

@@ -60,7 +60,8 @@ zlfalsif.cma: $(OBJ:%=$(DIR)/%.zci) $(OBJ:%=$(DIR)/%.cmo)
 clean cleanall:
 	-find * -type f -name "*.zci" -delete
 	-find * -type f -name "*.cm[iox]" -delete
-	-find * -type f -name "*.cma" -delete
+	-find * -type f -name "*.cm[x]a" -delete
+	-find * -type f -name "*.[ao]" -delete
 	-rm -f $(zls_ml)
 
 -include .zlsdeps

@@ -6,8 +6,8 @@ let name = "SA"
 
 let string_of_params p =
   Printf.sprintf "{ \"dispAdap\": %g, \"betaXAdap\": %g, \"minDisp\": %g,\
-\"maxDisp\": %g, \"acRatioMin\": %g, \"acRatioMax\": %g, \"dispStart\": %g,\
-\"betaXStart\": %g }"
+                  \"maxDisp\": %g, \"acRatioMin\": %g, \"acRatioMax\": %g,\
+                  \"dispStart\": %g, \"betaXStart\": %g }"
     p.sa.dispAdap p.sa.betaXAdap p.sa.minDisp p.sa.maxDisp p.sa.acRatioMin p.sa.acRatioMax
     p.sa.dispStart p.sa.betaXStart
 
@@ -26,12 +26,13 @@ type optim_step_params = {
 }
 
 let mk_step_params () = {
-    betaX = Optim_globals.params.meth.sa.betaXStart;
-    displace = Optim_globals.params.meth.sa.dispStart;
-    n_accepts = 0;
-  }
+  betaX = Optim_globals.params.meth.sa.betaXStart;
+  displace = Optim_globals.params.meth.sa.dispStart;
+  n_accepts = 0;
+}
 
-let neighbour (radius : float) (center : float array) (bounds : (float * float) array) =
+let neighbour (radius : float) (center : float array)
+    (bounds : (float * float) array) =
   assert (in_bounds center bounds);
 
   let direction = Array.map (fun _ -> gaussian(0.,1.)) center in
@@ -40,7 +41,8 @@ let neighbour (radius : float) (center : float array) (bounds : (float * float) 
   let lambda = bounded_gaussian (lambda_min, lambda_max)
       (0., min radius (max lambda_min lambda_max)) in
 
-  let new_input = Array.map2 (fun f1 f2 -> f1 +. lambda *. f2) center direction in
+  let new_input =
+    Array.map2 (fun f1 f2 -> f1 +. lambda *. f2) center direction in
 
   assert (in_bounds new_input bounds);
   new_input
@@ -83,12 +85,13 @@ let sa_step step_params incr_runs fn =
   incr_runs ();
 
   if verbose then begin
-      Printf.printf "New point : %a\n" Misc_printers.print_float_array new_sample;
-      Printf.printf "New value : %.2e\n" new_val;
+    Printf.printf "New point : %a\n"
+      Misc_printers.print_float_array new_sample;
+    Printf.printf "New value : %.2e\n" new_val;
   end;
 
   (* choose next sample *)
-  let accepted, cur_sample, cur_val =
+  let accepted, next_sample, next_val =
     if mcAccept step_params.optim_step.betaX new_val last_val
     then true, new_sample, new_val
     else false, last_sample, last_val
@@ -137,7 +140,7 @@ let sa_step step_params incr_runs fn =
 
   (* history and inputs for the next step *)
   step_params.history <- (new_sample, new_val) :: step_params.history;
-  step_params.last_result <- (cur_sample, cur_val)
+  step_params.last_result <- (next_sample, next_val)
 
 let get_rob_from_output rob = rob
 

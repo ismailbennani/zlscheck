@@ -1,0 +1,16 @@
+type t
+
+val make : string -S-> t
+val name : t -AD-> string
+val value : t -AD-> MyOp.t
+val register_zc : t -> MyOp.t -AD-> unit
+val pick_random : unit -AD-> t option
+val rst : unit -AD-> unit
+
+val active : t -AD-> bool
+
+val switched : t -AD-> unit
+val did_switch : unit -AD-> bool
+
+val print : t -AD-> unit
+val print_names : unit -AD-> unit

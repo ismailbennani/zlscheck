@@ -1,0 +1,25 @@
+F-16 Ground Collision Avoidance
+------------------------------------------------
+
+Source:
+https://github.com/pheidlauf/aerobenchvv
+https://easychair.org/publications/open/W7Ck
+
+Initialization:
+    Add "AeroBenchVV-master" folder to Matlab path. 
+
+
+Inputs:
+
+    Initial conditions for roll, pitch, and yaw in the ranges below
+       Xrange = [pi/4+[-pi/20 pi/30]; -(pi/2)*0.8+[0 pi/20]; -pi/4+[-pi/8 pi/8]];
+
+
+Requirement:
+	Never hit the ground
+    □_[0 15] (altitude>0)
+
+Initial altitude (InitAlt) is set to 4040. 
+
+Possible extention: Increasing "InitAlt" to 4050 and activate "model_err" to apply an error to the model
+and  solve it as a challenge problem.

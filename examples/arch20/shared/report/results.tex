@@ -1,0 +1,148 @@
+\begin{table}
+	\centering
+	\caption{Results for piecewise continuous input signals (instance 1).
+		\FR: falsification rate wrt.~number of trials,
+		\Savg\ and \Smed: mean resp. median number of simulations over successful trials (``--'' if \FR\ is zero).
+	}
+	\label{table:allResultsInstance1}
+	
+	\resizebox{\textwidth}{!}{\begin{tabular}{lrrrrrrrrrrrrrrr}
+			\toprule
+			\bf
+			Tool:
+			& \multicolumn{3}{c}{\bf\STaLiRo}
+			& \multicolumn{3}{c}{\bf\Breach}
+			& \multicolumn{6}{c}{\bf\FalStar}
+			& \multicolumn{3}{c}{\bf\falsify}\\
+			% \cmidrule(r){2-4}
+			% \cmidrule(lr){5-7}
+			% \cmidrule(lr){8-13}
+			% \cmidrule(l){14-19}
+			Configuration:
+			& \multicolumn{3}{c}{SOAR}
+			& \multicolumn{3}{c}{GNM}
+			& \multicolumn{3}{c}{MCTS}
+			& \multicolumn{3}{c}{aLVTS}
+			& \multicolumn{3}{c}{A3C}\\
+			\midrule
+			\midrule
+			Benchmark
+			& \FR & \Savg & \Smed
+			& \FR & \Savg & \Smed
+			& \FR & \Savg & \Smed
+			& \FR & \Savg & \Smed
+			& \FR & \Savg & \Smed\\
+			\cmidrule(r){1-1} \cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10} \cmidrule(lr){11-13} \cmidrule(lr){14-16}
+			AT1  & 50/50 & 118.84 & 116 &50/50  & 11    & 11  &  0/50 &     -- &  -- & 50/50 &  33.04 &  30 & 17/50 & 224.53 & 223.0\\
+			AT2  & 50/50 &23.88   &19.5   &50/50  & 2     & 2   & 50/50 &  21.68 &   5 & 50/50 &   4.32 &   3 & 50/50 & 22.10 & 10.0\\
+			AT51 & 50/50 & 26.72  &22    &41/50  & 74.56 & 67  & 50/50 &  39.10 &  43 & 50/50 &  69.48 &  56 & 50/50 & 1.00 & 1.0\\
+			AT52 & 50/50 &4.06    &3       &49/50  & 72    & 67  & 50/50 &   2.68 &   2 & 26/50 & 125.35 & 137 & 50/50 & 1.00 & 1.0\\
+			AT53 & 50/50 &3.44    &3       &49/50  & 74.51 & 73  & 50/50 &   2.52 &   3 & 50/50 &  70.82 &  68 & 50/50 & 1.00 & 1.0\\
+			AT54 & 50/50 &10.46   &2      &21/50  & 84.86 & 85  & 50/50 &  26.56 &  10 & 50/50 &  71.10 &  52 & 50/50 & 1.00 & 1.0\\
+			AT6a & 49/50 &78.41   &40     &50/50  & 97.92 & 97.5& 49/50 &  93.65 &  80 & 50/50 &  76.06 &  70 &  \multicolumn{3}{c}{(not a safety property)}  \\
+			AT6b & 33/50 &132.64 &128   &49/50  & 112.9 & 118 & 29/50 & 166.90 & 173 & 50/50 &  82.38 &  75 &  \multicolumn{3}{c}{(not a safety property)}  \\
+			AT6c &47/50 &61.34   &38      &  50/50  & 94.1  & 89  &6/50 & 105.92 & 125 &  0/50 &     -- &  -- &  \multicolumn{3}{c}{(not a safety property)}\\
+			
+			\cmidrule(r){1-1} \cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10} \cmidrule(lr){11-13} \cmidrule(lr){14-16}
+			% NOTE (Gidon) no instance 1 benchmark for the powertrain model
+			% AFC27 &&&&&&& 50/50 & 4 & 3 &&&&&&&&&\\
+			% AFC29 &&&&&&& 50/50 & 2 & 2 &&&&&&&&&\\
+			% AFC33 &&&&&&& 50/50 & 2 & 2 &&&&&&&&&\\
+			% \cmidrule(r){1-1} \cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10} \cmidrule(lr){11-13} \cmidrule(lr){14-16} \cmidrule(l){17-19}
+			NN  &50/50&26.72&22& 48/50 & 96.29 & 101.5   & 50/50 & 47.98 & 40 & 36/50 & 122.80 & 106 &  50/50 & 1.00 & 1.0\\
+			
+			NN($\beta$ = 0.04)  &4/50&193&222.5&  &  &   &  &  &  &  & & & & &\\			\cmidrule(r){1-1} \cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10} \cmidrule(lr){11-13} \cmidrule(lr){14-16}
+			WT1 &50/50 &91 &91 &50/50 & 3 & 3& 50/50 & 4.00 & 4 & \multicolumn{3}{c}{(unsupported)} &  37/50 & 47.68 & 7.0\\
+			WT2 &50/50 &32.62 & 30 &50/50 & 3 & 3& 50/50 & 1.00 & 1 & & & & 46/50 & 8.04 & 2.0\\
+			WT3 &50/50 &44.12& 60 &50/50 & 3 & 3& 50/50 & 2.00 & 2 & & & & 50/50 & 2.48 & 1.0\\
+			WT4 &50/50 &3.32 &2&50/50 & 30 &30 & 50/50 & 2.00 & 2 & & & & 50/50 & 4.90 & 4.0\\
+			\cmidrule(r){1-1} \cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10} \cmidrule(lr){11-13} \cmidrule(lr){14-16}
+			CC1 &50/50 & 9.38  & 7 & 50/50 &  3    & 3 & 50/50 &  15.00 &  15 & 50/50 &  4.06 &  2 & 47/50 & 51.26 & 17.0 \\
+			CC2 &50/50 & 6     & 4 & 50/50 &  1    & 1 & 50/50 &  26.00 &  26 & 50/50 &  4.02 &  2 & 37/50 & 24.24 & 4.0\\
+			CC3 &50/50 & 19.94 & 5 & 50/50 &  3    & 3 & 50/50 &  14.40 &  17 & 50/50 &  6.86 &  5 & 46/50 & 35.41 & 8.5\\
+			CC4 & 20/50   & 188   & 179.5 &  0/50  &   --  & --&  0/50 &     -- &  -- &  2/50 & 52.00 & 60 &  1/50 & 26.00 & 26.0\\
+			CC5 &50/50 & 42.94& 36.5 & 49/50 & 26.08 & 19& 50/50 & 132.00 & 140 & 46/50 & 91.19 & 79 & 31/50 & 29.65 & 26.0\\
+			%CC6 &&&&&&& N/A\\
+			\cmidrule(r){1-1} \cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10} \cmidrule(lr){11-13} \cmidrule(lr){14-16}
+			F16 &7/50&127.57&94 & 1/50 & 297 & 297 & \multicolumn{3}{c}{(unsupported)} & 0/50\rlap{$\dagger$} & -- & -- & \multicolumn{3}{c}{(unsupported)}\\
+			\cmidrule(r){1-1} \cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10} \cmidrule(lr){11-13} \cmidrule(lr){14-16}
+			SC  &50/50  \rlap{$\star$} & 62.26 & 55.5 & 0/50 & -- & -- & 0/50 & -- & -- & 0/50 & -- & -- & 0/50 & -- &--\\
+			\bottomrule
+	\end{tabular}}
+	\begin{flushleft}
+		\small F16 $\dagger$: FalStar/aLVTS currently samples initial conditions uniformly at random\\
+		\small SC $\star$: The S-TaLiRo results for this benchmark are yielded by Simulated annealing assisted with gradient based search (See \cite{YaghoubiHSCC}).   
+	\end{flushleft}
+\end{table}
+
+\begin{table}
+	\centering
+	\caption{Results for constrained input signals/instance 2. FR: falsification rate, $\overline{S}$: mean number of simulations, $\widetilde{S}$: median number of simulations.}
+	\label{table:allResultsInstance2}
+	\resizebox{\textwidth}{!}{\begin{tabular}{lrrrrrrrrrrrrrrr}
+			\toprule
+			\bf
+			Tool:
+			& \multicolumn{3}{c}{\bf\STaLiRo}
+			& \multicolumn{3}{c}{\bf\Breach}
+			& \multicolumn{6}{c}{\bf\FalStar}
+			& \multicolumn{3}{c}{\bf\falsify}\\
+			% \cmidrule(r){2-4}
+			% \cmidrule(lr){5-7}
+			% \cmidrule(lr){8-13}
+			% \cmidrule(l){14-19}
+			Configuration:
+			& \multicolumn{3}{c}{SOAR}
+			& \multicolumn{3}{c}{GNM}
+			& \multicolumn{3}{c}{MCTS}
+			& \multicolumn{3}{c}{aLVTS}
+			& \multicolumn{3}{c}{A3C} \\
+			\midrule
+			\midrule
+			Benchmark
+			& \FR & \Savg & \Smed
+			& \FR & \Savg & \Smed
+			& \FR & \Savg & \Smed
+			& \FR & \Savg & \Smed
+			& \FR & \Savg & \Smed\\
+			\cmidrule(r){1-1} \cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10} \cmidrule(lr){11-13} \cmidrule(lr){14-16}
+			AT1  &50/50 & 170.32 & 171  & 0/50   & -- & -- &  0/50 &     -- &  -- & 50/50 &  33.04 &  30 & 39/50 & 125.79 & 110\\
+			AT2  &50/50 & 16.82  &9     & 50/50  & 2  & 2  & 50/50 &  21.68 &   5 & 50/50 &   4.32 &   3 & 48/50 & 18.96 & 7.5\\
+			AT51 &50/50 &12.64   &11    & 50/50 & 7  & 7 & 50/50 &  39.10 &  43 & 50/50 &  69.48 &  56 & 50/50 & 1.00 & 1.0\\
+			AT52 &49/50 &17.57   &4     & 50/50 & 3  & 3 & 50/50 &   2.68 &   2 & 26/50 & 125.35 & 137 & 50/50 & 1.00 & 1.0\\
+			AT53 &50/50 & 3.38& 3       & 50/50 & 3  & 3 & 50/50 &   2.52 &   3 & 50/50 &  70.82 &  68 & 50/50 & 1.00 & 1.0\\
+			AT54 &50/50 & 24.15& 16.5   & 50/50 & 3  & 3 & 50/50 &  26.56 &  10 & 50/50 &  71.10 &  52 & 50/50 & 1.00 & 1.0\\
+			AT6a &44/50 & 130.353 &149.5& 0/50  & -- & --& 49/50 &  93.65 &  80 & 50/50 &  76.06 &  70 & \multicolumn{3}{c}{(not safety)}\\
+			AT6b &39/50 & 207.206& 236  & 0/50  & -- & --& 29/50 & 166.90 & 173 & 50/50 &  82.38 &  75 & \multicolumn{3}{c}{(not safety)}\\
+			AT6c &42/50 & 197.5& 208.5  & 0/50  & -- & --& 36/50 & 105.92 & 125 &  0/50 &     -- &  -- & \multicolumn{3}{c}{(not safety)}\\
+			\cmidrule(r){1-1} \cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10} \cmidrule(lr){11-13} \cmidrule(lr){14-16}
+			AFC27 & 50/50 & 70.34 & 78.5&50/50 &3&3& -- & -- & -- & 50/50 & 3.88 & 3 & 50/50 & 1.64 & 1.0 \\
+			AFC29 & 50/50 & 13.54 & 10  &50/50 &3&3 & -- & -- & -- & 50/50 & 1.18 & 1 & 50/50 & 1.00 & 1.0\\
+			AFC33 & 0/50 &--&--         & 0/50  & -- &-- & -- & -- & -- &  0/50 &   -- & -- & 50/50 & 1.00 & 1.0\\
+			\cmidrule(r){1-1} \cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10} \cmidrule(lr){11-13} \cmidrule(lr){14-16}
+			NN & 49/50 & 67.96 & 48        &50/50&6&6& 50/50 & 177.44 & 183 & 26/50 & 176.96 & 197 & 50/50 & 1.00 & 1.0 \\
+			NN($\beta$=0.04) & 3/50 & 127 & 74        &&&& & && & & & & &\\
+			\cmidrule(r){1-1} \cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10} \cmidrule(lr){11-13} \cmidrule(lr){14-16}
+			WT1 & 50/50 & 7.1 & 5       &50/50 & 3 & 3& 50/50 & 4 & 4 & \multicolumn{3}{c}{(unsupported)} & 49/50 & 8.57  & 2.0 \\
+			WT2 & 50/50 & 1.02 & 1      &50/50 & 3 & 3& 50/50 & 1 & 1 & & & & 50/50 & 2.76 & 2.0 \\
+			WT3 &50/50 &1.04 &1         &50/50 & 3 & 3& 50/50 & 2 & 2 & & & & 50/50 & 2.04 & 1.0 \\
+			WT4 &50/50 &12.02 &9        &50/50 & 30 & 30& 50/50 & 2 & 2 & & & & 50/50 & 3.68 & 3.0 \\
+			\cmidrule(r){1-1} \cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10} \cmidrule(lr){11-13} \cmidrule(lr){14-16}
+			CC1 & 50/50 &67.8 &91       & 50/50 &  5    & 5 & 50/50 &  15.00 &  15 & 50/50 &   7.30 &   6 & 50/50 &  23.48 &   7.0 \\
+			CC2  & 48/50 &114.48 &105          & 50/50 &  1    & 1 & 50/50 &  26.00 &  26 & 50/50 &  15.88 &   9 & 46/50 &  14.41 &   4.0 \\
+			CC3  & 50/50 & 22.36 & 13   & 50/50 &  5    & 5 & 50/50 &  14.40 &  17 &  4/50 & 207.50 & 229 & 44/50 &  13.52 &   2.5 \\
+			CC4 & 0/50 & --& --           & 0/50  &  --  & --&  0/50 &     -- &  -- &  0/50 &    --  &  -- &  9/50 & 120.44 & 168.0 \\
+			CC5 & 50/50 & 74.88& 48     & 16/50 & 84.69 & 79& 50/50 & 132.00 & 140 & 39/50 & 117.94 & 103 & 32/50 &  37.22 &   8.5 \\
+			%CC6 &&&&&&& N/A\\
+			% \cmidrule(r){1-1} \cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10} \cmidrule(lr){11-13} \cmidrule(lr){14-16}
+			% F16 &&&&&&& \multicolumn{3}{c}{(unsupported)} & \multicolumn{3}{c}{(missing toolbox)} & \multicolumn{3}{c}{(parameter generation problem)}\\
+			\cmidrule(r){1-1} \cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10} \cmidrule(lr){11-13} \cmidrule(lr){14-16}
+			SC &0/50& -- & -- & 0/50 & -- & -- & 0/50 & -- & -- & 0/50 & -- & -- & 0/50 & -- & -- \\
+			\bottomrule
+	\end{tabular}}
+\end{table}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "report"
+%%% End:

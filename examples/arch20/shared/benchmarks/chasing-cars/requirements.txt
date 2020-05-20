@@ -1,0 +1,27 @@
+Chasing Cars
+---------------
+
+Source: Towards a Theory of Stochastic Hybrid Systems, ianghai HuJohn LygerosShankar Sastry, HSCC2000
+
+Description:
+There are five cars, which run toward -infty.  The first car is controlled by inputs, Throttle and Brake.  Other cars are driven by the algorithm used HSSC2000 paper above.
+The outputs, y1, ..., y5 indicate locations of cars 1 to 5.  Simularion starts at t = 0 and ends at t = 100.
+
+Inputs:
+1) Any piecewise continuous signal with finite discontinuites and finite variability with
+        0 <= Throttle <= 1.0
+        0 <= Brake <= 1.0
+
+2) Any piecewise constant signal with control points for each 5 second.
+        0 <= Throttle <= 1.0
+        0 <= Brake <= 1.0
+
+
+Requirements:
+Requirements are artificially created to measure impact of complexities of formulas.  Some instances are easy, but some may be very hard.
+
+        Fml1: always_[0, 100] y5 - y4 <= 40
+        Fml2: always_[0,70] possibly_[0,30] y5-y4 >= 15
+        Fml3: always_[0,80] ((always_[0,20]y2-y1<=20) or (possibly_[0,20]y5-y4>=40))
+        Fml4: always_[0,65] possibly_[0,30] always_[0,5]y5-y4 >= 8
+        Fml5: always_[0,72] possibly_[0,8]((always_[0,5] y2-y1 >= 9) -> (always_[5,20]y5-y4>= 9))

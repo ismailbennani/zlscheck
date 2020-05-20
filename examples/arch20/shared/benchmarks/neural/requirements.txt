@@ -1,0 +1,37 @@
+Neural-Network based controller (narmamaglev_v1)
+------------------------------------------------
+
+Source:
+- https://www.mathworks.com/help/deeplearning/ug/design-narma-l2-neural-controller-in-simulink.html
+- Neural Network Toolbox User's Guide. Demuth et al.
+- https://github.com/decyphir/breach/blob/master/Examples/Simulink/simple_ML_controller/narmamaglev_v1.slx (commit 1248eb9 on Apr 20, 2017)
+
+Initialization
+
+    u_ts = 0.001;
+
+Inputs: always 1 <= Ref and Ref <= 3 and 
+    1. Piecewise continuous with consecutive discontinuities (steps) at least 3 seconds apart  
+
+    2. Piecewise constant input signal with 3 segments
+        
+Simulation time 40s.
+
+Requirement:
+    There are two parameters alpha=0.005 beta=0.03
+
+    □_[1.0, 37.0] ( (abs((Pos - Ref)) > (alpha + (beta * abs(Ref)))) ==> ◇_[0.0, 2.0] □_[0.0, 1.0] !((alpha + (beta * abs(Ref))) <= abs((Pos - Ref))))
+
+Alternative definition
+    # Output is close to the reference signal
+    param alpha=0.005
+    param beta=0.04
+    # param beta=0.03 # More difficult
+    close_ref := abs(Pos[t] - Ref[t]) < alpha+ beta*abs(Ref[t])
+    reach_ref_in_2s := ev_[0, 2] (alw_[0, 1] (close_ref))
+
+    # At all times, Output will be close to the reference signal within 2 seconds
+    NNreq: alw_[1., 37] ((not close_ref) => reach_ref_in_2s)
+
+Potentially more difficult values (open to debate)
+    beta \in {0.03,0.04} or alpha \in {0.005, 0.006, 0.007} (the higher the more difficult)

@@ -1,0 +1,4 @@
+r1 := alw_[30, 630] BladePitchAngle[t] < 14.2
+r2 := alw_[30, 630] Torque[t] > 21000 
+r3 := alw_[30, 630] Omega[t] <= 14.3
+r4 := alw_[30, 630](ev_[0,5] abs(BladePitchAngle[t] - Theta_d[t]) <= 1.6)

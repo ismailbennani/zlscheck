@@ -200,9 +200,8 @@ struct
 
   let name = "GD_" ^ Method.name
 
-  let gd_step step_params incr_runs fn =
+  let gd_next_sample step_params =
     let cur_sample, (cur_val, cur_grad) = step_params.last_result in
-
     let alpha = Method.alpha step_params.optim_step.t in
     let mt =
       Method.phi
@@ -218,7 +217,12 @@ struct
     in
     let dir = mul_array mt (translate (sqrt_diag_mat vt) epsilon_float) in
     let next_sample = mac cur_sample (-. alpha) dir in
-    let next_sample = Method.proj next_sample in
+    Method.proj next_sample
+
+
+  let gd_step step_params incr_runs fn =
+    let cur_sample, (cur_val, cur_grad) = step_params.last_result in
+    let next_sample = gd_next_sample step_params in
 
     let next_val, next_grad = fn next_sample in
     incr_runs ();

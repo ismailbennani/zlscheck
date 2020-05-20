@@ -1,0 +1,133 @@
+open MyOp
+open Discrete_obs_fad
+
+(* AT1:  □_[0.0, 20.0] (speed < 120.0) *)
+node phi1 tstep (inp, outp) =
+    let speed = Array.get outp 2 in
+    always_timed 20. (make tstep, q_lt (speed, make 120.))
+
+(* AT2:  □_[0.0, 10.0] (RPM < 4750.0) *)
+node phi2 tstep (inp, outp) =
+    let rpm = Array.get outp 0 in
+    always_timed 10. (make tstep, q_lt (rpm, make 4750.))
+
+(* AT5*: □_[0.0, 30.0] ((!(gear == * ) && ◇_[0.001, 0.1] (gear == * )) ==> ◇_[0.001, 0.1] □_[0.0, 2.5] (gear == * )) *)
+node phi5 tstep geari (inp, outp) =
+    let gear = Array.get outp 1 in
+    let start = q_true fby q_false in
+    let switch = q_and(q_not start, q_up (q_eqi (gear, make geari))) in
+    always_timed 30.
+        (make tstep,
+            alwaysBfromA_timed 2.5 (make tstep, switch, q_eqi(gear, make geari)))
+
+node phi51 tstep (inp, outp) = phi5 tstep 1. (inp, outp)
+node phi52 tstep (inp, outp) = phi5 tstep 2. (inp, outp)
+node phi53 tstep (inp, outp) = phi5 tstep 3. (inp, outp)
+node phi54 tstep (inp, outp) = phi5 tstep 4. (inp, outp)
+
+(* AT6(t,s): (□_[0.0, 30.0] (RPM < 3000.0) ==> □_[0.0, t] (speed < s)) *)
+
+node phi6 tstep (t, s) (inp, outp) =
+    let rpm = Array.get outp 0 in
+    let speed = Array.get outp 2 in
+    implies (always_timed 30. (make tstep, q_lt (rpm, make 3000.)),
+            (always_timed t (make tstep, q_lt (speed, make s))))
+
+(* AT6(t,s): (□_[0.0, 30.0] (RPM < 3000.0) ==> □_[0.0, t] (speed < s)) *)
+node phi6a tstep (inp, outp) =
+    let rpm = Array.get outp 0 in
+    let speed = Array.get outp 2 in
+    implies (always_timed 30. (make tstep, q_lt (rpm, make 3000.)),
+            (always_timed 4. (make tstep, q_lt (speed, make 35.))))
+node phi6b tstep (inp, outp) =
+    let rpm = Array.get outp 0 in
+    let speed = Array.get outp 2 in
+    implies (always_timed 30. (make tstep, q_lt (rpm, make 3000.)),
+            (always_timed 8. (make tstep, q_lt (speed, make 50.))))
+node phi6c tstep (inp, outp) =
+    let rpm = Array.get outp 0 in
+    let speed = Array.get outp 2 in
+    implies (always_timed 30. (make tstep, q_lt (rpm, make 3000.)),
+            (always_timed 20. (make tstep, q_lt (speed, make 65.))))
+
+node autotrans phi tstep inp = t, rob where
+    rec throttle = Array.get inp 0
+    and brake = Array.get inp 1
+    and t = 0. fby (t +. tstep)
+    and rpm, gear, speed = Autotransd.autotrans (make t, (throttle, brake))
+    and outp = Array.of_list [rpm; gear; speed]
+    and rob = run (phi tstep) (inp, outp)
+
+node autotrans_phi1 tstep inp = autotrans phi1 tstep inp
+
+node autotrans_phi2 tstep inp = t, rob where
+    rec throttle = Array.get inp 0
+    and brake = Array.get inp 1
+    and t = 0. fby (t +. tstep)
+    and rpm, gear, speed = Autotransd.autotrans (make t, (throttle, brake))
+    and outp = Array.of_list [rpm; gear; speed]
+    and rob = phi2 tstep (inp, outp)
+
+node autotrans_phi51 tstep inp = t, rob where
+    rec throttle = Array.get inp 0
+    and brake = Array.get inp 1
+    and t = 0. fby (t +. tstep)
+    and (rpm, gear, speed), rob_optim = Autotransd_modes.autotrans (make t, (throttle, brake))
+    and outp = Array.of_list [rpm; gear; speed]
+    and rob_spec = phi51 tstep (inp, outp)
+    and rob = if isFalse rob_spec then rob_spec else if isTrue rob_optim then rob_optim else rob_spec
+
+node autotrans_phi52 tstep inp = t, rob where
+    rec throttle = Array.get inp 0
+    and brake = Array.get inp 1
+    and t = 0. fby (t +. tstep)
+    and (rpm, gear, speed), rob_optim = Autotransd_modes.autotrans (make t, (throttle, brake))
+    and outp = Array.of_list [rpm; gear; speed]
+    and rob_spec = phi52 tstep (inp, outp)
+    and rob = if isFalse rob_spec then rob_spec else if isTrue rob_optim then rob_optim else rob_spec
+
+node autotrans_phi53 tstep inp = t, rob where
+    rec throttle = Array.get inp 0
+    and brake = Array.get inp 1
+    and t = 0. fby (t +. tstep)
+    and (rpm, gear, speed), rob_optim = Autotransd_modes.autotrans (make t, (throttle, brake))
+    and outp = Array.of_list [rpm; gear; speed]
+    and rob_spec = phi53 tstep (inp, outp)
+    and rob = if isFalse rob_spec then rob_spec else if isTrue rob_optim then rob_optim else rob_spec
+
+node autotrans_phi54 tstep inp = t, rob where
+    rec throttle = Array.get inp 0
+    and brake = Array.get inp 1
+    and t = 0. fby (t +. tstep)
+    and (rpm, gear, speed), rob_optim = Autotransd_modes.autotrans (make t, (throttle, brake))
+    and outp = Array.of_list [rpm; gear; speed]
+    and rob_spec = phi54 tstep (inp, outp)
+    and rob = if isFalse rob_spec then rob_spec else if isTrue rob_optim then rob_optim else rob_spec
+
+node autotrans_phi6a tstep inp = t, rob where
+    rec throttle = Array.get inp 0
+    and brake = Array.get inp 1
+    and t = 0. fby (t +. tstep)
+    and rpm, gear, speed = Autotransd.autotrans (make t, (throttle, brake))
+    and outp = Array.of_list [rpm; gear; speed]
+    and rob = phi6a tstep (inp, outp)
+
+node autotrans_phi6b tstep inp = t, rob where
+    rec throttle = Array.get inp 0
+    and brake = Array.get inp 1
+    and t = 0. fby (t +. tstep)
+    and rpm, gear, speed = Autotransd.autotrans (make t, (throttle, brake))
+    and outp = Array.of_list [rpm; gear; speed]
+    and rob = phi6b tstep (inp, outp)
+
+node autotrans_phi6c tstep inp = t, rob where
+    rec throttle = Array.get inp 0
+    and brake = Array.get inp 1
+    and t = 0. fby (t +. tstep)
+    and rpm, gear, speed = Autotransd.autotrans (make t, (throttle, brake))
+    and outp = Array.of_list [rpm; gear; speed]
+    and rob = phi6c tstep (inp, outp)
+
+node sanity_check tstep inp = t, rob where
+    rec t = 0. fby (t +. tstep)
+    and rob = Sanity_check.model inp

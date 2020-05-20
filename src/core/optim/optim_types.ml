@@ -1,6 +1,7 @@
 type optim_mode = Falsify | Minimize
 
 type ('a, 'b) step_params = {
+  mutable online : bool;
   mutable n_runs : int;
   mutable history : 'b list;
   mutable best_result : 'b;

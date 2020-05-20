@@ -1,0 +1,51 @@
+AbstractFuelControl_M1
+----------------------
+
+Description:
+- Xiaoqing Jin, Jyotirmoy V. Deshmukh, James Kapinski, Koichi Ueda, Ken Butts:
+  Powertrain Control Verification Benchmark, HSCC 2014.
+
+- ARCH 2017 and 2018
+
+Initialization (MATLAB variables):
+
+    simTime        = 50
+    measureTime    =  1
+    fault_time     = 60
+    spec_num       =  1 % compute mu
+    fuel_inj_tol   =  1
+    MAF_sensor_tol =  1
+    AF_sensor_tol  =  1
+
+Inputs:
+
+Only instance 2)
+    piecewise constant with 10 segments
+         0.0 <= throttle and throttle <= 61.1 (normal mode)
+        61.2 <= throttle and throttle <= 81.2 (power mode)
+    constant
+        900 <= engine and engine < 1100
+
+    IMPORTANT: feedforward power mode is entered at throttle = 61.2 so make sure this is *excluded* from the input range
+
+Requirement (time horizon: 50)
+
+    (27) from [HSCC 2014] in normal mode
+
+    always_[11, 50]
+        ((rise or fall) ==> (always_[1,5] (abs(mu) < 0.008)))
+
+where
+
+    rise = (throttle <  8.8) and (eventually_[0, 0.05] (throttle > 40.0))
+    fall = (throttle > 40.0) and (eventually_[0, 0.05] (throttle <  8.8))
+
+Requirement (time horizon 50)
+
+    (29) from [HSCC 2014] in normal mode
+
+    always_[11, 50] abs(mu) < 0.007
+
+    (33) from [HSCC 2014] in power mode
+
+    always_[11, 50] abs(mu) < 0.007

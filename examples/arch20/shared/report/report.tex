@@ -1,0 +1,692 @@
+\documentclass[a4paper]{easychair}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[scaled=0.8]{beramono}
+
+\usepackage{todonotes}
+\usepackage{cleveref}
+\usepackage{xspace}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{enumitem}
+
+\usepackage{newunicodechar}
+\newunicodechar{□}{\Box}
+\newunicodechar{◇}{\Diamond}
+\newunicodechar{○}{\circ}
+
+\title{ARCH-COMP 2019 Category Report: Falsification%
+       \footnote{The falsification category was coordinated by the first author.
+                 The remaining authors represent all participants and they are listed alphabetically.}}
+\author{
+    Gidon~Ernst\inst{1}
+    \and
+    Paolo~Arcaini \inst{2} \and
+    Alexandre Donze \inst{3} \\
+    Georgios~Fainekos \inst{4} \and
+    Logan~Mathesen \inst{4} \and 
+    Giulia Pedrielli \inst{4} \and \\
+    Shakiba~Yaghoubi \inst{4} \and
+    Yoriyuki~Yamagata \inst{5} \and
+    Zhenya~Zhang \inst{2}
+}
+
+\institute{
+	Ludwig-Maximilians-University (LMU), Munich, Germany \\
+	\email{gidon.ernst@sosy.ifi.lmu.de}
+\and
+    National Institute of Informatics (NII), Tokyo, Japan \\
+    \email{\{arcaini,zhangzy\}@nii.ac.jp}
+\and
+    Decyphir SAS, Moirans, France \\
+    \email{alex@decyphir.com}
+\and
+    Arizona State University (ASU), Tempe, USA \\
+    \email{\{fainekos,lmathese,gpedriel,syaghoub\}@asu.edu}
+\and
+    National Institute of Advanced Industrial Science and Technology (AIST), Osaka, Japan \\
+    \email{yoriyuki.yamagata@aist.go.jp}
+}
+
+\titlerunning{ARCH-COMP 2019: Falsification}
+\authorrunning{Ernst et al.}
+
+\newcommand{\ARCH}{\url{https://cps-vo.org/group/ARCH/FriendlyCompetition}}
+\newcommand{\gitlab}{\url{https://gitlab.com/goranf/ARCH-COMP}}
+
+\newcommand{\STaLiRo}{S-TaLiRo\xspace}
+\newcommand{\Breach}{Breach\xspace}
+\newcommand{\FalStar}{\textsc{FalStar}\xspace}
+\newcommand{\falsify}{falsify\xspace}
+
+\newcommand{\FR}{\ensuremath{\mathit{FR}}}
+\newcommand{\Savg}{\ensuremath{\overline{S}}}
+\newcommand{\Smed}{\ensuremath{\widetilde{S}}}
+
+\begin{document}
+	\maketitle
+
+	\begin{abstract}
+      This report presents the results from the 2019 friendly
+      competition in the ARCH workshop for the falsification of
+      temporal logic specifications over Cyber-Physical Systems.  We
+      describe the organization of the competition and how it differs
+      from previous years.  We give background on the participating
+      teams and tools and discuss the selected benchmarks and results.
+      The benchmarks are available on the ARCH
+      website\footnote{\ARCH}, as well as in the competition's
+      \texttt{gitlab} repository\footnote{\gitlab}.
+      The main outcome of the 2019 competition is a common benchmark repository,
+      and an initial base-line for falsification, with results from multiple tools,
+      which will facilitate comparisons and tracking of the state-of-the-art
+      in falsification in the future.
+	\end{abstract}
+
+	\section{Introduction}
+
+	The friendly competition of the ARCH workshop is running
+    yearly since~2014. The goal is to compare the state-of-the-art of
+    tools for testing and verification of hybrid systems.  The
+    competition is organized in several categories, with different
+    specifications (computing reachable regions, checking temporal
+    properties) and varying dynamics in the system models (such as
+    linear/non-linear and hybrid).
+
+	In the falsification category, benchmarks typically consist of
+    executable Matlab code or Simulink/Stateflow models, each
+    associated with a set of requirements in temporal logic with time
+    bounds, encoded in MTL~\cite{Koymans1990} or STL~\cite{MalerN04}.
+    The task is to find initial conditions and time-varying inputs
+    subject to given constraints that steer the system into a
+    violation of the respective requirement.  This search is typically
+    guided using well-established robustness
+    metrics~\cite{FainekosPappas2009} that give a quantitative account
+    of how close a given input is to violating a requirement.  Using such
+    metrics as score functions permits one to employ standard
+    optimization techniques to find falsifying inputs.  Recent results
+    in falsification have produced a variety of techniques, mature
+    tools, and practical applications, see~\cite{BDDFMNS2018} for an
+    overview.  Due to the complexity and unclear semantics of Matlab
+    and Simulink models, many previous techniques are entirely
+    black-box and just observe the input/output behavior of the system
+    via simulations, but grey-box approaches have been developed
+    recently~\cite{YaghoubiHSCC,DBLP:conf/fm/AkazakiLYDH18} to take
+    some knowledge on the internals of the system into deliberation.
+    This year's falsification competition featured more tools and
+    participating teams in comparison to previous years, prompting a
+    few changes to the organization with respect to benchmark
+    solicitation and specification, as well as the validation of the
+    results (Sec~\ref{sec:organization}).
+
+    The participating tools~2019 were \STaLiRo~\cite{annpureddy2011s},
+    \Breach~\cite{Donze2010},
+    \FalStar~\cite{ZhangESAH2018-MCTS,ErnstSZH2018-FalStar}, and
+    \falsify~\cite{DBLP:conf/fm/AkazakiLYDH18} in different
+    configurations (Sec~\ref{sec:participants}).
+
+	There were 6 benchmark models overall with individual requirements,
+    taken from previous competitions and from the literature (Sec~\ref{sec:benchmarks}):
+	Automatic Transmission (AT),
+	Fuel Control of an Automotive Powertrain (AFC),
+	Neural-network Controller (NN),
+	Wind Turbine (WT),
+	Chasing cars (CC),
+	Aircraft Ground Collision Avoidance system (F16),
+	and Steam Condenser with Recurrent Neural Network Controller (SC).
+
+    As expected, the results (Sec~\ref{sec:results}) show that tools
+    perform better on some benchmarks and worse on others, and that
+    different tools have different strengths.  Notable success is
+    achieved by the tool \falsify~\cite{DBLP:conf/fm/AkazakiLYDH18} ,
+    which often performs best by far, sometimes requiring just a
+    single simulation to find a falsifying input thanks to its
+    incremental strategy.
+
+	\section{Organization}
+	\label{sec:organization}
+
+	Several major changes to the format of the competitions were made in 2019.
+
+	\paragraph{Benchmark Solicitation.}
+
+	For a more comprehensive assessment of the capabilities of tools,
+    the benchmark pool was extended to cover several models with
+    multiple requirements.  Source of these benchmarks were known
+    models from the literature that had served in evaluations of new
+    methods and at previous years of the competition.
+
+	Two changes and the presence of more teams than in the years
+    before (see \cref{sec:participants}) prompted a more systematic
+    organization.  To this end, benchmarks were collected in a fork of
+    the \texttt{gitlab} repository in which the reproducibility
+    packages are maintained.  Participating teams had access to that
+    repository to contribute and download benchmarks models.
+
+	Similarly, descriptions on the use of the models and a precise,
+    informal characterization of the respective settings was
+    communicated in this way, too.
+
+    \paragraph{Input Specifications.}
+
+	There was some discussion on the format and strictness of the
+    input characterizations (for time varying inputs).  Two options
+    were proposed and it was agreed to run separate evaluations for
+    each of the two options (called instance~1 and instance~2 in the
+    following).
+
+	\emph{Arbitrary piece-wise continuous input signals (Instance 1).}
+    This option leaves the input specification up to the participants.
+    The search space is, in principle, the entire set of piece-wise
+    continuous input signals (i.e., which permit discontinuities),
+    where the values for each individual
+    dimensions are from a given range.  Additional constraints that
+    were suggested are finite-number of discontinuity and finite
+    variability for all continuous parts of inputs.  Further, each
+    benchmark may impose further constraints.  Participants may
+    instruct their tools to search a subset of the entire search
+    space, notably to achieve finite parametrization, and then to
+    apply an interpolation scheme to synthesize the input signal.
+
+	However, the participants agreed that such a choice must be
+    ``reasonable'' and should be justified from the problem's
+    specification without introducing external knowledge about
+    potential solutions.  Moreover, more general parametrizations that
+    are shared across requirements and benchmark models were
+    preferable.  Due to the diversity of benchmarks, it was decided to
+    evaluate the proposed solutions using common sense.
+
+	\emph{Constrained input signals (Instance 2).}  This option
+    precisely fixes the format of the input signal, potentially
+    allowing discontinuities. An example input signal would be
+    piecewise constant with $k$ equally spaced control points, with
+    ranges for each dimension of the input, disabling interpolation at
+    Simulink input ports so that tools don't need to up-sample their
+    inputs.  The arguments in favor of that are increased
+    comparability of results.  As possible downside was mentioned that
+    optimization-based tools (\STaLiRo and \Breach) are just compared with
+    respect to their optimization algorithm.
+    Nevertheless such a comparison is still meaningful, in particular,
+    as as \FalStar and \falsify implement other approaches to falsification.
+
+    \paragraph{Validation and Repeatability.}
+
+    To prevent implementation bugs and specification errors and to
+    check for differences in implementations of robustness
+    evaluations, it was planned early on to validate all results.  The
+    group's organizer provided a Matlab-based interface for
+    validation, implemented by~\FalStar.  Moreover, the organizers of
+    the ARCH workshop decided that all groups in the competition
+    should submit Docker-based packages for repeatability evaluation,
+    but in the end it was infeasible to package an entire Matlab
+    installation including the necessary toolboxes.
+
+	\section{Participants}
+	\label{sec:participants}
+
+	\paragraph{\STaLiRo.} \STaLiRo~\cite{annpureddy2011s} is a Matlab
+    toolbox for monitoring and test case generation against system
+    specifications presented in STL. The test cases are automatically
+    generated using optimization techniques guided by formal
+    requirements in STL in order to find falsifying systems behaviors.
+    The tool has different optimization algorithms. Specifically, in
+    this competition, the stochastic optimization with adaptive
+    restarts (SOAR) \cite{mathesen2019soar} framework is used for all
+    the benchmarks except for choosing instance 1 type inputs in Steam
+    Condenser model. In that benchmark Simulated annealing global
+    search was combined by a local optimal control based search
+    \cite{YaghoubiHSCC}.  \STaLiRo is publicly available on-line under
+    General Public License (GPL) \footnote{\url{
+        https://sites.google.com/a/asu.edu/s-taliro}}.
+
+	\paragraph{\Breach.} \Breach~\cite{Donze2010} is a Matlab toolbox
+    for test case generation, formal specification monitoring and
+    optimization-based falsification and mining of requirements for
+    hybrid dynamical systems. A particular emphasis is put on
+    modularity and flexibility of inputs generation, requirement
+    evaluation and optimization strategy. For this work, the approach
+    has been to ensure that each benchmark was properly implemented
+    and a default, relatively basic falsification strategy has been
+    applied. The idea was to perform a first systematic investigation
+    of the proposed problems, and then to provide a base to work on
+    for future editions of the competition to test a larger variety on
+    approaches on the most challenging instances.  Breach is available
+    under BSD license\footnote{\url{https://github.com/decyphir/breach}}.
+
+	\paragraph{\FalStar.}
+	\FalStar is an experimental prototype of a falsification tool that
+    explores the idea to construct falsifying inputs incrementally in
+    time, thereby exploiting potential time-causal dependencies in the
+    problem.  It implements several algorithms, of which two were used
+    in the competition: A two layered framework combining Monte-Carlo
+    tree search (MCTS) with stochastic
+    optimization~\cite{ZhangESAH2018-MCTS}, and a probabilistic
+    algorithm~\cite{ErnstSZH2018-FalStar} that adapts to the
+    difficulty of the problem dubbed adaptive Las-Vegas tree search
+    (aLVTS).  The code is publicly available under the BSD license.%
+	\footnote{\url{https://github.com/ERATOMMSD/falstar}}
+
+	\paragraph{\falsify.}
+	\falsify is an experimental program which solves falsification
+    problems of safety properties by reinforcement
+    learning~\cite{DBLP:conf/fm/AkazakiLYDH18}.  \falsify uses a
+    \emph{grey-box} method, that is, it learns system behavior by
+    observing system outputs during simulation.  \falsify is currently
+    implemented by a deep reinforcement learning algorithm
+    \emph{Asynchronous Advantage Actor-Critic}
+    (A3C)~\cite{DBLP:conf/icml/MnihBMGLHSK16}.
+
+	\section{Benchmarks}
+	\label{sec:benchmarks}
+
+	\paragraph{Automatic Transmission (AT).}
+
+	This model of an automatic transmission encompasses a controller
+    that selects a gear~1 to~4 depending on two inputs (throttle,
+    brake) and the current engine load, rotations per minute~$\omega$,
+    and car speed~$v$.  It is a standard falsification benchmark
+    derived from a model by Mathworks and has been proposed for
+    falsification in~\cite{ARCH14}.
+
+	Input specification: $0 \le \mathit{throttle} \le 100$ and
+    $0 \le \mathit{brake} \le 325$ (both can be active at the same
+    time).  Constrained input signals (instance~2) permit
+    discontinuities at most every 5~time units.
+
+	Requirements (where $○~\phi \equiv ◇_{[0.001, 0.1]}~\phi$) are specific versions of those in \cite{ARCH14} where the parameters have been chose to be somewhat difficult. \\
+
+	\begin{tabular}{ll}
+		\toprule
+		Benchmark & STL~formula \\
+		\cmidrule(r){1-1} \cmidrule(l){2-2}
+		AT1  & $□_{[0, 20]} v < 120$ \\
+		AT2  & $□_{[0, 10]} \omega < 4750$ \\
+		AT51 & $□_{[0, 30]} ((\lnot g1 \land ○~g1) \to ○~□_{[0, 2.5]} g1)$ \\
+		AT52 & $□_{[0, 30]} ((\lnot g2 \land ○~g2) \to ○~□_{[0, 2.5]} g2)$ \\
+		AT53 & $□_{[0, 30]} ((\lnot g3 \land ○~g3) \to ○~□_{[0, 2.5]} g3)$ \\
+		AT54 & $□_{[0, 30]} ((\lnot g4 \land ○~g4) \to ○~□_{[0, 2.5]} g4)$ \\
+		AT6a & $(□_{[0, 30]} \omega < 3000) \to (□_{[0,  4]} v < 35)$ \\
+		AT6b & $(□_{[0, 30]} \omega < 3000) \to (□_{[0,  8]} v < 50)$ \\
+		AT6c & $(□_{[0, 30]} \omega < 3000) \to (□_{[0, 20]} v < 65)$ \\
+		\bottomrule
+	\end{tabular}
+
+    % \falsify: Input specification for Instance 1 uses piecewise constant function with discontinuities spaced in even intervals $\Delta T$.
+	% $\Delta T = 1$ for all models except for SC in which $\Delta T = 0.1$ is used.
+
+	\paragraph{Fuel Control of an Automotive Powertrain (AFC).}
+
+	The model is described in \cite{JinHSCC2014} and has been used in
+    two previous instalments of this
+    competition~\cite{ARCH17falsification,ARCH18falsification}.  The
+    specific limits used in the requirements are chosen such that
+    falsification is possible but reasonably hard.
+
+	The constrained input signal (instance~2) fixes the
+    throttle~$\theta$ to be piecewise constant with 10 uniform
+    segments over a time horizon of 0 with two modes (normal and power
+    corresponding to feedback and feedforward control), and the engine
+    speed~$\omega$ to be constant with $900 \le \omega < 1100$ to
+    capture the input profile outlined in \cite{JinHSCC2014} and to
+    match the previous competitions.  For this reason, we do not
+    consider the unconstrained (instance~1) input specification.
+    Faults are disabled (e.g. by setting $\mathtt{fault\_time} > 50$).
+
+	\begin{tabular}{lll}
+		\toprule
+		Benchmark & STL~formula & Input Constraint \\
+		\cmidrule(r){1-1} \cmidrule(lr){2-2} \cmidrule(l){3-3}
+		AFC27 & $□_{[11, 50]} ((\mathit{rise} \lor \mathit{fall}) \to (□_{[1,5]} |\mu| < \beta))$ & $0 \le \theta < 61.2$ (normal) \\
+		AFC29 & $□_{[11, 50]} |\mu| < \gamma$ & $0 \le \theta < 61.2$ (normal) \\
+		AFC33 & $□_{[11, 50]} |\mu| < \gamma$ & $61.2 \le \theta \ge 81.2$ (power) \\
+		\bottomrule
+	\end{tabular}
+
+\noindent where
+	%
+	\begin{align*}
+		\beta &= 0.008 \qquad \gamma = 0.007 \\
+		\mathit{rise} &= (\theta <  8.8) \land (◇_{[0, 0.05]} (\theta > 40.0))\\
+		\mathit{fall} &= (\theta > 40.0) \land (◇_{[0, 0.05]} (\theta <  8.8))
+	\end{align*}
+	%
+	Note that the time interval starts at 11, which is one time unit after the feedback mode is enabled at time~10.
+
+	\paragraph{Neural-network Controller (NN).}
+
+	This benchmark is based on MathWork's neural network controller for a system that levitates a magnet above an electromagnet at a reference position.%
+	\footnote{\url{https://au.mathworks.com/help/deeplearning/ug/design-narma-l2-neural-controller-in-simulink.html}}
+	It has been used previously as a falsification demonstration in the distribution of Breach.
+	The model has one input, a reference value $\mathit{Ref}$ for the position, where $1 \le \mathit{Ref}$ and $\mathit{Ref} \le 3$.
+	It outputs the current position of the levitating magnet~$\mathit{Pos}$.
+	The input specification for instance~1 requires discontinuities to be at least 3~time units apart,
+	whereas instance~2 specifies an input signal with exactly three constant segments.
+	The time horizon for the problem is~40.
+	The requirement ensures that after changes to the reference, the actual position eventually stabilizes around that value with small error.
+
+\noindent\begin{tabular}{ll}
+	\toprule
+	Benchmark & STL~formula \\
+	\cmidrule(r){1-1} \cmidrule(l){2-2}
+	NN & $□_{[1, 37]} \big(|Pos - Ref| > \alpha + \beta |Ref| \to ◇_{[0, 2]} □_{[0, 1]} \lnot (\alpha + \beta |Ref| \le |Pos - Ref|)\big)$ \\
+	\bottomrule
+\end{tabular}
+
+\noindent where $\alpha=0.005$ and $\beta=0.03$.
+
+    % \falsify: Input specification for Instance 1 uses piecewise constant function with discontinuities spaced in even intervals $\Delta T$.
+	% $\Delta T = 1$ for all models except for SC in which $\Delta T = 0.1$ is used.
+
+	\paragraph{Wind Turbine (WT).}
+
+	The model is a simplified wind turbine model proposed
+    in~\cite{ARCH16:Hybrid_Modelling_of_Wind}.  The input of the
+    system is wind speed $v$ and the outputs are blade pitch angle
+    $\theta$, generator torque $M_{g, d}$, rotor speed $\Omega$ and
+    demanded blade pitch angle $\theta_d$.  The wind speed is
+    constrained by $8.0 \leq v \leq 16.0$.  Instance 1 allows any
+    piece-wise continuous inputs, while instance 2 constrains inputs
+    to piece-wise constant signals whose control points which are
+    evenly spaced each 5 seconds.  The model is relatively large.
+    Further, the time horizon is long (630) compared to other
+    benchmarks.
+
+	\begin{tabular}{ll}
+		\toprule
+		Benchmark & STL~formula \\
+		\cmidrule(r){1-1} \cmidrule(l){2-2}
+		WT1  & $□_{[30, 630]} \theta \leq 14.2$ \\
+		WT2  & $□_{[30, 630]} 21000 \leq M_{g, d} \leq 47500$ \\
+		WT3 &  $□_{[30, 630]} \Omega \leq 14.3$ \\
+		WT4 &  $□_{[30, 630]} ◇_{[0,5]} |\theta - \theta_d| \leq 1.6$ \\
+		\bottomrule
+	\end{tabular}
+
+    % \falsify: Input specification for Instance 1 uses piecewise constant function with discontinuities spaced in even intervals $\Delta T$.
+    % $\Delta T = 1$ for all models except for SC in which $\Delta T = 0.1$ is used.
+
+	\paragraph{Chasing cars (CC).}
+
+	The model is derived from Hu et al.~\cite{hu2000towards} which
+    presents a simple model of an automatic chasing car.  Chasing cars
+    (CC) model consists of five cars, in which the first car is driven
+    by inputs ($\mathit{throttle}$ and $\mathit{brake}$), and other
+    four are driven by Hu et al.'s algorithm.  The output of the
+    system is the location of five cars $y_1, y_2, y_3, y_4, y_5$.
+    The properties to be falsified are constructed artificially, to
+    investigate the impact of complexity of the formulas to
+    falsification.  The input specifications for instance 1 allows any
+    piecewise continuous signals while the input specification for
+    instance 2 constraints inputs to piecewise constant signals with
+    control points for each 5 seconds, i.e., 20 segments
+
+	\begin{tabular}{ll}
+		\toprule
+		Benchmark & STL~formula \\
+		\cmidrule(r){1-1} \cmidrule(l){2-2}
+		CC1  & $□_{[0, 100]} y_5 - y_4 \leq 40$ \\
+		CC2  & $□_{[0, 70]} ◇_{[0,30]} y_5 - y_4 \geq 15$ \\
+		CC3 &  $□_{[0, 80]} ((□_{[0,20]}y_2 - y_1 \leq 20) \lor (◇_{[0,20]} y_5 - y_4 \geq 40))$ \\
+		CC4 &  $□_{[0, 65]} ◇_{[0,30]} □_{[0,20]} y_5 - y_4 \geq 8$ \\
+		CC5 &  $□_{[0, 72]} ◇_{[0,8]} ((□_{[0,5]} y_2 - y_1 \geq 9) \to (□_{[5, 20]} y_5 - y_4 \geq 9))$\\
+		\bottomrule
+	\end{tabular}
+
+%   \falsify: Input specification for Instance 1 uses piecewise constant function with discontinuities spaced in even intervals $\Delta T$.
+%   $\Delta T = 1$ for all models except for SC in which $\Delta T = 0.1$ is used.
+
+
+	\paragraph{Aircraft Ground Collision Avoidance system (F16).}
+	The model has been derived
+    from~\cite{ARCH18:Verification_Challenges_in_F_16}. The F16
+    aircraft and its inner-loop controller for Ground Collision
+    avoidance have been modeled using 16 continuous variables with
+    piece-wise nonlinear differential equations. Autonomous maneuvers
+    are performed in an outer-loop controller that uses a finite-state
+    machine with guards involving the continuous variables. The system
+    is required to always avoid hitting the ground during its maneuver
+    starting from all the initial conditions for roll, pitch, and yaw
+    in the range
+    $[0.2\pi, 0.2833\pi]\times[ -0.5\pi, -0.54\pi]\times[0.25\pi,
+    0.375\pi]$.  Since the benchmark has no time-varying input, there
+    is no distinction between instance~1 and instance~2.  The
+    requirement is checked for a time horizon equal to 15. This
+    requirement can be captured using the following formula
+
+	\begin{tabular}{ll}
+		\toprule
+		Benchmark & STL~formula \\
+		\cmidrule(r){1-1} \cmidrule(l){2-2}
+		F16  & $□_{[0, 15]} altitude >0$ \\
+		\bottomrule
+	\end{tabular}
+
+	\paragraph{Steam condenser with Recurrent Neural Network Controller (SC).}
+
+	The model is presented in \cite{YaghoubiHSCC}. It is a dynamic model of an steam condenser based on energy balance and cooling water mass balance controlled with a Recurrent Neural network in feedback. The time horizon for the problem is 35 seconds. The input to the system can vary in the range $[3.99, 4.01]$.
+    For instance~2, the input signal should be piecewise constant with 20~evenly spaced segments.
+    The pressure output should satisfy the following requirement:
+
+	\begin{tabular}{ll}
+		\toprule
+		Benchmark & STL~formula \\
+		\cmidrule(r){1-1} \cmidrule(l){2-2}
+		SC  & $□_{[30,35]} (87\leq \mathit{pressure} \land \mathit{pressure}\leq 87.5)
+		$ \\
+		\bottomrule
+	\end{tabular}
+
+    % \falsify: We choose $\Delta T = 0.1$ for SC model because Instance 2 uses $\Delta T = 1.75$, which is near to $\Delta T = 1$.
+
+	\section{Evaluation}
+    \label{sec:results}
+
+	Falsification tools were instructed to run each individual
+    requirement 50 times, to account for the stochastic nature of most
+    algorithms.  We report the falsification rate, i.e., the number of
+    trials where a falsifying input was found, as well as the median
+    and mean of the number of simulations required to find such input
+    (not including the unsuccessful runs in the aggregate).  The
+    cut-off for the number of simulations per trial was
+    300. % and in case no falsification was achieved, we indicate a table entry ``N/A''.
+
+    The results for unconstrained piecewise-continuous input signals (instance~1)
+    are shown in Table~\ref{table:allResultsInstance1}.
+    They depend on the choices for the search space,
+    which we briefly discuss for each participating tool:
+
+    \paragraph{\Breach.} For most benchmarks (exceptions detailed below), a
+    piecewise constant signal generation was used with fixed step
+    size. For all instances, the optimization strategy used is the
+    default global Nelder Mead (GNM) approach with a custom
+    configuration for the competition, resulting in the following
+    three phases behavior:
+    \begin{itemize}[noitemsep,topsep=0pt,parsep=0pt,partopsep=0pt]
+    \item Phase 1.: at most $n_{\text{corners}}= $ 64 corner samples are tested, i.e., inputs
+      for which control points take only extreme values;
+    \item Phase 2.: $n_{\text{quasi-rand}} = 100-n_{\text{corners}}$
+      quasi-random samples from the Halton sequence with
+      varying start points determined by a random seed are tested;
+    \item Phase 3.: the robustness results from phase 1 and 2 are
+      sorted and Nelder Mead optimization is run from the most
+      promising samples.
+    \end{itemize}
+    Note that as a result of this approach, whenever a falsifying
+    input is consistently found with less than 100 simulations, it
+    indicates that the problem is likely trivially falsifiable with
+    extreme inputs or a quick stochastic exploration of the search
+    space. The following settings were chosen for input generation
+    for each benchmark:
+    \begin{itemize}[noitemsep,topsep=0pt,parsep=0pt,partopsep=0pt]
+    \item AT: throttle input and brake inputs were configured
+      with respectively 3 and 2 control points at variable times;
+    \item NN: input was piecewise constant with 3 control
+      points regularly spaced;
+    \item WT: spline interpolation with control
+      points regurlary spaced by 5s and saturation to domain [8;16]
+      (same for instance 2);
+    \item CC: same as instance 2, i.e., piecewise constant input with control
+      points regurlary spaced by 5s;
+    \item SC: same as instance 2, i.e., piecewise constant input with control
+      points regurlary spaced by 1.75s;
+    \end{itemize}
+
+
+    \paragraph{\STaLiRo.} In S-TaLiRo, input signals are parameterized in two ways:
+    the number of control points for the input signal, and the
+    time location of those control points during simulation. The number of
+    control points for each input signal is given by the user forming
+    an optimization problem with search space dimension the same as the number of 
+    control points. An option is provided to the user to add to the search space 
+    the timing of the control points, but this option is not used in the competition.
+    For this competition, the control point time locations are evenly spaced over the duration 
+    of the simulation for all the benchmarks except for the SC problem instance 1.
+
+    For the transmission model the $[throttle, brake]$ control points
+    are interpolated with the \textit{pchip} function, with $[7, 3]$ as
+    the number of control points in specifications 1-6 and $[4,2]$ for
+    7-9 to reduce the dimensionality of the search space. For the Neural model, we use $13$
+    control points to yield piecewise constant signals of $3.33$ seconds apart.
+    %The Chasing Cars model used $5$ control points for piecewise constant signals of $20$ seconds each.
+    The Wind Turbine used the default model input of $126$ control points interpolated linearly.
+    For the SC model, Simulated Annealing (SA) global search was utilized in combination with an optimal control based local search on the infinite dimensional input space. The SA global search utilizes piecewise constant inputs with 12 possibly uneven time durations.
+
+    \paragraph{\FalStar~(MCTS).}
+    The search space included piecewise constant inputs. For all the benchmarks and for all the specifications, the number of control points was computed according to the simulation time that was divided by a fixed interval of 5 time units (e.g., a simulation time of 50 has 10 control points).
+
+    \paragraph{\FalStar~(aLVTS).} The search space included piecewise constant
+    inputs (the only parameterization currently supported), ranging
+    from~2 upto~4 control points at which discontinuities are allowed
+    (resp. upto~3 for NN).  In this configuration \FalStar benefits
+    from a low number of control points and is more likely to try
+    inputs with fewer control points first.  For the AT benchmarks it
+    was clear beforehand that this choice suffices to falsify all
+    benchmarks, and the setting was then kept for the remaining
+    experiments.
+
+    \paragraph{\falsify.}
+	The input specification uses piecewise constant function with discontinuities spaced in even intervals $\Delta T$.
+	$\Delta T = 1$ for all models except for SC in which $\Delta T = 0.1$ is used.
+	The choice for the SC model was $\Delta T = 0.1$ model because Instance 2 uses $\Delta T = 1.75$, which is near to $\Delta T = 1$.
+
+    \paragraph{Common Settings.}
+
+    For a better comparison of the performance of the tools, a common
+    ground is piecewise constant input signals (instance~2) with a
+    concrete specification of the number of discontinuities allowed.
+    The corresponding results are shown in Table~\ref{table:allResultsInstance2}.
+
+    The implied intention was that the search space is actually large
+    enough so that in principle input signals are generated that
+    exhibit that number of variability.  For this reason, for example,
+    \FalStar~(aLVTS) was instructed not to generate input signals with
+    fewer control points (even though it would likely have improved
+    the results). \FalStar~(MCTS) similarly takes the number of
+    control points as input. % and, therefore, applying instance~2 has not been a problem.
+
+    \input{results}
+
+    \paragraph{Discussion.}
+
+    The most successful outcome can be attributed to \falsify, which
+    can find a falsifying input signal with a single simulation only.
+    This is remarkable as all sampling and tuning of the input is done
+    on the fly with respect to an established prefix.  Notably, most
+    results for AT, AFC, NN, and WT models show this behavior.  While
+    the strategy works well enough and applies generally, there are a
+    few instances where other strategies work better, e.g., the
+    tendency of GNM and aLVTS to prefer extreme values for AT1, as
+    well as the \STaLiRo's algorithm used to solve the SC benchmark.
+
+    Another observation is that many benchmarks can be solved quite
+    easily, leading to perfect falsification rates (FR) of 50/50.
+    This suggests that the overall mass of falsifying inputs is large
+    enough so that those can be found reliably with significantly less
+    than 300 simulations, independently of whether sophisticated
+    algorithms are used (\STaLiRo, MCTS, \falsify), or whether
+    sampling is random (but not necessarily uniform, GNM, aLVTS).
+    This can be seen as a confirmation of folklore knowledge that many
+    falsification problems are actually not that hard to solve, and
+    that conceptually simple methods can indeed work well.  A clear
+    take-away is that the set of benchmarks needs to be more
+    challenging in the future.
+
+    There is not so much of a difference between the results for
+    instance~1 and instance~2.  The latter typically require more time
+    to solve, as the parameter space is larger (e.g., the~CC benchmark
+    has many more control points in the second instance).
+
+    Due to the inhomogeneity of results we refrain from a further
+    in-depth analysis of when and why exactly certain algorithms fare
+    better than others.  This is left for future work (cf.~also the
+    comment on benchmark classification below).  Similarly, we do not
+    attempt to derive an aggregate score to determine a ``winner''.
+
+    \section{Conclusion and Outlook}
+
+    Setting up the competition with the format described in
+    Sec.~\ref{sec:organization} proved to be difficult and
+    time-consuming.
+
+    The first issue is a general lack of a well-prepared benchmark
+    suite for falsification of black-box systems.  In comparison to
+    the other tracks (and similar competitions such as SMT-COMP and
+    SV-COMP), the ARCH group on falsification could previously not
+    refer to an established repository of benchmarks.  By collecting
+    existing benchmarks and soliciting new ones in a single place now
+    we have that for the first time.
+
+    Nevertheless, even though all participating tools interface with
+    Matlab/Simulink, there are differences in how this is done, e.g.,
+    how input parameters are passed to the simulation engine.  As an
+    example, \Breach and \STaLiRo internally interpolate input signals
+    to a high sample rate, whereas \FalStar relies on Simulink for
+    this and provides compressed input signals with a low sample rate.
+    As a consequence, the result for \FalStar differs depending on the
+    interpolation setting of the input ports in the model, whereas
+    that is not the case for the other tools.  Another issue that had
+    to be clarified was the input signal specification, as discussed
+    in Sec.~\ref{sec:organization}.  Repeatability and
+    cross-validation of results currently involves a lot of manual
+    set-up due to lack of common standards for reporting and
+    processing these.  For future competitions, it would be much
+    better, if such standards are established beforehand, so that the
+    initial phase of the competition can focus on benchmark selection.
+    In the end, the envisioned cross-checking of results happened not
+    systematically, so the results cannot be trusted entirely, but at
+    least a partial success in this regard could be achieved.
+
+    Running the benchmarks is computationally expensive, which is
+    aggravated by the need to run many trials (50 here) to account for
+    the stochastic nature of the algorithms.  As a consequence,
+    running all benchmarks for a given tools takes several machine-days.
+    In combination with the discussions, this factor lead to a delayed
+    availability of stable results, and a short time frame for
+    validating the results.  It would be great to use existing
+    computing infrastructure such as StarExec%
+    \footnote{\url{https://www.starexec.org/starexec/public/about.jsp}}
+    to run the benchmarks, but it is currently unclear whether this is
+    feasible with respect to availability of sufficient Matlab
+    licenses.
+
+    We hope that future competition installments will benefit from the
+    now established set up, and that furthermore this benchmark
+    repository will eventually serve as a base-line for experimental
+    research in the falsification community.  Moreover, with respect
+    to such a base-line it will be easier to track the
+    state-of-the-art and progress of the effectiveness and efficiency
+    of falsification tools.  Potential future work would be to include
+    a classification of the difficulties of the individual benchmarks
+    (and the falsification rate of uniform random sampling), so that
+    it can be investigated which approach works well for which kind of
+    problem.
+
+\paragraph{Acknowledgments}
+P. Arcaini and Z. Zhang are supported by ERATO HASUO Metamathematics for Systems Design Project (No. JPMJER1603), JST. Funding Reference number: 10.13039/501100009024 ERATO.
+The report on \falsify is based on results obtained from a project commissioned by the New Energy and Industrial Technology Development Organization (NEDO).
+The ASU team (\STaLiRo) was partially supported by NSF CNS 1350420, NSF CMMI 1829238, NSF IIP-1361926 and the NSF I/UCRC Center for Embedded Systems.
+
+
+	\bibliographystyle{plain}
+	\bibliography{references}
+
+\end{document}

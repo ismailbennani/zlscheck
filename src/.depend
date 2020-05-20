@@ -44,6 +44,7 @@ core/optim/optim.cmo : \
     core/optim/uniformRandom.cmo \
     core/optim/uniformRandom_gdaware.cmo \
     core/optim/simulatedAnnealing.cmo \
+    core/optim/simulatedAnnealing_gdaware.cmo \
     core/optim/optim_utils.cmo \
     core/optim/optim_types.cmo \
     core/optim/optim_globals.cmo \
@@ -53,6 +54,7 @@ core/optim/optim.cmx : \
     core/optim/uniformRandom.cmx \
     core/optim/uniformRandom_gdaware.cmx \
     core/optim/simulatedAnnealing.cmx \
+    core/optim/simulatedAnnealing_gdaware.cmx \
     core/optim/optim_utils.cmx \
     core/optim/optim_types.cmx \
     core/optim/optim_globals.cmx \
@@ -93,6 +95,18 @@ core/optim/simulatedAnnealing.cmo : \
     core/optim/optim_globals.cmo \
     core/utils/misc_printers.cmo
 core/optim/simulatedAnnealing.cmx : \
+    core/utils/zlscheck_utils.cmx \
+    core/optim/optim_utils.cmx \
+    core/optim/optim_types.cmx \
+    core/optim/optim_globals.cmx \
+    core/utils/misc_printers.cmx
+core/optim/simulatedAnnealing_gdaware.cmo : \
+    core/utils/zlscheck_utils.cmo \
+    core/optim/optim_utils.cmo \
+    core/optim/optim_types.cmo \
+    core/optim/optim_globals.cmo \
+    core/utils/misc_printers.cmo
+core/optim/simulatedAnnealing_gdaware.cmx : \
     core/utils/zlscheck_utils.cmx \
     core/optim/optim_utils.cmx \
     core/optim/optim_types.cmx \

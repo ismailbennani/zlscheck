@@ -1,0 +1,42 @@
+Reporting Falsification Results
+-------------------------------
+
+Terminology
+- experiment: running the falsification tool once on a single requirement for a given model for a maximum number of simulations
+- simulation: number of invocations of the "sim" function for the entire time horizon of the benchmark (or similar)
+
+Last year we ran 50 experiments with max 100 simulations each to account for statistical variance.
+
+Suggested data to be collected from each experiment
+
+- benchmark model, requirement
+- falsification success: did the tool find a falsifying input with the given maximum number of simulations?
+- total wall clock time for this experiment
+- best (lowest) achieved robustness score
+- in case of success
+  - number of simulations actually required
+  - the concrete input signal(s) achieving the falsification
+
+Rationale: if we have individual data points for all experiments and tools,
+we can plot "nth fastest successfull result" vs "number of simulations required"
+which gives a graphical illustration of the relative performance of the tools.
+
+Suggested report format for inital parameters
+
+    matlab_var = <value> % if it is just a top-level Matlab variable
+
+Suggested report format for piecewise constant time varying inputs
+
+    u = [t0 a0 b0 ...;
+         t1 a1 b1 ...;
+         ...
+         tn an bn ...]
+
+where ti are the time points with t0 = 0 and tn = simulation time horizon,
+ai are the values of the first input signal,
+bi are the values of the second input signal, and so on.
+
+Such an array can directly be fed into the simulation
+(Configuration parameters -> Data Import/Export -> Load from workspace | Input)
+
+

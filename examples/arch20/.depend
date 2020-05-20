@@ -1,0 +1,36 @@
+common/common_utils.cmo : \
+    common/myOp.cmo
+common/common_utils.cmx : \
+    common/myOp.cmx
+common/myOp.cmo :
+common/myOp.cmx :
+common/offline.cmo : \
+    common/myOp.cmo \
+    common/common_utils.cmo
+common/offline.cmx : \
+    common/myOp.cmx \
+    common/common_utils.cmx
+common/online.cmo : \
+    common/myOp.cmo \
+    common/common_utils.cmo
+common/online.cmx : \
+    common/myOp.cmx \
+    common/common_utils.cmx
+common/zc.cmo : \
+    common/myOp.cmo
+common/zc.cmx : \
+    common/myOp.cmx
+defbench.cmo : \
+    common/online.cmo \
+    common/offline.cmo \
+    common/myOp.cmo
+defbench.cmx : \
+    common/online.cmx \
+    common/offline.cmx \
+    common/myOp.cmx
+run_bench.cmo : \
+    defbench.cmo \
+    common/common_utils.cmo
+run_bench.cmx : \
+    defbench.cmx \
+    common/common_utils.cmx

@@ -14,6 +14,7 @@ struct
   let name = OptimAlg.name
 
   let mk_step_params init_res = {
+      online = false;
       n_runs = 1;
       history = [init_res];
       best_result = init_res;
@@ -25,9 +26,17 @@ struct
 
   let step (fn : input -> output) step_params =
     let incr_runs () = step_params.n_runs <- step_params.n_runs + 1 in
-    if step_params.n_runs >= Optim_globals.params.max_n_runs ||
-       Optim_globals.params.mode = Falsify &&
-       get_rob_from_output (snd step_params.best_result) < 0. then
+
+    if not step_params.online then begin
+      Printf.printf "[%s] Run %d/%d\n"
+        name step_params.n_runs Optim_globals.params.max_n_runs;
+      flush stdout;
+    end;
+
+    if ((not step_params.online) &&
+        step_params.n_runs >= Optim_globals.params.max_n_runs) ||
+       (Optim_globals.params.mode = Falsify &&
+        get_rob_from_output (snd step_params.best_result) < 0.) then
       true
     else
       let (old_best_inp, old_best_out) = step_params.best_result in
@@ -72,6 +81,7 @@ end
 module type S = S
 
 module SA = Make(SimulatedAnnealing)
+module SA_GDAWARE = Make(SimulatedAnnealing_gdaware)
 module UR = Make(UniformRandom)
 module UR_GDAWARE = Make(UniformRandom_gdaware)
 

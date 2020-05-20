@@ -1,0 +1,3 @@
+node model inp = Array.get inp 0
+
+(* node model (inp : MyOp.t Array.t) = Array.get inp 0 *)

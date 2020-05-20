@@ -1,0 +1,19 @@
+Steam Condenser with RNN controller
+------------------------------------------------
+
+Source:
+Yaghoubi, Shakiba, and Georgios Fainekos. "Gray-box Adversarial Testing for Control Systems with Machine Learning Components.", HSCC (2019)
+
+Inputs:
+
+	Case 1) Any input in the range:
+       input_range = [3.99 ,4.01]
+
+    Case 2) Piecewise constant inputs with 20 even pieces in the above range.
+
+Requirement:
+    □_[30 35] (87<= pressure <=87.5)
+
+
+In order to run staliro with "Simulated Annealing or Uniform Random Sampling combined with Gradinet Descent", latest version of Staliro is required.
+More information can be found under Staliro\trunk\demos\Gradient descent\Readme
