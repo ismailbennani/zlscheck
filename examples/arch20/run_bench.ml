@@ -1,3 +1,5 @@
+type 'a input = (float * 'a) list
+
 type 'a bench_result = {
   bench: string;
   optim: string;
@@ -27,7 +29,7 @@ let compute_mean l =
     let sum, size = get_sum_size l in
     (float sum) /. (float size)
 
-let offline (module OfflineBench : Common_utils.S) n_repet n_runs =
+let run_bench (module Bench : Common_utils.S) n_repet n_runs =
   Optim_globals.params.max_n_runs <- n_runs;
 
   let n_falsif = ref 0 in
@@ -37,7 +39,7 @@ let offline (module OfflineBench : Common_utils.S) n_repet n_runs =
 
   for i = 0 to n_repet - 1 do
     Printf.printf "-- Bench %d/%d\n" (i+1) n_repet;
-    let res = OfflineBench.run () in
+    let res = Bench.run () in
 
     if res.falsified then begin
       n_falsif := !n_falsif + 1;
@@ -49,8 +51,8 @@ let offline (module OfflineBench : Common_utils.S) n_repet n_runs =
   let time = Unix.gettimeofday () -. start_time in
 
   {
-    bench = OfflineBench.name;
-    optim = OfflineBench.Optim.name;
+    bench = Bench.name;
+    optim = Bench.Optim.name;
     n_repet = n_repet;
     n_runs = n_runs;
     mean_n_runs = compute_mean !n_runs_l;
@@ -84,7 +86,7 @@ let _ =
   let benches_str = String.concat " | " (fst (List.split benches)) ^ " | all" in
   let all_benches = snd (List.split benches) in
 
-  let usg_msg = Printf.sprintf "usage: ./offline.opt [%s]" benches_str in
+  let usg_msg = Printf.sprintf "usage: ./run_bench.opt [%s]" benches_str in
 
   Arg.parse [] (fun a ->
       if a = "all" then sel_bench := all_benches
@@ -103,8 +105,13 @@ let _ =
     match b with
     | [] -> print_endline "done"
     | (module Bench : Common_utils.S) :: q ->
-      let res = offline (module Bench) n_repet n_runs in
+      let res = run_bench (module Bench) n_repet n_runs in
       print_result res;
+      begin match Bench.dump_folder with
+      | None -> ()
+      | Some dump_folder ->
+        Printf.printf "Dump saved at %s\n" dump_folder
+      end;
       run_benches q
   in
   run_benches !sel_bench

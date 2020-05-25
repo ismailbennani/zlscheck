@@ -1,4 +1,3 @@
-open Offline
 open Ztypes
 
 module Autotrans =
@@ -16,6 +15,7 @@ struct
   module type Params =
   sig
     module Optim : Optim.S
+    val name : string
     val tstep : float
     val max_t : float
     val set_optim_params : unit -> unit
@@ -25,6 +25,8 @@ struct
   module ParamsPhi1 =
   struct
     module Optim = Optim.GDClassic
+    let name = "AT1"
+
     let tstep = 0.01
     let max_t = 20.
 
@@ -40,6 +42,8 @@ struct
   module ParamsPhi2 =
   struct
     module Optim = Optim.GDClassic
+    let name = "AT2"
+
     let tstep = 0.01
     let max_t = 30.
 
@@ -55,6 +59,8 @@ struct
   module ParamsPhi51Offline =
   struct
     module Optim = Optim.UR_GDAWARE
+    let name = "AT51"
+
     let tstep = 0.01
     let max_t = 30.
 
@@ -69,6 +75,8 @@ struct
   module ParamsPhi52Offline =
   struct
     module Optim = Optim.UR_GDAWARE
+    let name = "AT52"
+
     let tstep = 0.01
     let max_t = 30.
 
@@ -83,6 +91,8 @@ struct
   module ParamsPhi53Offline =
   struct
     module Optim = Optim.UR_GDAWARE
+    let name = "AT53"
+
     let tstep = 0.01
     let max_t = 30.
 
@@ -97,6 +107,8 @@ struct
   module ParamsPhi54Offline =
   struct
     module Optim = Optim.UR_GDAWARE
+    let name = "AT54"
+
     let tstep = 0.01
     let max_t = 30.
 
@@ -111,6 +123,8 @@ struct
   module ParamsPhi51Online =
   struct
     module Optim = Optim.GDClassic
+    let name = "AT51"
+
     let tstep = 0.01
     let max_t = 30.
 
@@ -126,6 +140,8 @@ struct
   module ParamsPhi52Online =
   struct
     module Optim = Optim.GDClassic
+    let name = "AT52"
+
     let tstep = 0.01
     let max_t = 30.
 
@@ -141,6 +157,8 @@ struct
   module ParamsPhi53Online =
   struct
     module Optim = Optim.GDClassic
+    let name = "AT53"
+
     let tstep = 0.01
     let max_t = 30.
 
@@ -156,6 +174,8 @@ struct
   module ParamsPhi54Online =
   struct
     module Optim = Optim.GDClassic
+    let name = "AT54"
+
     let tstep = 0.01
     let max_t = 30.
 
@@ -171,6 +191,8 @@ struct
   module ParamsPhi6a =
   struct
     module Optim = Optim.GDClassic
+    let name = "AT6a"
+
     let tstep = 0.01
     let max_t = 30.
 
@@ -186,6 +208,8 @@ struct
   module ParamsPhi6b =
   struct
     module Optim = Optim.GDADAM
+    let name = "AT6b"
+
     let tstep = 0.01
     let max_t = 30.
 
@@ -201,6 +225,8 @@ struct
   module ParamsPhi6c =
   struct
     module Optim = Optim.GDAMSGRAD
+    let name = "AT6c"
+
     let tstep = 0.01
     let max_t = 30.
 
@@ -217,7 +243,8 @@ struct
   struct
     module Optim = Params.Optim
 
-    let name = "autotrans"
+    let name = "autotrans_" ^ Params.name
+    let dump_path = Some "models/autotrans/dump"
     let max_t = Params.max_t
     let set_optim_params = Params.set_optim_params
     let node = Params.node
@@ -262,6 +289,7 @@ module Sanity_check =
     (struct
       module Optim = Optim.GDAMSGRAD
       let name = "sanity_check"
+      let dump_path = None
       let max_t = 30.0
       let node = Bench.sanity_check 0.01
       let set_optim_params () =

@@ -24,7 +24,7 @@ INCLUDES += $(DIRS:%=-I %) \
 myOp.cmx discrete_obs_fad.cmx zc.cmx zc_utils.cmx \
 consts.cmx utils.cmx common.cmx autotransd.cmx autotransd_modes.cmx \
 sanity_check.cmx \
-online.cmx offline.cmx bench.cmx
+common_utils.cmx online.cmx offline.cmx bench.cmx
 
 TARGET = run_bench.opt
 

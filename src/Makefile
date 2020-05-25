@@ -1,7 +1,7 @@
 include ../config
 
 dirs = $(shell find * -type d)
-INCLUDES += $(dirs:%=-I %) fadbad.cma
+INCLUDES += $(dirs:%=-I %)
 ZELUCFLAGS += $(dirs:%=-I %)
 
 # find all .ml files in subdirectories

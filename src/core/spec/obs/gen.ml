@@ -1,5 +1,5 @@
-(* The Zélus compiler, version 2.1
-  (mer. 06 mai 2020 13:31:20 CEST) *)
+(* The Zélus compiler, version 2.0
+  (lundi 25 mai 2020, 14:33:03 (UTC+0200)) *)
 open Ztypes
 let pick_float ((i1_76:float) , (i2_77:float)) =
   (+.) (Random.float ((-.) i2_77  i1_76))  i1_76

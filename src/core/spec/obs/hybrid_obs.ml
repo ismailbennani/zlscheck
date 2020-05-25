@@ -1,5 +1,5 @@
-(* The Zélus compiler, version 2.1
-  (mer. 06 mai 2020 13:31:20 CEST) *)
+(* The Zélus compiler, version 2.0
+  (lundi 25 mai 2020, 14:33:03 (UTC+0200)) *)
 open Ztypes
 type state__4678 =
 Hybrid_obs_YFALSE_343 | Hybrid_obs_YTRUE_342 | Hybrid_obs_INIT_341 

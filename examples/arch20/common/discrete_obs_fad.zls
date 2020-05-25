@@ -1,7 +1,7 @@
 open MyOp
 
-let q_true = make infinity
-let q_false = make neg_infinity
+let q_true = MyOp.infinity
+let q_false = MyOp.neg_infinity
 
 node no_signal () = present (false) -> ()
 node now () = present (true fby false) -> ()

@@ -1,9 +1,11 @@
 autotransd.cmo : \
+    ../../common/zc_utils.cmo \
     ../../common/zc.cmo \
     ../../common/myOp.cmo \
     ../../common/discrete_obs_fad.cmo \
     common.cmo
 autotransd.cmx : \
+    ../../common/zc_utils.cmx \
     ../../common/zc.cmx \
     ../../common/myOp.cmx \
     ../../common/discrete_obs_fad.cmx \

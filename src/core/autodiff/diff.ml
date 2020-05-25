@@ -1,10 +1,19 @@
+module type OrderedFS =
+sig
+  include Fadbad.OrderedOpS
+  val diff: t -> int -> int -> unit
+  val d: t -> int -> elt
+  val length: t -> int
+end
+
 module type DiffF =
 sig
-  include Fadbad.OrderedFS with type elt = float
+  include OrderedFS with type elt = float
+
   val run_diff : (t array -> t) -> float array -> float * float array
 end
 
-module FADLike (OpFAD : Fadbad.OrderedFS with type elt = float) =
+module FADLike (OpFAD : OrderedFS with type elt = float) =
 struct
   include OpFAD
   let run_diff fn (inputs : float array) : float * float array =

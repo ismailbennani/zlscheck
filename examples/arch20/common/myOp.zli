@@ -1,6 +1,9 @@
 type t
 type op_t
 
+val infinity: t
+val neg_infinity: t
+
 val create : unit -> t
 val make : float -> t
 val integer : int -> t

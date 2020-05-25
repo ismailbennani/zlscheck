@@ -50,15 +50,13 @@ node phi6c tstep (inp, outp) =
     implies (always_timed 30. (make tstep, q_lt (rpm, make 3000.)),
             (always_timed 20. (make tstep, q_lt (speed, make 65.))))
 
-node autotrans phi tstep inp = t, rob where
+node autotrans_phi1 tstep inp = t, rob where
     rec throttle = Array.get inp 0
     and brake = Array.get inp 1
     and t = 0. fby (t +. tstep)
     and rpm, gear, speed = Autotransd.autotrans (make t, (throttle, brake))
     and outp = Array.of_list [rpm; gear; speed]
-    and rob = run (phi tstep) (inp, outp)
-
-node autotrans_phi1 tstep inp = autotrans phi1 tstep inp
+    and rob = phi1 tstep (inp, outp)
 
 node autotrans_phi2 tstep inp = t, rob where
     rec throttle = Array.get inp 0
