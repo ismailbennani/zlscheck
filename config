@@ -1,0 +1,71 @@
+# # # THIS FILE IS GENERATED AUTOMATICALLY BY CONFIGURE # # #
+# programs used
+
+OCAML     ?= ocaml
+OCAMLC    ?= ocamlc
+OCAMLLEX  ?= ocamllex
+OCAMLYACC ?= ocamlyacc
+OCAMLOPT  ?= ocamlopt
+OCAMLDEP  ?= ocamldep
+OCAMLRUN  ?= ocamlrun
+OCAMLFIND ?= ocamlfind
+MENHIR    ?= menhir
+OTAGS	    ?= otags
+
+ZLLIB = /home/lahkim/zlscheck/zelus/lib
+ZELUC = /home/lahkim/zlscheck/zelus/bin/zeluc.byte
+ZELUCFLAGS = -I $(ZLLIB)
+
+FADBADLIB = /home/lahkim/zlscheck/fadbadml/lib
+
+CHECKLIB = /home/lahkim/zlscheck/lib
+
+INCLUDES += \
+	unix.cma bigarray.cma \
+	-I $(shell ocamlfind query lablgtk2) lablgtk.cma \
+	-I $(shell ocamlfind query sundialsml) sundials.cma \
+	-I $(ZLLIB) -I $(ZLLIB)/solvers zllibgtk.cma \
+	-I $(FADBADLIB) fadbad.cma
+
+OCAMLFLAGS ?=
+OCAMLOPTFLAGS ?=
+
+# implicit rules
+
+.SUFFIXES : .mli .ml .cmi .cmo .cmx .mll .mly .zli .zli .byte .opt
+
+%.cmi: %.mli
+	$(OCAMLC) $(OCAMLFLAGS) -c $(INCLUDES) $<
+
+%.cmo %.cmi: %.ml
+	$(OCAMLC) $(OCAMLFLAGS) -c $(INCLUDES) $<
+
+%.cmx %.cmi: %.ml
+	$(OCAMLOPT) $(OCAMLOPTFLAGS) -c $(patsubst %.cma,%.cmxa,$(patsubst %.cmo,%.cmx,$(INCLUDES))) $<
+
+%.zci: %.zli
+	$(ZELUC) $(ZELUCFLAGS) $<
+
+%.ml %.zci: %.zls
+	$(ZELUC) $(ZELUCFLAGS) $<
+
+%.ml: %.mll
+	$(OCAMLLEX) $<
+
+%.ml %.mli: %.mly
+	$(MENHIR) $(MENHIRFLAGS) $<
+
+# set ZLEXTRALIBS to ZLGTKLIBS to compile examples that use gtk
+%.byte: %.ml
+	$(OCAMLC) $(OCAMLFLAGS) -o $@ \
+	    $(ZLSTDLIBS) $(ZLEXTRALIBS) \
+      $(INCLUDES) \
+	    $< $(<:.ml=_main.ml)
+
+# set ZLEXTRALIBS to ZLGTKLIBS to compile examples that use gtk
+%.opt: %.ml
+	$(OCAMLOPT) $(OCAMLOPTFLAGS) -o $@ \
+	    $(patsubst %.cma,%.cmxa,$(patsubst %.cmo,%.cmx,$(ZLSTDLIBS)))\
+			$(patsubst %.cma,%.cmxa,$(patsubst %.cmo,%.cmx,$(ZLEXTRALIBS)))\
+      $(patsubst %.cma,%.cmxa,$(patsubst %.cmo,%.cmx,$(INCLUDES)))\
+	    $< $(<:.ml=_main.ml)
