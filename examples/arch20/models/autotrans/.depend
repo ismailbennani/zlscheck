@@ -1,23 +1,23 @@
+autotransc.cmo : \
+    common.cmo
+autotransc.cmx : \
+    common.cmx
 autotransd.cmo : \
-    ../../common/zc_utils.cmo \
-    ../../common/zc.cmo \
     ../../common/myOp.cmo \
     ../../common/discrete_obs_fad.cmo \
-    common.cmo
+    common_myop.cmo
 autotransd.cmx : \
-    ../../common/zc_utils.cmx \
-    ../../common/zc.cmx \
     ../../common/myOp.cmx \
     ../../common/discrete_obs_fad.cmx \
-    common.cmx
+    common_myop.cmx
 autotransd_modes.cmo : \
     ../../common/myOp.cmo \
     ../../common/discrete_obs_fad.cmo \
-    common.cmo
+    common_myop.cmo
 autotransd_modes.cmx : \
     ../../common/myOp.cmx \
     ../../common/discrete_obs_fad.cmx \
-    common.cmx
+    common_myop.cmx
 autotransd_modes_main.cmo : \
     autotransd_modes.cmo
 autotransd_modes_main.cmx : \
@@ -27,6 +27,14 @@ common.cmo : \
     ../../common/myOp.cmo \
     consts.cmo
 common.cmx : \
+    utils.cmx \
+    ../../common/myOp.cmx \
+    consts.cmx
+common_myop.cmo : \
+    utils.cmo \
+    ../../common/myOp.cmo \
+    consts.cmo
+common_myop.cmx : \
     utils.cmx \
     ../../common/myOp.cmx \
     consts.cmx

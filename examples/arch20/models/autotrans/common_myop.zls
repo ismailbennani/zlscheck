@@ -1,8 +1,10 @@
 (** constants, initial state **)
 
+open MyOp
+
 type shift = UP | DOWN
 
-let pi = 4.0 *. atan 1.0
+let pi = 4.0 *. Stdlib.atan 1.0
 
 let iei = 0.0219914882835559         (* moment of inertia of the engine and the impeller *)
 let engine_feedback_gain = 1. /. iei
@@ -24,60 +26,54 @@ let p_mph = 60. /. 5280.             (* ft.min-1 to mph ratio *)
 let l_speed_coef = 2. *. pi *. p_wheel_radius
 let p_initial_wheel_speed = initial_speed /. p_mph /. l_speed_coef
 
-let static twait = 0.08
+let static twait = 0.08 (*  *)
 
 (** utils **)
 
 let lookup_engine    (l, c) =
-  MyOp.get
-  (Utils.lookup2D (Consts.line_engine,
-                   Consts.col_engine,
-                   Consts.vals_engine)
-                   (MyOp.make l, MyOp.make c))
+  Utils.lookup2D (Consts.line_engine,
+                  Consts.col_engine,
+                  Consts.vals_engine)
+                  (l, c)
 let lookup_interpup  (l, c) =
-  MyOp.get
-  (Utils.lookup2D (Consts.line_interpup,
-                   Consts.col_interpup,
-                   Consts.vals_interpup)
-                   (MyOp.make l, MyOp.make c))
+  Utils.lookup2D (Consts.line_interpup,
+                  Consts.col_interpup,
+                  Consts.vals_interpup)
+                  (l, c)
 let lookup_interpdn  (l, c) =
-  MyOp.get
-  (Utils.lookup2D (Consts.line_interpdn,
-                   Consts.col_interpdn,
-                   Consts.vals_interpdn)
-                   (MyOp.make l, MyOp.make c))
+  Utils.lookup2D (Consts.line_interpdn,
+                  Consts.col_interpdn,
+                  Consts.vals_interpdn)
+                  (l, c)
 let lookup_factork   (l)    =
-  MyOp.get
-  (Utils.lookup1D (Consts.line_factork,
-                   Consts.vals_factork)
-                   (MyOp.make l))
+  Utils.lookup1D (Consts.line_factork,
+                  Consts.vals_factork)
+                  l
 let lookup_torkratio (l)    =
-  MyOp.get
-  (Utils.lookup1D (Consts.line_torkratio,
-                   Consts.vals_torkratio)
-                   (MyOp.make l))
+  Utils.lookup1D (Consts.line_torkratio,
+                  Consts.vals_torkratio)
+                  l
 let lookup_gear      (l)    =
-  MyOp.get
-  (Utils.lookup1D (Consts.line_gear,
-                   Consts.vals_gear)
-                   (MyOp.make l))
+  Utils.lookup1D (Consts.line_gear,
+                  Consts.vals_gear)
+                  l
 
 (** algorithm **)
 
 let torque_converter(ne, nin) = (ti, tt) where
-  rec speedratio = nin /. ne
+  rec speedratio = nin / ne
   and factorK = lookup_factork speedratio
   and torqueratio = lookup_torkratio speedratio
-  and quotient = ne /. factorK
-  and impeller = quotient *. quotient
-  and turbine = impeller *. torqueratio
+  and quotient = ne / factorK
+  and impeller = quotient * quotient
+  and turbine = impeller * torqueratio
 
   and ti = impeller and tt = turbine
 
 let transmissionratio(tin, gear, nout) = (tout, nin) where
   rec gear_lookup = lookup_gear gear
-  and tout = tin *. gear_lookup
-  and nin  = nout *. gear_lookup
+  and tout = tin * gear_lookup
+  and nin  = nout * gear_lookup
 
 let transmission(ne, gear, nout) = (ti, tout) where
   rec ti, turbine_torque = torque_converter(ne, nin)

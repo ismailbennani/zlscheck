@@ -81,12 +81,13 @@ let engine  =
     (i_654_reset self.i_654 :unit) in 
   let engine_step self ((t_403:MyOp.t) ,
                         (ti_405:MyOp.t) , (throttle_404:MyOp.t)) =
-    ((let (te_408:MyOp.t) = Common.lookup_engine (throttle_404 , self.m_410) in
+    ((let (te_408:MyOp.t) =
+          Common_myop.lookup_engine (throttle_404 , self.m_410) in
       let (drpm_406:MyOp.t) = MyOp.(-) te_408  ti_405 in
       let (rpm_407:MyOp.t) =
           i_654_step self.i_654
             (t_403 ,
-             (MyOp.scale drpm_406  Common.engine_feedback_gain) ,
+             (MyOp.scale drpm_406  Common_myop.engine_feedback_gain) ,
              (MyOp.make 1000.) , (MyOp.make 600.) , (MyOp.make 6000.)) in
       self.m_410 <- rpm_407 ; rpm_407):MyOp.t) in
   Node { alloc = engine_alloc; reset = engine_reset ; step = engine_step }
@@ -106,7 +107,7 @@ let gearlogic  =
     ((self.i_422 <- true ;
       self.r_420 <- false ; self.s_419 <- Autotransd_modes_First_105):
     unit) in 
-  let gearlogic_step self ((shiftv_416:Common.shift) , (shiftp_417:bool)) =
+  let gearlogic_step self ((shiftv_416:Common_myop.shift) , (shiftp_417:bool)) =
     (((if self.i_422 then self.nx_421 <- gear1) ;
       self.i_422 <- false ;
       (let (gear_418:MyOp.t) = self.nx_421 in
@@ -114,7 +115,7 @@ let gearlogic  =
               | Autotransd_modes_First_105 ->
                   (if self.r_420 then ()) ;
                   (begin match (shiftv_416 , shiftp_417) with
-                         | (Common.UP , true) ->
+                         | (Common_myop.UP , true) ->
                              self.nx_421 <- gear2 ;
                              self.r_420 <- true ;
                              self.s_419 <- Autotransd_modes_Second_106
@@ -122,11 +123,11 @@ let gearlogic  =
               | Autotransd_modes_Second_106 ->
                   (if self.r_420 then ()) ;
                   (begin match (shiftv_416 , shiftp_417) with
-                         | (Common.DOWN , true) ->
+                         | (Common_myop.DOWN , true) ->
                              self.nx_421 <- gear1 ;
                              self.r_420 <- true ;
                              self.s_419 <- Autotransd_modes_First_105
-                         | (Common.UP , true) ->
+                         | (Common_myop.UP , true) ->
                              self.nx_421 <- gear3 ;
                              self.r_420 <- true ;
                              self.s_419 <- Autotransd_modes_Third_107
@@ -134,11 +135,11 @@ let gearlogic  =
               | Autotransd_modes_Third_107 ->
                   (if self.r_420 then ()) ;
                   (begin match (shiftv_416 , shiftp_417) with
-                         | (Common.DOWN , true) ->
+                         | (Common_myop.DOWN , true) ->
                              self.nx_421 <- gear2 ;
                              self.r_420 <- true ;
                              self.s_419 <- Autotransd_modes_Second_106
-                         | (Common.UP , true) ->
+                         | (Common_myop.UP , true) ->
                              self.nx_421 <- gear4 ;
                              self.r_420 <- true ;
                              self.s_419 <- Autotransd_modes_Fourth_108
@@ -146,7 +147,7 @@ let gearlogic  =
               | Autotransd_modes_Fourth_108 ->
                   (if self.r_420 then ()) ;
                   (begin match (shiftv_416 , shiftp_417) with
-                         | (Common.DOWN , true) ->
+                         | (Common_myop.DOWN , true) ->
                              self.nx_421 <- gear3 ;
                              self.r_420 <- true ;
                              self.s_419 <- Autotransd_modes_Third_107
@@ -189,14 +190,14 @@ let shiftlogic  =
   let shiftlogic_step self ((t_424:MyOp.t) ,
                             (speed_423:MyOp.t) , (throttle_425:MyOp.t)) =
     ((let shiftp_438 = ref (false:bool) in
-      let shiftv_437 = ref (Common.DOWN:Common.shift) in
+      let shiftv_437 = ref (Common_myop.DOWN:Common_myop.shift) in
       (if self.i_442 then self.nx_441 <- gear1) ;
       self.i_442 <- false ;
       (let (gear_430:MyOp.t) = self.nx_441 in
        let (dn_th_426:MyOp.t) =
-           Common.lookup_interpdn (throttle_425 , gear_430) in
+           Common_myop.lookup_interpdn (throttle_425 , gear_430) in
        let (up_th_429:MyOp.t) =
-           Common.lookup_interpup (throttle_425 , gear_430) in
+           Common_myop.lookup_interpup (throttle_425 , gear_430) in
        (begin match self.s_435 with
               | Autotransd_modes_SteadyState_123 ->
                   (if self.r_436 then self.i_444 <- true) ;
@@ -223,14 +224,14 @@ let shiftlogic  =
                   self.rob_428 <- zero_val ;
                   (begin match (((>) t_424 
                                      (MyOp.translate self.t0_431 
-                                                     Common.twait)) ,
+                                                     Common_myop.twait)) ,
                                 ((>) speed_423  dn_th_426)) with
                          | (_ , true) ->
                              self.r_436 <- true ;
                              self.s_435 <- Autotransd_modes_SteadyState_123
                          | (true , _) ->
                              shiftp_438 := true ;
-                             shiftv_437 := Common.DOWN ;
+                             shiftv_437 := Common_myop.DOWN ;
                              self.r_436 <- true ;
                              self.s_435 <- Autotransd_modes_SteadyState_123
                          | _ -> self.r_436 <- false  end)
@@ -239,14 +240,14 @@ let shiftlogic  =
                   self.rob_428 <- zero_val ;
                   (begin match (((>) t_424 
                                      (MyOp.translate self.t0_432 
-                                                     Common.twait)) ,
+                                                     Common_myop.twait)) ,
                                 ((<) speed_423  up_th_429)) with
                          | (_ , true) ->
                              self.r_436 <- true ;
                              self.s_435 <- Autotransd_modes_SteadyState_123
                          | (true , _) ->
                              shiftp_438 := true ;
-                             shiftv_437 := Common.UP ;
+                             shiftv_437 := Common_myop.UP ;
                              self.r_436 <- true ;
                              self.s_435 <- Autotransd_modes_SteadyState_123
                          | _ -> self.r_436 <- false  end)
@@ -255,7 +256,7 @@ let shiftlogic  =
               | Autotransd_modes_First_119 ->
                   (if self.r_434 then ()) ;
                   (begin match (!shiftv_437 , !shiftp_438) with
-                         | (Common.UP , true) ->
+                         | (Common_myop.UP , true) ->
                              self.nx_441 <- gear2 ;
                              self.r_434 <- true ;
                              self.s_433 <- Autotransd_modes_Second_120
@@ -263,11 +264,11 @@ let shiftlogic  =
               | Autotransd_modes_Second_120 ->
                   (if self.r_434 then ()) ;
                   (begin match (!shiftv_437 , !shiftp_438) with
-                         | (Common.DOWN , true) ->
+                         | (Common_myop.DOWN , true) ->
                              self.nx_441 <- gear1 ;
                              self.r_434 <- true ;
                              self.s_433 <- Autotransd_modes_First_119
-                         | (Common.UP , true) ->
+                         | (Common_myop.UP , true) ->
                              self.nx_441 <- gear3 ;
                              self.r_434 <- true ;
                              self.s_433 <- Autotransd_modes_Third_121
@@ -275,11 +276,11 @@ let shiftlogic  =
               | Autotransd_modes_Third_121 ->
                   (if self.r_434 then ()) ;
                   (begin match (!shiftv_437 , !shiftp_438) with
-                         | (Common.DOWN , true) ->
+                         | (Common_myop.DOWN , true) ->
                              self.nx_441 <- gear2 ;
                              self.r_434 <- true ;
                              self.s_433 <- Autotransd_modes_Second_120
-                         | (Common.UP , true) ->
+                         | (Common_myop.UP , true) ->
                              self.nx_441 <- gear4 ;
                              self.r_434 <- true ;
                              self.s_433 <- Autotransd_modes_Fourth_122
@@ -287,7 +288,7 @@ let shiftlogic  =
               | Autotransd_modes_Fourth_122 ->
                   (if self.r_434 then ()) ;
                   (begin match (!shiftv_437 , !shiftp_438) with
-                         | (Common.DOWN , true) ->
+                         | (Common_myop.DOWN , true) ->
                              self.nx_441 <- gear3 ;
                              self.r_434 <- true ;
                              self.s_433 <- Autotransd_modes_Third_121
@@ -311,25 +312,27 @@ let vehicle  =
   let vehicle_step self ((t_447:MyOp.t) ,
                          (out_torque_446:MyOp.t) , (brake_torque_445:MyOp.t)) =
     ((let (final_drive_ratio_450:MyOp.t) =
-          MyOp.scale out_torque_446  Common.p_final_drive_ratio in
+          MyOp.scale out_torque_446  Common_myop.p_final_drive_ratio in
       let (aux1_448:MyOp.t) = MyOp.(-) final_drive_ratio_450  self.m_464 in
-      let (vehicle_inertia_459:MyOp.t) = MyOp.scale aux1_448  Common.iv_inv in
+      let (vehicle_inertia_459:MyOp.t) =
+          MyOp.scale aux1_448  Common_myop.iv_inv in
       let (x_463:MyOp.t) =
           if self.i_469 then t_447 else MyOp.(-) t_447  self.m_461 in
       let (x_468:MyOp.t) =
           if self.i_469
-          then MyOp.make Common.p_initial_wheel_speed
+          then MyOp.make Common_myop.p_initial_wheel_speed
           else MyOp.(+) self.m_466  (MyOp.( * ) vehicle_inertia_459  x_463) in
       self.i_469 <- false ;
-      (let (linear_speed_451:MyOp.t) = MyOp.scale x_468  Common.l_speed_coef in
-       let (mph_452:MyOp.t) = MyOp.scale linear_speed_451  Common.p_mph in
+      (let (linear_speed_451:MyOp.t) =
+           MyOp.scale x_468  Common_myop.l_speed_coef in
+       let (mph_452:MyOp.t) = MyOp.scale linear_speed_451  Common_myop.p_mph in
        let (trans_rpm_458:MyOp.t) =
-           MyOp.scale x_468  Common.p_final_drive_ratio in
+           MyOp.scale x_468  Common_myop.p_final_drive_ratio in
        self.m_466 <- x_468 ;
        (let (road_load_453:MyOp.t) =
             MyOp.translate (MyOp.scale (MyOp.sqr mph_452) 
-                                       Common.p_aerodynamic_drag) 
-                           Common.p_drag_friction in
+                                       Common_myop.p_aerodynamic_drag) 
+                           Common_myop.p_drag_friction in
         let (brake_449:MyOp.t) = MyOp.(+) brake_torque_445  road_load_453 in
         let (sgn_454:MyOp.t) =
             if (>=) mph_452  zero_val then MyOp.make 1. else MyOp.make (-1.) in
@@ -390,32 +393,34 @@ let autotrans  =
   let autotrans_step self ((t_471:MyOp.t) ,
                            ((throttle_472:MyOp.t) , (brake_torque_470:MyOp.t))) =
     ((let shiftp_524 = ref (false:bool) in
-      let shiftv_523 = ref (Common.DOWN:Common.shift) in
+      let shiftv_523 = ref (Common_myop.DOWN:Common_myop.shift) in
       (if self.i_540 then self.nx_527 <- gear1) ;
       (let (gear_487:MyOp.t) = self.nx_527 in
-       let (gear_lookup_500:MyOp.t) = Common.lookup_gear gear_487 in
+       let (gear_lookup_500:MyOp.t) = Common_myop.lookup_gear gear_487 in
        let (nin_501:MyOp.t) = MyOp.( * ) self.m_530  gear_lookup_500 in
        let ((ti_494:MyOp.t) , (turbine_torque_496:MyOp.t)) =
-           Common.torque_converter (self.m_528 , nin_501) in
+           Common_myop.torque_converter (self.m_528 , nin_501) in
        let (tout_502:MyOp.t) = MyOp.( * ) turbine_torque_496  gear_lookup_500 in
        let (final_drive_ratio_508:MyOp.t) =
-           MyOp.scale tout_502  Common.p_final_drive_ratio in
+           MyOp.scale tout_502  Common_myop.p_final_drive_ratio in
        let (aux1_506:MyOp.t) = MyOp.(-) final_drive_ratio_508  self.m_535 in
-       let (vehicle_inertia_517:MyOp.t) = MyOp.scale aux1_506  Common.iv_inv in
+       let (vehicle_inertia_517:MyOp.t) =
+           MyOp.scale aux1_506  Common_myop.iv_inv in
        let (x_534:MyOp.t) =
            if self.i_540 then t_471 else MyOp.(-) t_471  self.m_532 in
        let (x_539:MyOp.t) =
            if self.i_540
-           then MyOp.make Common.p_initial_wheel_speed
+           then MyOp.make Common_myop.p_initial_wheel_speed
            else MyOp.(+) self.m_537  (MyOp.( * ) vehicle_inertia_517  x_534) in
        self.i_540 <- false ;
        self.m_537 <- x_539 ;
-       (let (linear_speed_509:MyOp.t) = MyOp.scale x_539  Common.l_speed_coef in
-        let (mph_510:MyOp.t) = MyOp.scale linear_speed_509  Common.p_mph in
+       (let (linear_speed_509:MyOp.t) =
+            MyOp.scale x_539  Common_myop.l_speed_coef in
+        let (mph_510:MyOp.t) = MyOp.scale linear_speed_509  Common_myop.p_mph in
         let (road_load_511:MyOp.t) =
             MyOp.translate (MyOp.scale (MyOp.sqr mph_510) 
-                                       Common.p_aerodynamic_drag) 
-                           Common.p_drag_friction in
+                                       Common_myop.p_aerodynamic_drag) 
+                           Common_myop.p_drag_friction in
         let (brake_507:MyOp.t) = MyOp.(+) brake_torque_470  road_load_511 in
         let (sgn_512:MyOp.t) =
             if (>=) mph_510  zero_val then MyOp.make 1. else MyOp.make (-1.) in
@@ -423,15 +428,15 @@ let autotrans  =
         self.m_535 <- signed_load_513 ;
         self.m_532 <- t_471 ;
         (let (trans_rpm_516:MyOp.t) =
-             MyOp.scale x_539  Common.p_final_drive_ratio in
+             MyOp.scale x_539  Common_myop.p_final_drive_ratio in
          self.m_530 <- trans_rpm_516 ;
          (let (rpm_476:MyOp.t) =
               i_655_step self.i_655 (t_471 , ti_494 , throttle_472) in
           self.m_528 <- rpm_476 ;
           (let (dn_th_483:MyOp.t) =
-               Common.lookup_interpdn (throttle_472 , gear_487) in
+               Common_myop.lookup_interpdn (throttle_472 , gear_487) in
            let (up_th_486:MyOp.t) =
-               Common.lookup_interpup (throttle_472 , gear_487) in
+               Common_myop.lookup_interpup (throttle_472 , gear_487) in
            (begin match self.s_521 with
                   | Autotransd_modes_SteadyState_169 ->
                       (if self.r_522 then self.i_542 <- true) ;
@@ -458,14 +463,14 @@ let autotrans  =
                       self.rob_485 <- zero_val ;
                       (begin match (((>) t_471 
                                          (MyOp.translate self.t0_488 
-                                                         Common.twait)) ,
-                                    ((>) mph_510  dn_th_483)) with
+                                                         Common_myop.twait))
+                                    , ((>) mph_510  dn_th_483)) with
                              | (_ , true) ->
                                  self.r_522 <- true ;
                                  self.s_521 <- Autotransd_modes_SteadyState_169
                              | (true , _) ->
                                  shiftp_524 := true ;
-                                 shiftv_523 := Common.DOWN ;
+                                 shiftv_523 := Common_myop.DOWN ;
                                  self.r_522 <- true ;
                                  self.s_521 <- Autotransd_modes_SteadyState_169
                              | _ -> self.r_522 <- false  end)
@@ -474,14 +479,14 @@ let autotrans  =
                       self.rob_485 <- zero_val ;
                       (begin match (((>) t_471 
                                          (MyOp.translate self.t0_489 
-                                                         Common.twait)) ,
-                                    ((<) mph_510  up_th_486)) with
+                                                         Common_myop.twait))
+                                    , ((<) mph_510  up_th_486)) with
                              | (_ , true) ->
                                  self.r_522 <- true ;
                                  self.s_521 <- Autotransd_modes_SteadyState_169
                              | (true , _) ->
                                  shiftp_524 := true ;
-                                 shiftv_523 := Common.UP ;
+                                 shiftv_523 := Common_myop.UP ;
                                  self.r_522 <- true ;
                                  self.s_521 <- Autotransd_modes_SteadyState_169
                              | _ -> self.r_522 <- false  end)
@@ -490,7 +495,7 @@ let autotrans  =
                   | Autotransd_modes_First_165 ->
                       (if self.r_520 then ()) ;
                       (begin match (!shiftv_523 , !shiftp_524) with
-                             | (Common.UP , true) ->
+                             | (Common_myop.UP , true) ->
                                  self.nx_527 <- gear2 ;
                                  self.r_520 <- true ;
                                  self.s_519 <- Autotransd_modes_Second_166
@@ -498,11 +503,11 @@ let autotrans  =
                   | Autotransd_modes_Second_166 ->
                       (if self.r_520 then ()) ;
                       (begin match (!shiftv_523 , !shiftp_524) with
-                             | (Common.DOWN , true) ->
+                             | (Common_myop.DOWN , true) ->
                                  self.nx_527 <- gear1 ;
                                  self.r_520 <- true ;
                                  self.s_519 <- Autotransd_modes_First_165
-                             | (Common.UP , true) ->
+                             | (Common_myop.UP , true) ->
                                  self.nx_527 <- gear3 ;
                                  self.r_520 <- true ;
                                  self.s_519 <- Autotransd_modes_Third_167
@@ -510,11 +515,11 @@ let autotrans  =
                   | Autotransd_modes_Third_167 ->
                       (if self.r_520 then ()) ;
                       (begin match (!shiftv_523 , !shiftp_524) with
-                             | (Common.DOWN , true) ->
+                             | (Common_myop.DOWN , true) ->
                                  self.nx_527 <- gear2 ;
                                  self.r_520 <- true ;
                                  self.s_519 <- Autotransd_modes_Second_166
-                             | (Common.UP , true) ->
+                             | (Common_myop.UP , true) ->
                                  self.nx_527 <- gear4 ;
                                  self.r_520 <- true ;
                                  self.s_519 <- Autotransd_modes_Fourth_168
@@ -522,7 +527,7 @@ let autotrans  =
                   | Autotransd_modes_Fourth_168 ->
                       (if self.r_520 then ()) ;
                       (begin match (!shiftv_523 , !shiftp_524) with
-                             | (Common.DOWN , true) ->
+                             | (Common_myop.DOWN , true) ->
                                  self.nx_527 <- gear3 ;
                                  self.r_520 <- true ;
                                  self.s_519 <- Autotransd_modes_Third_167
@@ -679,18 +684,19 @@ let main  =
       i_658_reset self.i_658  ; i_657_reset self.i_657 ):unit) in 
   let main_step self () =
     ((let shiftp_626 = ref (false:bool) in
-      let shiftv_625 = ref (Common.DOWN:Common.shift) in
+      let shiftv_625 = ref (Common_myop.DOWN:Common_myop.shift) in
       (if self.i_647 then self.nx_631 <- gear1) ;
       (let (gear_574:MyOp.t) = self.nx_631 in
-       let (gear_lookup_587:MyOp.t) = Common.lookup_gear gear_574 in
+       let (gear_lookup_587:MyOp.t) = Common_myop.lookup_gear gear_574 in
        let (nin_588:MyOp.t) = MyOp.( * ) self.m_634  gear_lookup_587 in
        let ((ti_581:MyOp.t) , (turbine_torque_583:MyOp.t)) =
-           Common.torque_converter (self.m_632 , nin_588) in
+           Common_myop.torque_converter (self.m_632 , nin_588) in
        let (tout_589:MyOp.t) = MyOp.( * ) turbine_torque_583  gear_lookup_587 in
        let (final_drive_ratio_595:MyOp.t) =
-           MyOp.scale tout_589  Common.p_final_drive_ratio in
+           MyOp.scale tout_589  Common_myop.p_final_drive_ratio in
        let (aux1_593:MyOp.t) = MyOp.(-) final_drive_ratio_595  self.m_639 in
-       let (vehicle_inertia_604:MyOp.t) = MyOp.scale aux1_593  Common.iv_inv in
+       let (vehicle_inertia_604:MyOp.t) =
+           MyOp.scale aux1_593  Common_myop.iv_inv in
        let (x_630:float) = self.m_629 in
        let (t_550:float) = (+.) x_630  0.01 in
        let (t_558:MyOp.t) = MyOp.make t_550 in
@@ -698,7 +704,7 @@ let main  =
            if self.i_647 then t_558 else MyOp.(-) t_558  self.m_636 in
        let (x_643:MyOp.t) =
            if self.i_647
-           then MyOp.make Common.p_initial_wheel_speed
+           then MyOp.make Common_myop.p_initial_wheel_speed
            else MyOp.(+) self.m_641  (MyOp.( * ) vehicle_inertia_604  x_638) in
        (begin match self.s_623 with
               | Autotransd_modes_I_214 ->
@@ -716,12 +722,13 @@ let main  =
                               self.r_624 <- true ;
                               self.s_623 <- Autotransd_modes_I_214
                           | _ -> self.r_624 <- false  end)) end) ;
-       (let (linear_speed_596:MyOp.t) = MyOp.scale x_643  Common.l_speed_coef in
-        let (mph_597:MyOp.t) = MyOp.scale linear_speed_596  Common.p_mph in
+       (let (linear_speed_596:MyOp.t) =
+            MyOp.scale x_643  Common_myop.l_speed_coef in
+        let (mph_597:MyOp.t) = MyOp.scale linear_speed_596  Common_myop.p_mph in
         let (dn_th_570:MyOp.t) =
-            Common.lookup_interpdn (self.th_552 , gear_574) in
+            Common_myop.lookup_interpdn (self.th_552 , gear_574) in
         let (up_th_573:MyOp.t) =
-            Common.lookup_interpup (self.th_552 , gear_574) in
+            Common_myop.lookup_interpup (self.th_552 , gear_574) in
         (begin match self.s_621 with
                | Autotransd_modes_SteadyState_244 ->
                    (if self.r_622 then self.i_653 <- true) ;
@@ -748,14 +755,14 @@ let main  =
                    self.rob_572 <- zero_val ;
                    (begin match (((>) t_558 
                                       (MyOp.translate self.t0_575 
-                                                      Common.twait)) ,
+                                                      Common_myop.twait)) ,
                                  ((>) mph_597  dn_th_570)) with
                           | (_ , true) ->
                               self.r_622 <- true ;
                               self.s_621 <- Autotransd_modes_SteadyState_244
                           | (true , _) ->
                               shiftp_626 := true ;
-                              shiftv_625 := Common.DOWN ;
+                              shiftv_625 := Common_myop.DOWN ;
                               self.r_622 <- true ;
                               self.s_621 <- Autotransd_modes_SteadyState_244
                           | _ -> self.r_622 <- false  end)
@@ -764,14 +771,14 @@ let main  =
                    self.rob_572 <- zero_val ;
                    (begin match (((>) t_558 
                                       (MyOp.translate self.t0_576 
-                                                      Common.twait)) ,
+                                                      Common_myop.twait)) ,
                                  ((<) mph_597  up_th_573)) with
                           | (_ , true) ->
                               self.r_622 <- true ;
                               self.s_621 <- Autotransd_modes_SteadyState_244
                           | (true , _) ->
                               shiftp_626 := true ;
-                              shiftv_625 := Common.UP ;
+                              shiftv_625 := Common_myop.UP ;
                               self.r_622 <- true ;
                               self.s_621 <- Autotransd_modes_SteadyState_244
                           | _ -> self.r_622 <- false  end)
@@ -795,8 +802,8 @@ let main  =
          self.m_641 <- x_643 ;
          (let (road_load_598:MyOp.t) =
               MyOp.translate (MyOp.scale (MyOp.sqr mph_597) 
-                                         Common.p_aerodynamic_drag) 
-                             Common.p_drag_friction in
+                                         Common_myop.p_aerodynamic_drag) 
+                             Common_myop.p_drag_friction in
           let (brake_594:MyOp.t) = MyOp.(+) self.br_551  road_load_598 in
           let (sgn_599:MyOp.t) =
               if (>=) mph_597  zero_val
@@ -806,14 +813,14 @@ let main  =
           self.m_639 <- signed_load_600 ;
           self.m_636 <- t_558 ;
           (let (trans_rpm_603:MyOp.t) =
-               MyOp.scale x_643  Common.p_final_drive_ratio in
+               MyOp.scale x_643  Common_myop.p_final_drive_ratio in
            self.m_634 <- trans_rpm_603 ;
            self.m_632 <- rpm_563 ;
            (begin match self.s_619 with
                   | Autotransd_modes_First_240 ->
                       (if self.r_620 then ()) ;
                       (begin match (!shiftv_625 , !shiftp_626) with
-                             | (Common.UP , true) ->
+                             | (Common_myop.UP , true) ->
                                  self.nx_631 <- gear2 ;
                                  self.r_620 <- true ;
                                  self.s_619 <- Autotransd_modes_Second_241
@@ -821,11 +828,11 @@ let main  =
                   | Autotransd_modes_Second_241 ->
                       (if self.r_620 then ()) ;
                       (begin match (!shiftv_625 , !shiftp_626) with
-                             | (Common.DOWN , true) ->
+                             | (Common_myop.DOWN , true) ->
                                  self.nx_631 <- gear1 ;
                                  self.r_620 <- true ;
                                  self.s_619 <- Autotransd_modes_First_240
-                             | (Common.UP , true) ->
+                             | (Common_myop.UP , true) ->
                                  self.nx_631 <- gear3 ;
                                  self.r_620 <- true ;
                                  self.s_619 <- Autotransd_modes_Third_242
@@ -833,11 +840,11 @@ let main  =
                   | Autotransd_modes_Third_242 ->
                       (if self.r_620 then ()) ;
                       (begin match (!shiftv_625 , !shiftp_626) with
-                             | (Common.DOWN , true) ->
+                             | (Common_myop.DOWN , true) ->
                                  self.nx_631 <- gear2 ;
                                  self.r_620 <- true ;
                                  self.s_619 <- Autotransd_modes_Second_241
-                             | (Common.UP , true) ->
+                             | (Common_myop.UP , true) ->
                                  self.nx_631 <- gear4 ;
                                  self.r_620 <- true ;
                                  self.s_619 <- Autotransd_modes_Fourth_243
@@ -845,7 +852,7 @@ let main  =
                   | Autotransd_modes_Fourth_243 ->
                       (if self.r_620 then ()) ;
                       (begin match (!shiftv_625 , !shiftp_626) with
-                             | (Common.DOWN , true) ->
+                             | (Common_myop.DOWN , true) ->
                                  self.nx_631 <- gear3 ;
                                  self.r_620 <- true ;
                                  self.s_619 <- Autotransd_modes_Third_242
