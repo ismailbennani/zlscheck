@@ -1,0 +1,128 @@
+open Constants
+open MyOp
+
+type ctrlLimits = {
+    throttleMax : MyOp.t;
+    throttleMin : MyOp.t;
+    elevatorMaxDeg : MyOp.t;
+    elevatorMinDeg : MyOp.t;
+    aileronMaxDeg : MyOp.t;
+    aileronMinDeg : MyOp.t;
+    rudderMaxDeg : MyOp.t;
+    rudderMinDeg : MyOp.t;
+    maxBankDeg : MyOp.t;
+    nzMax : MyOp.t;
+    nzMin : MyOp.t;
+}
+
+let defaultCtrlLimits = {
+    throttleMax = make 1.;
+    throttleMin = make 0.;
+    elevatorMaxDeg = make 25.;
+    elevatorMinDeg = make (-25.);
+    aileronMaxDeg = make 21.5;
+    aileronMinDeg = make (-21.5);
+    rudderMaxDeg = make 30.;
+    rudderMinDeg = make (-30.);
+    maxBankDeg = make 60.;
+    nzMax = make 6.;
+    nzMin = make (-1.);
+}
+
+let string_of_ctrl_limits ctrl_limits =
+    "{ " ^
+    "throttleMax = " ^ (string_of_float (get ctrl_limits.throttleMax)) ^ "; " ^
+    "throttleMin = " ^ (string_of_float (get ctrl_limits.throttleMin)) ^ "; " ^
+    "elevatorMaxDeg = " ^ (string_of_float (get ctrl_limits.elevatorMaxDeg)) ^ "; " ^
+    "elevatorMinDeg = " ^ (string_of_float (get ctrl_limits.elevatorMinDeg)) ^ "; " ^
+    "aileronMaxDeg = " ^ (string_of_float (get ctrl_limits.aileronMaxDeg)) ^ "; " ^
+    "aileronMinDeg = " ^ (string_of_float (get ctrl_limits.aileronMinDeg)) ^ "; " ^
+    "rudderMaxDeg = " ^ (string_of_float (get ctrl_limits.rudderMaxDeg)) ^ "; " ^
+    "rudderMinDeg = " ^ (string_of_float (get ctrl_limits.rudderMinDeg)) ^ "; " ^
+    "maxBankDeg = " ^ (string_of_float (get ctrl_limits.maxBankDeg)) ^ "; " ^
+    "nzMax = " ^ (string_of_float (get ctrl_limits.nzMax)) ^ "; " ^
+    "nzMin = " ^ (string_of_float (get ctrl_limits.nzMin)) ^
+    " }"
+
+type f16_state = {
+    vt : MyOp.t; alpha : MyOp.t; beta : MyOp.t; phi : MyOp.t; theta : MyOp.t;
+    psi : MyOp.t; p : MyOp.t; q : MyOp.t; r : MyOp.t; x9 : MyOp.t;
+    x10 : MyOp.t; alt : MyOp.t; power : MyOp.t;
+}
+
+let string_of_f16_state state =
+    "{ " ^
+    "vt = " ^ (string_of_float (get state.vt)) ^ "; " ^
+    "alpha = " ^ (string_of_float (get (state.alpha / pi))) ^ "π; " ^
+    "beta = " ^ (string_of_float (get (state.beta / pi))) ^ "π; " ^
+    "phi = " ^ (string_of_float (get (state.phi / pi))) ^ "π; " ^
+    "theta = " ^ (string_of_float (get (state.theta / pi))) ^ "π; " ^
+    "psi = " ^ (string_of_float (get (state.psi / pi))) ^ "π; " ^
+    "P = " ^ (string_of_float (get state.p)) ^ "; " ^
+    "Q = " ^ (string_of_float (get state.q)) ^ "; " ^
+    "R = " ^ (string_of_float (get state.r)) ^ "; " ^
+    "x9 = " ^ (string_of_float (get state.x9)) ^ "; " ^
+    "x10 = " ^ (string_of_float (get state.x10)) ^ "; " ^
+    "altitude = " ^ (string_of_float (get state.alt)) ^ "; " ^
+    "power = " ^ (string_of_float (get state.power)) ^
+    " }"
+
+let json_of_f16_state state =
+    "{" ^
+    "\"vt\":" ^ (string_of_float (get state.vt)) ^ "," ^
+    "\"alpha\":" ^ (string_of_float (get state.alpha)) ^ "," ^
+    "\"beta\":" ^ (string_of_float (get state.beta)) ^ "," ^
+    "\"phi\":" ^ (string_of_float (get state.phi)) ^ "," ^
+    "\"theta\":" ^ (string_of_float (get state.theta)) ^ "," ^
+    "\"psi\":" ^ (string_of_float (get state.psi)) ^ "," ^
+    "\"P\":" ^ (string_of_float (get state.p)) ^ "," ^
+    "\"Q\":" ^ (string_of_float (get state.q)) ^ "," ^
+    "\"R\":" ^ (string_of_float (get state.r)) ^ "," ^
+    "\"x9\":" ^ (string_of_float (get state.x9)) ^ "," ^
+    "\"x10\":" ^ (string_of_float (get state.x10)) ^ "," ^
+    "\"altitude\":" ^ (string_of_float (get state.alt)) ^ "," ^
+    "\"power\":" ^ (string_of_float (get state.power)) ^
+    "}"
+
+type solver_state = {
+    f16 : f16_state;
+    nz : MyOp.t; ps : MyOp.t; ny_r : MyOp.t;
+}
+
+let string_of_state state =
+    "{ " ^
+    "f16_state = " ^ (string_of_f16_state state.f16) ^ "; " ^
+    "nz = " ^ (string_of_float (get state.nz)) ^ "; " ^
+    "ps = " ^ (string_of_float (get state.ps)) ^ "; " ^
+    "ny_r = " ^ (string_of_float (get state.ny_r)) ^
+    " }"
+
+let json_of_state state =
+    "{" ^
+    "\"f16_state\":" ^ (json_of_f16_state state.f16) ^ "," ^
+    "\"nz\":" ^ (string_of_float (get state.nz)) ^ "," ^
+    "\"ps\":" ^ (string_of_float (get state.ps)) ^ "," ^
+    "\"ny_r\":" ^ (string_of_float (get state.ny_r)) ^
+    "}"
+
+type input = { thtlc : MyOp.t; el : MyOp.t; ail : MyOp.t; rdr: MyOp.t; }
+
+let string_of_input input =
+    "{ " ^
+    "thtlc = " ^ (string_of_float (get input.thtlc)) ^ "; " ^
+    "el = " ^ (string_of_float (get input.el)) ^ "; " ^
+    "ail = " ^ (string_of_float (get input.ail)) ^ "; " ^
+    "rdr = " ^ (string_of_float (get input.rdr)) ^
+    " }"
+
+type ref_ctrl = {
+    thtlc_ref : MyOp.t; nz_ref : MyOp.t; ps_ref : MyOp.t; ny_r_ref : MyOp.t
+}
+
+let string_of_ref_ctrl ref_ctrl =
+    "{ " ^
+    "thtlc_ref = " ^ (string_of_float (get ref_ctrl.thtlc_ref)) ^ "; " ^
+    "nz_ref = " ^ (string_of_float (get ref_ctrl.nz_ref)) ^ "; " ^
+    "ps_ref = " ^ (string_of_float (get ref_ctrl.ps_ref)) ^ "; " ^
+    "ny_r_ref = " ^ (string_of_float (get ref_ctrl.ny_r_ref)) ^
+    " }"

@@ -1,5 +1,6 @@
 open Constants
-open Types
+open F16_types
+open MyOp
 
 (* change autopilot by opening another one *)
 open GcasAutopilot
@@ -18,10 +19,10 @@ let node derivatives (tstep, state, ctrlLimits) =
     in
 
     let xd_model, ny, nz = Subf16_model.derivatives(state.f16, u_deg) in
-    let ps = x_ctrl.f16.p *. (cos x_ctrl.f16.alpha) +.
-             x_ctrl.f16.r *. (sin x_ctrl.f16.alpha)
+    let ps = x_ctrl.f16.p * (cos x_ctrl.f16.alpha) +
+             x_ctrl.f16.r * (sin x_ctrl.f16.alpha)
     in
-    let ny_r = ny +. x_ctrl.f16.r in
+    let ny_r = ny + x_ctrl.f16.r in
 
     let nzd, psd, ny_rd =
         LowLevelController.get_integrator_derivatives
@@ -29,7 +30,7 @@ let node derivatives (tstep, state, ctrlLimits) =
     in
     let u_rad = {
         thtlc = u_deg.thtlc;
-        el = u_deg.el *. dtor; ail = u_deg.ail *. dtor; rdr = u_deg.rdr *. dtor;
+        el = u_deg.el * dtor; ail = u_deg.ail * dtor; rdr = u_deg.rdr * dtor;
     } in
 
     u_rad,

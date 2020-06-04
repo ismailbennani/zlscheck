@@ -1,5 +1,6 @@
 open Constants
-open Types
+open F16_types
+open MyOp
 
 type state = Start | Roll | Pull | Done
 let string_of_state state =
@@ -7,29 +8,30 @@ let string_of_state state =
     | Start -> "Start" | Roll -> "Roll" | Pull -> "Pull" | Done -> "Done"
     end
 
-let node state_logic (tstep, alpha, phi, theta, p) =
-    let t = Utils.integrate(0., 1., tstep) in
+let eps_phi = scale dtor 5.
+let eps_p = scale dtor 1.
+let path_goal = scale dtor 0.
+let man_start = make 2.
+let twopi = scale pi 2.
 
-    let eps_phi = 5. *. dtor in
-    let eps_p = 1. *. dtor in
-    let path_goal = 0. *. dtor in
-    let man_start = 2. in
+let node state_logic (tstep, alpha, phi, theta, p) =
+    let t = Utils.integrate(make 0., make 1., tstep) in
 
     let automaton
     | Start ->
         do state = Start
         until (t > man_start &&
-            (theta -. alpha) -. 2. *. pi *. Utils.round ((theta -. alpha) /. (2. *. pi)) > path_goal)
+            (theta - alpha) - twopi * Utils.round ((theta - alpha) / twopi) > path_goal)
             then do emit trans = Done in Done
-        else (t > man_start && abs_float p < eps_p &&
-                (abs_float (phi -. pi *. (Utils.round (phi /. pi))) < eps_phi))
+        else (t > man_start && abs p < eps_p &&
+                (abs (phi - pi * (Utils.round (phi / pi))) < eps_phi))
                 then do emit trans = Pull in Pull
         else (t > man_start) then do emit trans = Roll in Roll
     | Roll ->
-        let radsFromWingsLevel = Utils.round (phi /. pi) in
+        let radsFromWingsLevel = Utils.round (phi / pi) in
         let wings_are_level =
-            abs_float (phi -. pi *. radsFromWingsLevel) < eps_phi
-        and rate_is_small = abs_float p < eps_p
+            abs (phi - pi * radsFromWingsLevel) < eps_phi
+        and rate_is_small = abs p < eps_p
         in
         do state = Roll
         (* and present (period(0.1)) -> do
@@ -44,17 +46,17 @@ let node state_logic (tstep, alpha, phi, theta, p) =
         until (wings_are_level && rate_is_small)
         then do emit trans = Pull in Pull
     | Pull ->
-        let radsFromNoseLevel = Utils.round ((theta -. alpha) /. (2. *. pi)) in
+        let radsFromNoseLevel = Utils.round ((theta - alpha) / twopi) in
         do state = Pull
         (* and present (period(0.1)) -> do
             () = print_endline ("at t = " ^ (string_of_float t) ^ ", STATE : Pull" ^
                     "\n\ttheta = " ^ (string_of_float theta) ^
                     "\n\talpha = " ^ (string_of_float alpha) ^
-                    "\n\ttheta - alpha = " ^ (string_of_float (theta -. alpha)) ^
+                    "\n\ttheta - alpha = " ^ (string_of_float (theta - alpha)) ^
                     "\n\tradsFromNoseLevel = " ^ (string_of_float radsFromNoseLevel)
                 )
         done *)
-        until (theta -. alpha -. 2. *. pi *. radsFromNoseLevel > path_goal)
+        until (theta - alpha - twopi * radsFromNoseLevel > path_goal)
         then do emit trans = Done in Done
     | Done -> do state = Done done
     in
@@ -70,40 +72,40 @@ let node state_logic (tstep, alpha, phi, theta, p) =
 let discrete get_u_ref (state, ctrlLimits, x_equil, x) = u_ref where rec
 
     match state with
-    | Start -> do nz = 0. and ps = 0. done
+    | Start -> do nz = make 0. and ps = make 0. done
     | Roll ->
         local radsFromWingsLevel, k_prop, k_der
         do
-            radsFromWingsLevel = Utils.round (x.phi /. pi)
-            and k_prop = 4.
-            and k_der = k_prop *. 0.3
-            and ps = -. (x.phi -. pi *. radsFromWingsLevel) *. k_prop -. x.p *. k_der
-            and nz = 0.
+            radsFromWingsLevel = Utils.round (x.phi / pi)
+            and k_prop = make 4.
+            and k_der = scale k_prop 0.3
+            and ps = - (x.phi - pi * radsFromWingsLevel) * k_prop - x.p * k_der
+            and nz = make 0.
         done
     | Pull ->
         do
-            nz = min 5. ctrlLimits.Types.nzMax
-            and ps = 0.
+            nz = min (make 5.) ctrlLimits.F16_types.nzMax
+            and ps = make 0.
         done
     | Done ->
         local radsFromWingsLevel, radsFromNoseLevel,
               k_prop, k_der, k_prop2, k_der2
         do
-            k_prop = 1.
-            and k_der = k_prop *. 0.3
-            and radsFromWingsLevel = Utils.round (x.phi /. pi)
-            and ps = -. (x.phi -. pi *. radsFromWingsLevel) *. k_prop -. x.p *. k_der
-            and k_prop2 = 2.
-            and k_der2 = k_prop2 *. 0.3
-            and radsFromNoseLevel = Utils.round ((x.theta -. x.alpha) /. pi)
-            and nz = -. (x.theta -. x.alpha -. pi *. radsFromNoseLevel) *. k_prop2
-                     -. x.p *. k_der2
+            k_prop = make 1.
+            and k_der = scale k_prop 0.3
+            and radsFromWingsLevel = Utils.round (x.phi / pi)
+            and ps = - (x.phi - pi * radsFromWingsLevel) * k_prop - x.p * k_der
+            and k_prop2 = make 2.
+            and k_der2 = scale k_prop2 0.3
+            and radsFromNoseLevel = Utils.round ((x.theta - x.alpha) / pi)
+            and nz = - (x.theta - x.alpha - pi * radsFromNoseLevel) * k_prop2
+                     - x.p * k_der2
         done
 
-    and ny_r = 0.
+    and ny_r = make 0.
 
-    and k_vt = 0.25
-    and throttle = -. k_vt *. (x.vt -. x_equil.vt)
+    and k_vt = make 0.25
+    and throttle = - k_vt * (x.vt - x_equil.vt)
 
     and u_ref = {
         thtlc_ref = throttle; nz_ref = nz; ps_ref = ps; ny_r_ref = ny_r

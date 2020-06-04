@@ -1,10 +1,13 @@
 open Matrix
+open MyOp
 
-let ro = 2.377e-3
+let get = Matrix.get
+
+let ro = make 2.377e-3
 
 let thrust_a = {
   dim = (6,6);
-  content =
+  content = Array.map (Array.map make)
     [|[|  1060.;  635.;   60.; -1020.; -2700.; -3600. |];
       [|   670.;  425.;   25.;  -170.; -1900.; -1400. |];
       [|   880.;  690.;  345.;  -300.; -1300.;  -595. |];
@@ -15,7 +18,7 @@ let thrust_a = {
 
 let thrust_b = {
   dim = (6,6);
-  content =
+  content = Array.map (Array.map make)
     [|[| 12680.; 12680.; 12610.; 12640.; 12390.; 11680. |];
       [|  9150.;  9150.;  9312.;  9839.; 10176.;  9848. |];
       [|  6200.;  6313.;  6610.;  7090.;  7750.;  8050. |];
@@ -26,7 +29,7 @@ let thrust_b = {
 
 let thrust_c = {
   dim = (6,6);
-  content =
+  content = Array.map (Array.map make)
     [|[| 20000.; 21420.; 22700.; 24240.; 26070.; 28886. |];
       [| 15000.; 15700.; 16860.; 18910.; 21075.; 23319. |];
       [| 10800.; 11225.; 12250.; 13760.; 15975.; 18300. |];
@@ -37,7 +40,7 @@ let thrust_c = {
 
 let dampp_a = {
   dim = (12,9);
-  content =
+  content = Array.map (Array.map make)
     [|[| -0.267;  0.882; -0.108; -8.80; -0.126; -0.360;  -7.21; -0.380;  0.061 |];
       [| -0.110;  0.852; -0.108; -25.8; -0.026; -0.359; -0.540; -0.363;  0.052 |];
       [|  0.308;  0.876; -0.188; -28.9;  0.063; -0.443;  -5.23; -0.378;  0.052 |];
@@ -54,7 +57,7 @@ let dampp_a = {
 
 let cx_a = {
   dim = (12, 5);
-  content =
+  content = Array.map (Array.map make)
     [|[| -0.0990; -0.0480; -0.0220; -0.0400; -0.0830 |];
       [| -0.0810; -0.0380; -0.0200; -0.0380; -0.0730 |];
       [| -0.0810; -0.0400; -0.0210; -0.0390; -0.0760 |];
@@ -69,13 +72,13 @@ let cx_a = {
       [|  0.1660;  0.1670;  0.1380;  0.0910;  0.0400 |]|]
 }
 
-let cz_a =
+let cz_a = Array.map make
   [| 0.770;  0.241; -0.100; -0.415; -0.731; -1.053;
      -1.355; -1.646; -1.917; -2.120; -2.248; -2.229|]
 
 let cl_a = {
   dim = (12,7);
-  content =
+  content = Array.map (Array.map make)
     [|[| 0.; -0.0010; -0.0030; -0.0010;      0.;  0.0070;  0.0090 |];
       [| 0.; -0.0040; -0.0090; -0.0100; -0.0100; -0.0100; -0.0110 |];
       [| 0.; -0.0080; -0.0170; -0.0200; -0.0220; -0.0230; -0.0230 |];
@@ -92,7 +95,7 @@ let cl_a = {
 
 let cm_a = {
   dim = (12,7);
-  content =
+  content = Array.map (Array.map make)
     [|[| 0.2050; 0.0810; -0.0460; -0.1740; -0.2590 |];
       [| 0.1680; 0.0770; -0.0200; -0.1450; -0.2020 |];
       [| 0.1860; 0.1070; -0.0090; -0.1210; -0.1840 |];
@@ -109,7 +112,7 @@ let cm_a = {
 
 let cn_a = {
   dim = (12, 7);
-  content =
+  content = Array.map (Array.map make)
     [|[| 0.;  0.0180;  0.0380;  0.0560;  0.0640;  0.0740;  0.0790 |];
       [| 0.;  0.0190;  0.0420;  0.0570;  0.0770;  0.0860;  0.0900 |];
       [| 0.;  0.0180;  0.0420;  0.0590;  0.0760;  0.0930;  0.1060 |];
@@ -126,7 +129,7 @@ let cn_a = {
 
 let dlda_a = {
   dim = (12, 7);
-  content =
+  content = Array.map (Array.map make)
     [|[| -0.0410; -0.0410; -0.0420; -0.0400; -0.0430; -0.0440; -0.0430 |];
       [| -0.0520; -0.0530; -0.0530; -0.0520; -0.0490; -0.0480; -0.0490 |];
       [| -0.0530; -0.0530; -0.0520; -0.0510; -0.0480; -0.0480; -0.0470 |];
@@ -143,7 +146,7 @@ let dlda_a = {
 
 let dldr_a = {
   dim = (12, 7);
-  content =
+  content = Array.map (Array.map make)
     [|[|  0.0050;  0.0070;  0.0130;  0.0180;  0.0150;  0.0210;  0.0230 |];
       [|  0.0170;  0.0160;  0.0130;  0.0150;  0.0140;  0.0110;  0.0100 |];
       [|  0.0140;  0.0140;  0.0110;  0.0150;  0.0130;  0.0100;  0.0110 |];
@@ -160,7 +163,7 @@ let dldr_a = {
 
 let dnda_a = {
   dim = (12, 7);
-  content =
+  content = Array.map (Array.map make)
     [|[| 0.0010;   0.0020; -0.0060; -0.0110; -0.0150; -0.0240; -0.0220; |];
       [| -0.0270; -0.0140; -0.0080; -0.0110; -0.0150; -0.0100;  0.0020; |];
       [| -0.0170; -0.0160; -0.0060; -0.0100; -0.0140; -0.0040; -0.0030; |];
@@ -177,7 +180,7 @@ let dnda_a = {
 
 let dndr_a = {
   dim = (12, 7);
-  content =
+  content = Array.map (Array.map make)
     [|[| -0.0180; -0.0280; -0.0370; -0.0480; -0.0430; -0.0520; -0.0620 |];
       [| -0.0520; -0.0510; -0.0410; -0.0450; -0.0440; -0.0340; -0.0340 |];
       [| -0.0520; -0.0430; -0.0380; -0.0450; -0.0410; -0.0360; -0.0270 |];
@@ -193,7 +196,9 @@ let dndr_a = {
 }
 
 let round f =
-  let frac, i = modf f in if frac >= 0.5 then i +. 1. else i
+  let frac, i = modf f in
+  if Stdlib.(frac >= 0.5) then make (i +. 1.)
+  else make i
 
 let adc(vt, alt) =
   (* converts velocity (vt) and altitude (alt) to mach number (amach)
@@ -203,51 +208,51 @@ let adc(vt, alt) =
 
   (* vt = freestream air speed *)
 
-  let tfac = 1. -. 0.703e-5 *. alt in
+  let tfac = translate (-(scale alt 0.703e-5)) 1. in
   let t =
-    if alt >= 35000. then 390. (* in stratosphere *)
-    else 519. *. tfac (* 3 rankine per atmosphere (3 rankine per 1000 ft) *)
+    if alt >= make 35000. then make 390. (* in stratosphere *)
+    else scale tfac 519. (* 3 rankine per atmosphere (3 rankine per 1000 ft) *)
   in
 
   (* rho = freestream mass density *)
-  let rho = ro *. (tfac ** 4.14) in
+  let rho = ro * (pow tfac 4.14) in
 
   (* a = speed of sound at the ambient conditions *)
   (* speed of sound in a fluid is the sqrt of the quotient of the modulus
      of elasticity over the mass density *)
-  let a = sqrt (1.4 *. 1716.3 *. t) in
+  let a = sqrt (scale t (1.4 *. 1716.3)) in
 
   (* amach = mach number *)
-  vt /. a,
+  vt / a,
   (* qbar = dynamic pressure *)
-  0.5 *. rho *. vt *. vt
+  scale (rho * vt * vt) 0.5
 
 let tgear(thtl) =
-  if thtl <= 0.77 then 64.94 *. thtl else 217.38 *. thtl -. 117.38
+  if thtl <= make 0.77 then scale thtl 64.94 else translate (scale thtl 217.38) (-117.38)
 
 let thrust(power, alt, rmach) =
-  let rmach = max rmach 0. in
+  let rmach = max rmach (make 0.) in
 
   (* thrust lookup-table *)
-  let alt = max 0.01 alt in (* uh, why not 0? *)
-  let h = 0.0001 *. alt in
-  let rm = 5. *. rmach in
+  let alt = max (make 0.01) alt in (* uh, why not 0? *)
+  let h = scale alt 0.0001 in
+  let rm = scale rmach 5. in
   let tmil = Matrix.lut2d thrust_b h rm in
 
-  if power < 50. then
+  if power < make 50. then
     let tidl = Matrix.lut2d thrust_a h rm in
-    tidl +. (tmil -. tidl) *. power *. 0.02
+    tidl + (tmil - tidl) * (scale power 0.02)
   else
     let tmax = Matrix.lut2d thrust_c h rm in
-    tmil +. (tmax -. tmil) *. (power -. 50.) *. 0.02
+    tmil + (tmax - tmil) * (scale (translate power (-50.)) 0.02)
 
 let dampp_aux (da, k, l, i) =
-  (get dampp_a (k-1) i) +.
-  (abs_float da) *. ((get dampp_a (l-1) i) -. (get dampp_a (k-1) i))
+  (get dampp_a Stdlib.(k-1) i) +
+  (abs da) * ((get dampp_a Stdlib.(l-1) i) - (get dampp_a Stdlib.(k-1) i))
 
 let dampp(alpha) =
   (* alpha in degrees *)
-  let s = 0.2 *. alpha +. 2. in
+  let s = translate (scale alpha 0.2) 2. in
   let d0 = Matrix.lut1d_row dampp_a s 0 alpha
   and d1 = Matrix.lut1d_row dampp_a s 1 alpha
   and d2 = Matrix.lut1d_row dampp_a s 2 alpha
@@ -262,77 +267,77 @@ let dampp(alpha) =
 let c c_a (a, b) (min_k, max_k) (min_m, max_m) add_m force_sgn =
   let s = a in
   let k = truncate s in
-  let k = max min_k k in
-  let k = min max_k k in
-  let da = s -. (float k) in
-  let l = k + (truncate (copysign 1.1 da)) in
+  let k = Stdlib.max min_k k in
+  let k = Stdlib.min max_k k in
+  let da = s - (MyOp.integer k) in
+  let l = Stdlib.(k + (truncate (copysign 1.1 (MyOp.get da)))) in
   let s = b in
   let m = truncate s in
-  let m = max min_m m in
-  let m = min max_m m in
-  let db = s -. (float m) in
-  let n = m + (truncate (copysign 1.1 db)) in
-  let l = l + 3 in
-  let k = k + 3 in
-  let m = m + add_m in
-  let n = n + add_m in
-  let t = get c_a (k-1) (m-1) in
-  let u = get c_a (k-1) (n-1) in
-  let v = t +. (abs_float da) *. (get c_a (l-1) (m-1) -. t) in
-  let w = u +. (abs_float da) *. (get c_a (l-1) (n-1) -. u) in
-  let dum = v +. (w -. v) *. (abs_float db) in
-  let sgn = if force_sgn <> 0. then copysign 1. force_sgn else 1. in
-  sgn *. dum
+  let m = Stdlib.max min_m m in
+  let m = Stdlib.min max_m m in
+  let db = s - (MyOp.integer m) in
+  let n = Stdlib.(m + (truncate (copysign 1.1 (MyOp.get db)))) in
+  let l = Stdlib.(l + 3) in
+  let k = Stdlib.(k + 3) in
+  let m = Stdlib.(m + add_m) in
+  let n = Stdlib.(n + add_m) in
+  let t = get c_a Stdlib.(k-1) Stdlib.(m-1) in
+  let u = get c_a Stdlib.(k-1) Stdlib.(n-1) in
+  let v = t + (abs da) * (get c_a Stdlib.(l-1) Stdlib.(m-1) - t) in
+  let w = u + (abs da) * (get c_a Stdlib.(l-1) Stdlib.(n-1) - u) in
+  let dum = v + (w - v) * (abs db) in
+  let sgn = if Stdlib.(force_sgn <> 0.) then Stdlib.copysign 1. force_sgn else 1. in
+  scale dum sgn
 
 let cx (alpha, el) =
-  c cx_a (0.2 *. alpha, el /. 12.) (-1, 8) (-1, 1) 3 0.
+  c cx_a (scale alpha 0.2, scale el (1. /. 12.)) (-1, 8) (-1, 1) 3 0.
 
 let cy (beta, ail, rdr) =
-  -0.02 *. beta +. 0.021 *. (ail /. 20.) +. 0.086 *. (rdr /. 30.)
+  (scale beta (-0.02)) + (scale ail (0.021 /. 20.)) + (scale rdr (0.086 /. 30.))
 
 let cz (alpha, beta, el) =
-  let s = 0.2 *. alpha in
+  let s = scale alpha 0.2 in
   let k = truncate s in
-  let k = max (-1) k in
-  let k = min 8 k in
-  let da = s -. (float k) in
-  let l = k + (truncate (copysign 1.1 da)) in
-  let l = l + 3 in
-  let k = k + 3 in
-  let s = cz_a.(k-1) +. (abs_float da) *. (cz_a.(l-1) -. cz_a.(k-1)) in
-  s *. (1. -. (beta /. 57.3)**2.) -. 0.19 *. (el /. 25.)
+  let k = Stdlib.max (-1) k in
+  let k = Stdlib.min 8 k in
+  let da = s - (integer k) in
+  let l = Stdlib.(k + (truncate (copysign 1.1 (MyOp.get da)))) in
+  let l = Stdlib.(l + 3) in
+  let k = Stdlib.(k + 3) in
+  let s = cz_a.(Stdlib.(k-1)) + (abs da) * (cz_a.(Stdlib.(l-1)) - cz_a.(Stdlib.(k-1))) in
+  s * ((make 1.) - (pow (scale beta (1. /. 57.3))) 2.) - (scale el (0.19 /. 25.))
 
 let cl (alpha, beta) =
-  c cl_a (0.2 *. alpha, 0.2 *. (abs_float beta)) (-1, 8) (1, 5) 1 beta
+  c cl_a (scale alpha 0.2, scale (abs beta) 0.2) (-1, 8) (1, 5) 1 (MyOp.get beta)
 
 let cm (alpha, el) =
-  c cm_a (0.2 *. alpha, el /. 12.) (-1, 8) (-1, 1) 3 0.
+  c cm_a (scale alpha 0.2, scale el (1. /. 12.)) (-1, 8) (-1, 1) 3 0.
 
 let cn (alpha, beta) =
-  c cn_a (0.2 *. alpha, 0.2 *. (abs_float beta)) (-1, 8) (1, 5) 1 beta
+  c cn_a (scale alpha 0.2, scale (abs beta) 0.2) (-1, 8) (1, 5) 1 (MyOp.get beta)
 
 let dlda (alpha, beta) =
-  c dlda_a (0.2 *. alpha, 0.1 *. beta) (-1, 8) (-2, 2) 4 0.
+  c dlda_a (scale alpha 0.2, scale beta 0.1) (-1, 8) (-2, 2) 4 0.
 
 let dldr (alpha, beta) =
-  c dldr_a (0.2 *. alpha, 0.1 *. beta) (-1, 8) (-2, 2) 4 0.
+  c dldr_a (scale alpha 0.2, scale beta 0.1) (-1, 8) (-2, 2) 4 0.
 
 let dnda (alpha, beta) =
-  c dnda_a (0.2 *. alpha, 0.1 *. beta) (-1, 8) (-2, 2) 4 0.
+  c dnda_a (scale alpha 0.2, scale beta 0.1) (-1, 8) (-2, 2) 4 0.
 
 let dndr (alpha, beta) =
-  c dndr_a (0.2 *. alpha, 0.1 *. beta) (-1, 8) (-2, 2) 4 0.
+  c dndr_a (scale alpha 0.2, scale beta 0.1) (-1, 8) (-2, 2) 4 0.
 
 let rtau(dp) =
-  if dp <= 25. then 1.
-  else if dp >= 50. then 0.1
-  else 1.9 -. 0.036 *. dp
+  if dp <= make 25. then make 1.
+  else if dp >= make 50. then make 0.1
+  else translate  (- (scale dp 0.036)) 1.9
 
 let exit = exit
 
 (* let test_fn name fn range_a range_b =
   let pick_float (low, high) =
-    Random.float (high -. low) +. low
+    Random.float (high - low) + low
   in
   let n = 10 in
   let inp = List.init n (fun _ -> (pick_float range_a, pick_float range_b)) in
@@ -344,7 +349,7 @@ let exit = exit
 
 let test_fn_ name fn range_a range_b range_c =
   let pick_float (low, high) =
-    Random.float (high -. low) +. low
+    Random.float (high - low) + low
   in
   let n = 10 in
   let inp = List.init n (fun _ -> (pick_float range_a, pick_float range_b, pick_float range_c)) in
