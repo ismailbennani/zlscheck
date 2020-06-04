@@ -1,5 +1,18 @@
+(**************************************************************************)
+(*                                                                        *)
+(*                                FADBADml                                *)
+(*                                                                        *)
+(*           OCaml port by François Bidet and Ismail Bennani              *)
+(*     Based on FADBAD++, written by Ole Stauning and Claus Bendtsen      *)
+(*                                                                        *)
+(*                             Copyright 2019                             *)
+(*                                                                        *)
+(*   This file is distributed under the terms of the CeCILL-C license.    *)
+(*                                                                        *)
+(**************************************************************************)
+
 module OpFloat = Fadbad.OpFloat
-module T : Fadbad.TS with type elt = float and type op_t = OpFloat.t = Fadbad.T(OpFloat)
+module T = Fadbad.T(OpFloat)
 
 let f x y =
   let open T in

@@ -7,7 +7,7 @@ ZELUCFLAGS += -I common -noreduce
 
 INCLUDES += -I $(CHECKLIB) zlscheck.cma
 
-DIRS = $(shell find * -type d)
+DIRS = common $(shell find models -type d -mindepth 0 -maxdepth 1)
 
 COMMON_ML = $(shell echo common/*.ml)
 COMMON_MLI = $(shell echo common/*.mli)
@@ -21,16 +21,19 @@ MLS = $(COMMON_ML) $(BENCH_ML)
 MLIS = $(COMMON_MLI) $(BENCH_MLI)
 
 INCLUDES += $(DIRS:%=-I %) \
+\
 myOp.cmx discrete_obs_fad.cmx zc.cmx zc_utils.cmx \
-consts.cmx utils.cmx common.cmx autotransd.cmx autotransd_modes.cmx \
-sanity_check.cmx \
-common_utils.cmx online.cmx offline.cmx bench.cmx
+consts.cmx utils.cmx common.cmx common_myop.cmx \
+autotransc.cmx autotransd.cmx autotransd_modes.cmx \
+\
+common_utils.cmx online.cmx offline.cmx replay.cmx bench_models.cmx replay_models.cmx
 
-TARGET = run_bench.opt
+TARGET = run_bench.opt replay_bench.opt
 
 all: $(TARGET)
 
-run_bench.opt: models defbench.cmx
+run_bench.opt replay_bench.opt: INCLUDES += defbench.cmx
+run_bench.opt replay_bench.opt: models defbench.cmx
 
 common: $(COMMON_ML:.ml=.cmx) $(COMMON_ZLI:.zli=.zci) $(COMMON_ZLS:.zls=.cmx)
 
@@ -40,8 +43,6 @@ models: common
 common/discrete_obs_fad.ml: common/discrete_obs_fad.zls common/myOp.zci
 	$(ZELUC) $(ZELUCFLAGS) $<
 	sed -i "s/Obj.magic ():MyOp.t/create ():MyOp.t/g" $@
-
-run_bench.opt: INCLUDES += defbench.cmx
 
 clean_this:
 	-cd common; rm -f *.cm[iox] *.o *.opt *.zci

@@ -1,3 +1,16 @@
+(**************************************************************************)
+(*                                                                        *)
+(*                                FADBADml                                *)
+(*                                                                        *)
+(*           OCaml port by François Bidet and Ismail Bennani              *)
+(*     Based on FADBAD++, written by Ole Stauning and Claus Bendtsen      *)
+(*                                                                        *)
+(*                             Copyright 2019                             *)
+(*                                                                        *)
+(*   This file is distributed under the terms of the CeCILL-C license.    *)
+(*                                                                        *)
+(**************************************************************************)
+
 module Op = Fadbad.OpFloat
 module F = Fadbad.F(Op)
 module BF = Fadbad.B(F)
@@ -21,7 +34,7 @@ type 'a diff2 =
   }
 
 
-module Func (Op : Fadbad.Op.S) =
+module Func (Op : Fadbad.OpS) =
   struct
     let exec x y =
       let open Op in
@@ -29,7 +42,7 @@ module Func (Op : Fadbad.Op.S) =
       (y * z) + (sin z)
   end
 
-module DFunc (Op : Fadbad.Op.S) =
+module DFunc (Op : Fadbad.OpS) =
   struct
     module B = Fadbad.B(Op)
     module Func = Func(B)
@@ -48,7 +61,7 @@ module DFunc (Op : Fadbad.Op.S) =
       }
   end
 
-module DDFunc (Op : Fadbad.Op.S) =
+module DDFunc (Op : Fadbad.OpS) =
   struct
     module F = Fadbad.F(Op)
     module DFunc = DFunc(F)

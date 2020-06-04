@@ -242,7 +242,7 @@ struct
     let new_history = next_res :: step_params.history in
 
     let next_res, next_history =
-      if Optim_globals.params.meth.gd.do_restart then begin
+      if Optim_globals.params.meth.gd.do_restart && not step_params.online then begin
         if eq_float_array next_sample cur_sample then begin
           let new_sample = ur_sample Optim_globals.params.bounds in
           let new_val, new_grad = fn next_sample in

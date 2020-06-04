@@ -1,0 +1,114 @@
+open MyOp
+open Scope
+
+open Discrete_obs_fad
+
+(* AT5 *)
+node phi5 geari (tstep, gear) =
+    let start = q_true fby q_false in
+    let switch = q_and(q_not start, q_up (q_eqi (gear, make geari))) in
+    always_timed 30.
+        (make tstep,
+            alwaysBfromA_timed 2.5 (make tstep, switch, q_eqi(gear, make geari)))
+
+node phi51 (tstep, gear) = phi5 1. (tstep, gear)
+node phi52 (tstep, gear) = phi5 2. (tstep, gear)
+node phi53 (tstep, gear) = phi5 3. (tstep, gear)
+node phi54 (tstep, gear) = phi5 4. (tstep, gear)
+
+
+node autotransd tstep (times, inp) = () where
+    rec n = 0 fby (Stdlib.( + ) n 1)
+    and cur_inp = Array.get inp n
+    and t = Array.get times n
+    and throttle = Array.get cur_inp 0
+    and brake = Array.get cur_inp 1
+    and rpm = Array.get cur_inp 2
+    and gear = Array.get cur_inp 3
+    and speed = Array.get cur_inp 4
+    and rob = Array.get cur_inp 5
+
+    and up_th = Common_myop.lookup_interpup(throttle, gear)
+    and dn_th = Common_myop.lookup_interpdn(throttle, gear)
+
+    and () =
+        let s1 = scope2(0., 350., ("throttle", linear, get throttle),
+                                  ("brake", linear, get brake))
+        and s2 = scope2(0., 5000., ("rpm", linear, get rpm),
+                                   ("4750", linear, 4750.))
+        and s3 = scope (0., 4., ("gear", linear, get gear))
+        and s4 = scope4(0., 130., ("speed", linear, get speed),
+                        ("up_th", linear, get up_th), ("dn_th", linear, get dn_th),
+                        ("120", linear, 120.))
+        and s5 = scope2(-4., 4., ("rob", linear, get rob),
+                                 ("", linear, 0.)) in
+        window5("Autotrans", 30., t, s1, s2, s3, s4, s5)
+
+open Node
+
+discrete print_status (t, h, status) =
+    print_string ("h=" ^ (string_of_float h) ^ ", cur_t=" ^ (string_of_float t) ^ ": ");
+    match status with
+    | Interpolate -> print_endline "Interpolate"
+    | Success f -> print_endline ("Success " ^ (string_of_float f))
+    | RootsFound -> print_endline "RootsFound"
+    | Horizon f -> print_endline ("Horizon " ^ (string_of_float f))
+    | Cascade -> print_endline "Cascade"
+    | StopTimeReached -> print_endline "StopTimeReached"
+    | TimeHasPassed -> print_endline "TimeHasPassed"
+    | Error -> print_endline "Error"
+
+node autotransc max_t tstep (times, inp) = () where
+    rec init cur_t = 0.
+    and cur_inp = Replay.interp times inp cur_t
+    and throttle = get (Array.get cur_inp 0)
+    and brake = get (Array.get cur_inp 1)
+    and rpm = get (Array.get cur_inp 2)
+    and gear = get (Array.get cur_inp 3)
+    and speed = get (Array.get cur_inp 4)
+    and rob = get (Array.get cur_inp 5)
+
+    and init h = 0. (* next horizon *)
+
+    and { time = t; status = status; result = res } =
+        solve Autotransc.autotrans max_t (h, (throttle, brake))
+
+    (* when to draw stuff on screen*)
+    and tick =
+    present (true fby false) | (match status with
+    | Interpolate | TimeHasPassed -> true
+    | _ -> false) -> (t, res)
+
+    (* print_stuff *)
+    (* and () = print_status (cur_t, h, status) *)
+
+    and present tick(t, (rpm_, gear_, speed_)) ->
+    local rob_, up_th, dn_th, s1, s2, s3, s4, s5
+    do
+        (* advance horizon and update actual t *)
+        next h = if (make t >= make h) then h +. tstep else h
+        and next cur_t = t
+
+        and rob_ = MyOp.get (phi51 (tstep, MyOp.make gear_))
+
+        (* tmp *)
+        and up_th = Common.lookup_interpup(throttle, gear_)
+        and dn_th = Common.lookup_interpdn(throttle, gear_)
+
+        (* plot *)
+        and s1 = scope2(0., 350., ("throttle", linear, throttle),
+                                  ("brake", linear, brake))
+        and s2 = scope3(0., 5000., ("replay rpm", linear, rpm),
+                                   ("actual rpm", linear, rpm_),
+                                   ("4750", linear, 4750.))
+        and s3 = scope2(0., 4., ("replay gear", linear, gear),
+                                ("actual gear", linear, gear_))
+        and s4 = scope5(0., 130., ("replay speed", linear, speed),
+                        ("actual speed", linear, speed_),
+                        ("up_th", linear, up_th), ("dn_th", linear, dn_th),
+                        ("120", linear, 120.))
+        and s5 = scope3(-4., 4., ("replay rob", linear, rob),
+                                 ("actual rob", linear, rob_),
+                                 ("", linear, 0.))
+        and () = window5("Autotrans", 30., t, s1, s2, s3, s4, s5)
+    done

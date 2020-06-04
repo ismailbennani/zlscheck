@@ -13,14 +13,17 @@ struct
 
   let name = OptimAlg.name
 
+  let optim_mode = ref Falsify
+
   let mk_step_params init_res = {
-      online = false;
-      n_runs = 1;
-      history = [init_res];
-      best_result = init_res;
-      last_result = init_res;
-      optim_step = OptimAlg.mk_step_params ();
-    }
+    online = false;
+    mode = !optim_mode;
+    n_runs = 1;
+    history = [init_res];
+    best_result = init_res;
+    last_result = init_res;
+    optim_step = OptimAlg.mk_step_params ();
+  }
 
   let get_rob_from_output = OptimAlg.get_rob_from_output
 
@@ -35,9 +38,9 @@ struct
 
     if ((not step_params.online) &&
         step_params.n_runs >= Optim_globals.params.max_n_runs) ||
-       (Optim_globals.params.mode = Falsify &&
+       (step_params.mode = Falsify &&
         get_rob_from_output (snd step_params.best_result) < 0.) then
-      true
+        true
     else
       let (old_best_inp, old_best_out) = step_params.best_result in
       OptimAlg.step step_params incr_runs fn;
@@ -73,9 +76,9 @@ struct
 
 
   let falsify fn =
-    Optim_globals.params.mode <- Falsify; run fn
+    optim_mode := Falsify; run fn
   let minimize fn =
-    Optim_globals.params.mode <- Minimize; run fn
+    optim_mode := Minimize; run fn
 end
 
 module type S = S

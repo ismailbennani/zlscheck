@@ -5,10 +5,17 @@ module Make (Bench : Bench) =
 struct
   module Optim = Bench.Optim
 
-  let name = Bench.name ^ " - offline"
-  let dump_folder = match Bench.dump_path with
-    | None -> None
-    | Some dump_path -> Some (make_dump_folder dump_path)
+  let name = Bench.name ^ " - offline - " ^ Optim.name
+  let bench_name = Bench.name
+  let prop_name_in_matlab = Bench.prop_name_in_matlab
+
+  let dump_path = ref (Some Bench.dump_path)
+  let dump_folder = ref (Some "")
+  let matlab_path = ref Bench.matlab_path
+
+  let print_optim_params ff () =
+    Printf.fprintf ff "Optim:\n%s\n"
+      (Optim.string_of_params Optim_globals.params)
 
   let wrap (Node { alloc; step; reset }) (control_points: float array) : float * float array =
 
@@ -18,7 +25,7 @@ struct
 
     let inputs = Bench.interp_fn cp_fad in
 
-    let fd = match Bench.dump_path with
+    let fd = match !dump_folder with
       | None -> None
       | Some _ -> Some (make_tmp_dump ())
     in
@@ -26,52 +33,47 @@ struct
     let mem = alloc () in
     reset mem;
 
-    let rec aux mem last_t =
-      (* we are currently at time last_t and we want to compute next step *)
-      let cur_inp = inputs last_t in
+    let rec aux mem t =
+      (* we are currently at time t and we want to compute next step *)
+      let cur_inp = inputs t in
+      let next_t, cur_out, rob = step mem cur_inp in
 
       begin match fd with
         | None -> ()
         | Some (_, dump_fd) ->
-          Printf.fprintf dump_fd "%f,%s\n" last_t
-            (String.concat ","
-               (Array.to_list
-                  (Array.map
-                     (fun fad_f -> Printf.sprintf "%f" (MyOp.get fad_f))
-                     cur_inp)))
+          Printf.fprintf dump_fd "%f,%s,%s,%g\n" t
+            (string_of_op_t_arr cur_inp) (string_of_op_t_arr cur_out)
+            (MyOp.get rob)
       end;
 
-      let t, cur_out = step mem cur_inp in
-
-      (* Printf.printf "------ t=%g\nZc:\n" t;
-         List.map (fun id -> Printf.printf "\t%s: %g\n\t\tgrads: %a\n"
-                   (Zc.name id) (MyOp.get (Zc.value id))
-                   print_grads (Zc.value id))
-         (Zc.ids ());
-         print_newline (); *)
-
-      if t >= Bench.max_t then cur_out
-      else aux mem t
+      if t >= Bench.max_t then rob
+      else aux mem next_t
     in
     let final_out = aux mem 0. in
     let rob = MyOp.get final_out in
     let grad = Array.init n_inputs (fun i -> MyOp.d final_out i) in
 
-    if rob < 0. then
-      begin match fd with
-        | None -> ()
-        | Some (temp_path, temp_fd) ->
-          close_out temp_fd;
-          let Some dump_folder = dump_folder in
+    begin match fd with
+      | None -> ()
+      | Some (temp_path, temp_fd) ->
+        close_tmp_dump (temp_path, temp_fd);
+        if rob < 0. then
+          let Some dump_folder = !dump_folder in
           ignore(Unix.system ("mv " ^ temp_path ^ " " ^ dump_folder))
-      end;
+    end;
 
     rob, grad
 
   let run () =
-    begin match dump_folder with
+    dump_folder :=
+      begin match !dump_path with
+      | None -> None
+      | Some path -> Some (make_dump_folder path name);
+      end;
+
+    begin match !dump_folder with
     | None -> ()
-    | Some dump_folder -> ignore(Unix.system ("mkdir -p " ^ dump_folder))
+    | Some dump_folder -> ignore(Unix.system ("mkdir -p " ^ dump_folder));
     end;
 
     Bench.set_optim_params ();

@@ -2,7 +2,6 @@ open Optim_types
 
 let params = {
   max_n_runs = 500;
-  mode = Optim_types.Falsify;
   bounds = [||];
   init_sample = None;
   vverbose = false;
@@ -33,7 +32,6 @@ let params = {
 
 let set_params p =
   params.max_n_runs <- p.max_n_runs;
-  params.mode <- p.mode;
   params.bounds <- p.bounds;
   params.init_sample <- p.init_sample;
   params.verbose <- p.verbose;

@@ -2,6 +2,7 @@ type optim_mode = Falsify | Minimize
 
 type ('a, 'b) step_params = {
   mutable online : bool;
+  mutable mode: optim_mode;
   mutable n_runs : int;
   mutable history : 'b list;
   mutable best_result : 'b;
@@ -43,7 +44,6 @@ type method_params = {
 
 type params = {
   mutable max_n_runs: int;
-  mutable mode: optim_mode;
   mutable bounds: (float * float) array;
   mutable init_sample: float array option;
   mutable verbose: bool;

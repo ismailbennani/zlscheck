@@ -1,7 +1,7 @@
 include ../config
 
-FADBAD = ../lib/fadbad.cma
-INCLUDES += -I ../lib/ fadbad.cma
+FADBAD = ../src/fadbad.cma
+INCLUDES += -I ../src/ fadbad.cma
 
 EXAMPLES = \
 	exampleFAD.byte \
@@ -21,16 +21,20 @@ EXAMPLES = \
 
 all: $(EXAMPLES)
 
+$(EXAMPLES): $(FADBAD)
+
 exampleBrusselator.byte: INCLUDES += graphics.cma unix.cma
 brusselator.tmp: exampleBrusselator.byte
 	./exampleBrusselator.byte -notad -n 20000 -o brusselator.tmp
 brusselator.png: brusselator.tmp
 	gnuplot -e "set key autotitle columnhead; set terminal png size 800,800; set output '$@'; plot '$<' using 2:3"
 
+$(FADBAD):
+	$(MAKE) -C ../src/
+
 clean:
 	rm -rf *.cm[ixo] *.byte .depend
 	rm -rf *.tmp *.png
-	$(MAKE) -C synchronous clean
 	$(MAKE) -C reachability clean
 
 cleanall: clean
