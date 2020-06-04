@@ -70,6 +70,7 @@ export:
 clean:
 	-@rm -f autotransc_main.ml autotransc.ml
 	-@rm -f autotransd_main.ml autotransd.ml
+	-@rm -f autotransd_modes_main.ml autotransd_modes.ml
 	-@rm -f common.ml
 	-@rm -f *.o *.cm[oix] *.annot *.obc *.zci
 

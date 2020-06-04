@@ -26,7 +26,7 @@ let string_of_op_t v = string_of_float (get v)
 
 let node integrate_and_saturate(t, dx, x0, xmin, xmax) = x where
   rec timestep = t -> (t - pre t)
-  and aux = x0 -> (pre aux + dx * timestep)
+  and aux = x0 -> (pre x + dx * timestep)
   and x = max xmin (min xmax aux)
 
 (** algorithm **)
@@ -132,14 +132,13 @@ let node vehicle(t, out_torque, brake_torque) = (speed, trans_rpm) where
   and trans_rpm = scale wheel_speed Common_myop.p_final_drive_ratio
   and speed = mph
 
-open Scope
-
 let node autotrans(t, (throttle, brake_torque)) = (rpm, gear, speed), rob where
   rec rpm = engine(t, ti, throttle)
   and gear, rob = shiftlogic(t, speed, throttle)
   and ti, out_torque = Common_myop.transmission(pre rpm, gear, pre trans_rpm)
   and speed, trans_rpm = vehicle(t, out_torque, brake_torque)
 
+open Scope
 open Discrete_obs_fad
 
 (* AT2:  □_[0.0, 10.0] (RPM < 4750.0) *)
