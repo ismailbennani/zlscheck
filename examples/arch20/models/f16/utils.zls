@@ -1,100 +1,33 @@
 open Constants
 open Matrix
+open Mlutils
+
+let node euler (x0, dx, h) = y where
+    rec y = x0 fby (y +. h *. dx)
+
+let node integrate (x0, dx, h) = y where
+    rec y = x0 fby (y +. h *. dx)
 
 let saturate (x, low, high) = max (min x high) low
 let discrete round f =
     let frac, i = modf f in if frac >= 0.5 then i +. 1. else i
 
-let hybrid hybrid_round x = round_x where
-    rec init ceil_x = ceil x
-    and init floor_x = floor x
-    and init round_x = round x
-    and present up(x -. ceil_x) | up(floor_x -. x) -> do
-        ceil_x = ceil x and floor_x = floor x and round_x = round x
-    done
-
-let hybrid pdot(p3, p1) =
+let node pdot(p3, p1) =
     let t, p2 =
-    (*
-       TR = Top Right     p1 >= 50 & p3 >= 50
-       TL = Top Left      p1 <  50 & p3 >= 50
-       BR = Bottom Right  p1 >= 50 & p3 <  50
-       BL = Bottom Left   p1 <  50 & p3 <  50
-    *)
-        automaton
-        | I ->
-            do
-                let init res =
-                    if p1 >= 50. then
-                        if p3 >= 50. then
-                            (5., p1)
-                        else
-                            (Mlutils.rtau(60. -. p3), 60.)
-                    else
-                        if p3 >= 50. then
-                            (5., 40.)
-                        else
-                            (Mlutils.rtau(p1 -. p3), p1)
-                in res
-            until (init) on (p1 >= 50. && p3 >= 50.) then TR
-            else (init) on (p1 <  50. && p3 >= 50.) then TL
-            else (init) on (p1 >= 50. && p3 <  50.) then BR
-            else (init) on (p1 <  50. && p3 <  50.) then BL
+        if p1 >= 50. then
+            if p3 >= 50. then
+                (5., p1)
+            else
+                (rtau(60. -. p3), 60.)
+        else
+            if p3 >= 50. then
+                (5., 40.)
+            else
+                (rtau(p1 -. p3), p1)
+    in t *. (p2 -. p3)
 
-        | TL -> do (5., 40.)
-                until up(p1 -. 50.) on (p3 < 50.)
-                    | up(50. -. p3) on (p1 >= 50.) then BR
-                else up(p1 -. 50.) on (p3 >= 50.) then TR
-                else up(50. -. p3) on (p1 < 50.) then BL
-                else (disc p1) on (p1 >= 50. && p3 >= 50.)
-                   | (disc p3) on (p1 >= 50. && p3 >= 50.) then TR
-                else (disc p1) on (p1 <  50. && p3 >= 50.)
-                   | (disc p3) on (p1 <  50. && p3 >= 50.) then TL
-                else (disc p1) on (p1 >= 50. && p3 <  50.)
-                   | (disc p3) on (p1 >= 50. && p3 <  50.) then BR
-                else (disc p1) on (p1 <  50. && p3 <  50.)
-                   | (disc p3) on (p1 <  50. && p3 <  50.) then BL
-        | TR -> do (5., p1)
-                until up(50. -. p1) on (p3 < 50.)
-                    | up(50. -. p3) on (p1 < 50.)  then BL
-                else up(50. -. p1) on (p3 >= 50.) then TL
-                else up(50. -. p3) on (p1 >= 50.) then BR
-                else (disc p1) on (p1 >= 50. && p3 >= 50.)
-                   | (disc p3) on (p1 >= 50. && p3 >= 50.) then TR
-                else (disc p1) on (p1 <  50. && p3 >= 50.)
-                   | (disc p3) on (p1 <  50. && p3 >= 50.) then TL
-                else (disc p1) on (p1 >= 50. && p3 <  50.)
-                   | (disc p3) on (p1 >= 50. && p3 <  50.) then BR
-                else (disc p1) on (p1 <  50. && p3 <  50.)
-                   | (disc p3) on (p1 <  50. && p3 <  50.) then BL
-        | BL -> do (Mlutils.rtau(p1 -. p3), p1)
-                until up(p1 -. 50.) on (p3 < 50.) then BR
-                else up(p1 -. 50.) on (p3 >= 50.)
-                   | up(p3 -. 50.) on (p1 >= 50.) then TR
-                else up(p3 -. 50.) on (p1 < 50.) then TL
-                else (disc p1) on (p1 >= 50. && p3 >= 50.)
-                   | (disc p3) on (p1 >= 50. && p3 >= 50.) then TR
-                else (disc p1) on (p1 <  50. && p3 >= 50.)
-                   | (disc p3) on (p1 <  50. && p3 >= 50.) then TL
-                else (disc p1) on (p1 >= 50. && p3 <  50.)
-                   | (disc p3) on (p1 >= 50. && p3 <  50.) then BR
-                else (disc p1) on (p1 <  50. && p3 <  50.)
-                   | (disc p3) on (p1 <  50. && p3 <  50.) then BL
-        | BR -> do (Mlutils.rtau(60. -. p3), 60.)
-                until up(50. -. p1) on (p3 < 50.) then BL
-                else up(50. -. p1) on (p3 >= 50.)
-                   | up(p3 -. 50.) on (p1 < 50.) then TL
-                else up(p3 -. 50.) on (p1 >= 50.) then TR
-                else (disc p1) on (p1 >= 50. && p3 >= 50.)
-                   | (disc p3) on (p1 >= 50. && p3 >= 50.) then TR
-                else (disc p1) on (p1 <  50. && p3 >= 50.)
-                   | (disc p3) on (p1 <  50. && p3 >= 50.) then TL
-                else (disc p1) on (p1 >= 50. && p3 <  50.)
-                   | (disc p3) on (p1 >= 50. && p3 <  50.) then BR
-                else (disc p1) on (p1 <  50. && p3 <  50.)
-                   | (disc p3) on (p1 <  50. && p3 <  50.) then BL
-        in t *. (p2 -. p3)
-
+(* warning, morellif16 is NOT subf16_morelli.m but Morellif16.m
+   subf16_morelli.m is implemented in subf16_model.zls in node derivatives *)
 let morellif16(alpha, beta, de, da, dr, p, q, r, cbar, b, v, xcg, xcgref) =
     cx, cy, cz, cl, cm, cn where rec
 
@@ -231,4 +164,17 @@ let morellif16(alpha, beta, de, da, dr, p, q, r, cbar, b, v, xcg, xcgref) =
     and cm = cm0 +. cmq *. qhat +. cz *. (xcgref -. xcg)
     and cn = cn0 +. cnp *. phat +. cnr *. rhat +. cnda *. da +. cndr *. dr -.
              cy *. (xcgref -. xcg) *. (cbar /. b)
+    done
+
+let stevensf16(alpha, beta, el, ail, rdr) =
+    cxt, cyt, czt, clt, cmt, cnt where rec
+    let dail = ail /. 20.
+    and drdr = rdr /. 30. in
+    do
+        cxt = cx(alpha, el)
+    and cyt = cy(beta, ail, rdr)
+    and czt = cz(alpha, beta, el)
+    and clt = cl(alpha, beta) +. dlda(alpha, beta) *. dail +. dldr(alpha, beta) *. drdr
+    and cmt = cm(alpha, el)
+    and cnt = cn(alpha, beta) +. dnda(alpha, beta) *. dail +. dndr(alpha, beta) *. drdr
     done

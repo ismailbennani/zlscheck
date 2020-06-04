@@ -1,27 +1,16 @@
-include ../../config
+include ../../../../config
 
-ZELUC = zeluc
-ZLLIB = `zeluc -where`
+ZELUCFLAGS += -noreduce -I ../../common -I ../
+INCLUDES += -I $(CHECKLIB) zlscheck.cmxa -I ../ -I ../../common myOp.cmx discrete_obs_fad.cmx
 
-default: run_controlledf16.byte
+default: run_controlledf16.opt
 
-%.ml %.zci: %.zls
-	$(ZELUC) $<
-%.cmo:%.ml
-
-%.byte: ZLEXTRALIBS=$(ZLGTKLIBS)
-%.byte: ZELUCFLAGS=-gtk2
-%.byte: %.ml
-	$(OCAMLC) $(OCAMLFLAGS) -o $@ \
-	    -I $(ZLLIB) $(ZLSTDLIBS) $(ZLEXTRALIBS) \
-			$(INCLUDES) \
-	    $< $(<:.ml=_main.ml)
 %.opt: ZLEXTRALIBS=$(ZLGTKLIBS)
-%.opt: ZELUCFLAGS=-gtk2
+%.opt: ZELUCFLAGS+=-gtk2
 %.opt: %.ml
 	$(OCAMLOPT) $(OCAMLOPTFLAGS) -o $@ \
 	    -I $(ZLLIB) $(ZLSTDLIBS:.cma=.cmxa) $(ZLEXTRALIBS:.cma=.cmxa) \
-			$(INCLUDES) \
+			$(INCLUDES:.cma=.cmxa) \
 	    $< $(<:.ml=_main.ml)
 
 %_main.ml: %.zls
@@ -29,66 +18,41 @@ default: run_controlledf16.byte
 
 # dependencies
 
-utilsDeps = constants.cmo matrix.cmo mlutils.cmo
-utils.ml: $(utilsDeps:.cmo=.zci)
-utils.cmo: $(utilsDeps)
+utilsDeps = constants.cmx matrix.cmx mlutils.cmx
+utils.ml: $(utilsDeps:.cmx=.zci)
+utils.cmx: $(utilsDeps)
 
-subf16_modelDeps = constants.cmo types.cmo mlutils.cmo utils.cmo
-subf16_model.ml: $(subf16_modelDeps:.cmo=.zci)
-subf16_model.cmo: $(subf16_modelDeps)
+subf16_modelDeps = constants.cmx types.cmx mlutils.cmx utils.cmx
+subf16_model.ml: $(subf16_modelDeps:.cmx=.zci)
+subf16_model.cmx: $(subf16_modelDeps)
 
-lowLevelControllerDeps = constants.cmo types.cmo matrix.cmo mlutils.cmo utils.cmo
-lowLevelController.ml: $(lowLevelControllerDeps:.cmo=.zci)
-lowLevelController.cmo: $(lowLevelControllerDeps)
+lowLevelControllerDeps = constants.cmx types.cmx matrix.cmx mlutils.cmx utils.cmx
+lowLevelController.ml: $(lowLevelControllerDeps:.cmx=.zci)
+lowLevelController.cmx: $(lowLevelControllerDeps)
 
-gcasAutopilotDeps = constants.cmo mlutils.cmo utils.cmo types.cmo
-gcasAutopilot.ml: $(gcasAutopilotDeps:.cmo=.zci)
-gcasAutopilot.cmo: $(gcasAutopilotDeps)
+gcasAutopilotDeps = constants.cmx mlutils.cmx utils.cmx types.cmx
+gcasAutopilot.ml: $(gcasAutopilotDeps:.cmx=.zci)
+gcasAutopilot.cmx: $(gcasAutopilotDeps)
 
-controlledf16Deps = constants.cmo types.cmo gcasAutopilot.cmo lowLevelController.cmo \
-							      subf16_model.cmo
-controlledf16.ml: $(controlledf16Deps:.cmo=.zci)
-controlledf16.cmo: $(controlledf16Deps)
+controlledf16Deps = constants.cmx types.cmx gcasAutopilot.cmx lowLevelController.cmx \
+							      subf16_model.cmx
+controlledf16.ml: $(controlledf16Deps:.cmx=.zci)
+controlledf16.cmx: $(controlledf16Deps)
 
-run_controlledf16Deps = constants.cmo types.cmo matrix.cmo mlutils.cmo utils.cmo gcasAutopilot.cmo \
-											 lowLevelController.cmo subf16_model.cmo \
-											 controlledf16.cmo
-run_controlledf16.ml run_controlledf16_main.ml: $(run_controlledf16Deps:.cmo=.zci)
-run_controlledf16.cmo: $(run_controlledf16Deps)
-run_controlledf16.byte: INCLUDES += $(run_controlledf16Deps)
-run_controlledf16.byte: $(run_controlledf16Deps) run_controlledf16_main.ml
-run_controlledf16.opt: INCLUDES += $(run_controlledf16Deps:.cmo=.cmx)
-run_controlledf16.opt: $(run_controlledf16Deps:.cmo=.cmx) run_controlledf16_main.ml
+run_controlledf16Deps = constants.cmx types.cmx matrix.cmx mlutils.cmx utils.cmx gcasAutopilot.cmx \
+											 lowLevelController.cmx subf16_model.cmx \
+											 controlledf16.cmx
+run_controlledf16.ml run_controlledf16_main.ml: $(run_controlledf16Deps:.cmx=.zci)
+run_controlledf16.cmx: $(run_controlledf16Deps)
+run_controlledf16.opt: INCLUDES += $(run_controlledf16Deps:.cmx=.cmx)
+run_controlledf16.opt: $(run_controlledf16Deps:.cmx=.cmx) run_controlledf16_main.ml
 
-test_controlledf16Deps = constants.cmo types.cmo matrix.cmo mlutils.cmo utils.cmo gcasAutopilot.cmo \
-											 lowLevelController.cmo subf16_model.cmo \
-											 controlledf16.cmo
-test_controlledf16.ml: $(test_controlledf16Deps:.cmo=.zci)
-test_controlledf16.ml: ZLEXTRALIBS=zllib.cma
-test_controlledf16.ml: ZELUCFLAGS=-I ../../src/S-Taliro
-test_controlledf16.cmo: $(test_controlledf16Deps)
-test_controlledf16.cmo: INCLUDES += $(test_controlledf16Deps) -I ../../src/S-Taliro staliro_global.cmo
-test_controlledf16.cmo: $(test_controlledf16Deps)
-test_controlledf16.cmx: INCLUDES += $(test_controlledf16Deps:.cmo=.cmx)
-test_controlledf16.cmx: $(test_controlledf16Deps:.cmo=.cmx)
-
-run_subf16_modelDeps = constants.cmo types.cmo matrix.cmo mlutils.cmo utils.cmo \
-											 subf16_model.cmo
-run_subf16_model.ml run_subf16_model_main.ml: $(run_subf16_modelDeps:.cmo=.zci)
-run_subf16_model.cmo: $(run_subf16_modelDeps)
-run_subf16_model.byte: INCLUDES += $(run_subf16_modelDeps)
-run_subf16_model.byte: $(run_subf16_modelDeps) run_subf16_model_main.ml
-run_subf16_model.opt: INCLUDES += $(run_subf16_modelDeps:.cmo=.cmx)
-run_subf16_model.opt: $(run_subf16_modelDeps:.cmo=.cmx) run_subf16_model_main.ml
-
-run_sa.byte: run_sa.ml test_controlledf16.cmo
-	$(OCAMLC) $(OCAMLFLAGS) -o $@ \
-	    -I $(ZLLIB) $(ZLSTDLIBS) $(ZLEXTRALIBS) \
-			-I ../../src sim.cmo \
-			-I ../../src/sampling sampler.cmo \
-			-I ../../src/S-Taliro staliro_global.cmo staliro_types.cmo staliro_utils.cmo SA_Taliro.cmo \
-			$(test_controlledf16Deps) test_controlledf16.cmo \
-			run_sa.ml
+run_subf16_modelDeps = constants.cmx types.cmx matrix.cmx mlutils.cmx utils.cmx \
+											 subf16_model.cmx
+run_subf16_model.ml run_subf16_model_main.ml: $(run_subf16_modelDeps:.cmx=.zci)
+run_subf16_model.cmx: $(run_subf16_modelDeps)
+run_subf16_model.opt: INCLUDES += $(run_subf16_modelDeps:.cmx=.cmx)
+run_subf16_model.opt: $(run_subf16_modelDeps:.cmx=.cmx) run_subf16_model_main.ml
 
 clean:
 	-@rm -rf types.ml
@@ -98,7 +62,6 @@ clean:
 	-@rm -rf subf16_model.ml
 	-@rm -rf run_subf16_model.ml run_subf16_model_main.ml
 	-@rm -rf run_controlledf16.ml run_controlledf16_main.ml
-	-@rm -rf test_controlledf16.ml test_controlledf16_main.ml
 	-@rm -rf utils.ml
 	-@rm -rf *.annot *.zci *.cm[iox]
 

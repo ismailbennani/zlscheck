@@ -4,3 +4,14 @@ val tgear : float -> float
 val thrust : float * float * float -> float
 val dampp : float -> float * float * float * float * float * float * float * float * float
 val rtau : float -> float
+
+val cx : float * float -> float
+val cy : float * float * float -> float
+val cz : float * float * float -> float
+val cl : float * float -> float
+val cm : float * float -> float
+val cn : float * float -> float
+val dlda : float * float -> float
+val dldr : float * float -> float
+val dnda : float * float -> float
+val dndr : float * float -> float

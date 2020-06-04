@@ -4,10 +4,10 @@ open Types
 (* change autopilot by opening another one *)
 open GcasAutopilot
 
-let hybrid derivatives (state, ctrlLimits) =
+let node derivatives (tstep, state, ctrlLimits) =
     let autopilot_state, _ =
         state_logic
-            (state.f16.alpha, state.f16.phi, state.f16.theta, state.f16.p)
+            (tstep, state.f16.alpha, state.f16.phi, state.f16.theta, state.f16.p)
     in
     let u_ref =
         get_u_ref
@@ -41,28 +41,28 @@ let hybrid derivatives (state, ctrlLimits) =
         ny_r = ny_rd;
     }
 
-let hybrid model (initial_cond, ctrlLimits) = u, u_ref, x, xd where
+let node model (tstep, initial_cond, ctrlLimits) = u, u_ref, x, xd where
     rec f16_state = {
         vt = vt; alpha = alpha; beta = beta; phi = phi; theta = theta;
         psi = psi; p = p; q = q; r = r; x9 = x9;
         x10 = x10; alt = alt; power = power;
     }
     and x = { f16 = f16_state; nz = nz; ps = ps; ny_r = ny_r; }
-    and u, u_ref, xd = derivatives (x, ctrlLimits)
+    and u, u_ref, xd = derivatives (tstep, x, ctrlLimits)
 
-    and der vt = xd.f16.vt init initial_cond.f16.vt
-    and der alpha = xd.f16.alpha init initial_cond.f16.alpha
-    and der beta = xd.f16.beta init initial_cond.f16.beta
-    and der phi = xd.f16.phi init initial_cond.f16.phi
-    and der theta = xd.f16.theta init initial_cond.f16.theta
-    and der psi = xd.f16.psi init initial_cond.f16.psi
-    and der p = xd.f16.p init initial_cond.f16.p
-    and der q = xd.f16.q init initial_cond.f16.q
-    and der r = xd.f16.r init initial_cond.f16.r
-    and der x9 = xd.f16.x9 init initial_cond.f16.x9
-    and der x10 = xd.f16.x10 init initial_cond.f16.x10
-    and der alt = xd.f16.alt init initial_cond.f16.alt
-    and der power = xd.f16.power init initial_cond.f16.power
-    and der nz = xd.nz init initial_cond.nz
-    and der ps = xd.ps init initial_cond.ps
-    and der ny_r = xd.ny_r init initial_cond.ny_r
+    and vt = Utils.integrate(initial_cond.f16.vt, xd.f16.vt, tstep)
+    and alpha = Utils.integrate(initial_cond.f16.alpha, xd.f16.alpha, tstep)
+    and beta = Utils.integrate(initial_cond.f16.beta, xd.f16.beta, tstep)
+    and phi = Utils.integrate(initial_cond.f16.phi, xd.f16.phi, tstep)
+    and theta = Utils.integrate(initial_cond.f16.theta, xd.f16.theta, tstep)
+    and psi = Utils.integrate(initial_cond.f16.psi, xd.f16.psi, tstep)
+    and p = Utils.integrate(initial_cond.f16.p, xd.f16.p, tstep)
+    and q = Utils.integrate(initial_cond.f16.q, xd.f16.q, tstep)
+    and r = Utils.integrate(initial_cond.f16.r, xd.f16.r, tstep)
+    and x9 = Utils.integrate(initial_cond.f16.x9, xd.f16.x9, tstep)
+    and x10 = Utils.integrate(initial_cond.f16.x10, xd.f16.x10, tstep)
+    and alt = Utils.integrate(initial_cond.f16.alt, xd.f16.alt, tstep)
+    and power = Utils.integrate(initial_cond.f16.power, xd.f16.power, tstep)
+    and nz = Utils.integrate(initial_cond.nz, xd.nz, tstep)
+    and ps = Utils.integrate(initial_cond.ps, xd.ps, tstep)
+    and ny_r = Utils.integrate(initial_cond.ny_r, xd.ny_r, tstep)

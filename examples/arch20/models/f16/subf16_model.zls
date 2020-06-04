@@ -3,7 +3,7 @@ open Mlutils
 open Utils
 open Types
 
-let hybrid derivatives(state, inp) = res, ny, nz where
+let node derivatives(state, inp) = res, ny, nz where
     (* State variables in state
         0   vt = air speed, VT    (ft/sec)
         1   alpha = angle of attack, alpha  (rad)
@@ -32,10 +32,9 @@ let hybrid derivatives(state, inp) = res, ny, nz where
         ny = side acceleration
         nz = upward acceleration
     *)
-  rec der time = 1. init 0.
 
   (* air data computer and engine model *)
-  and amach, qbar = adc(state.vt, state.alt)
+  rec amach, qbar = adc(state.vt, state.alt)
   and cpow = tgear(inp.thtlc)
 
   and der_power = pdot(state.power, cpow)
@@ -53,9 +52,13 @@ let hybrid derivatives(state, inp) = res, ny, nz where
     cnt is a sum of the yawing moment coefficients
   *)
   and cxt, cyt, czt, clt, cmt, cnt =
+    stevensf16(state.alpha *. rtod, state.beta *. rtod, inp.el, inp.ail, inp.rdr)
+  (* and cxt, cyt, czt, clt, cmt, cnt =
     morellif16(state.alpha, state.beta, inp.el *. dtor, inp.ail *. dtor,
                inp.rdr *. dtor, state.p, state.q, state.r, cbar, b, state.vt,
-               xcg, xcgr)
+               xcg, xcgr) *)
+
+
 
   (* add damping derivatives *)
   and tvt = 0.5 /. state.vt
@@ -153,7 +156,7 @@ let hybrid derivatives(state, inp) = res, ny, nz where
       x9 = der_x9; x10 = der_x10; alt = der_alt; power = der_power;
   }
 
-let hybrid model (init_cond, inp) = x, xd, ny, nz where
+let node model (tstep, init_cond, inp) = x, xd, ny, nz where
     rec x = {
         vt = vt; alpha = alpha; beta = beta; phi = phi;
         theta = theta; psi = psi; p = p; q = q; r = r;
@@ -161,16 +164,16 @@ let hybrid model (init_cond, inp) = x, xd, ny, nz where
     }
     and xd, ny, nz = derivatives(x, inp)
 
-    and der vt = xd.vt init init_cond.vt
-    and der alpha = xd.alpha init init_cond.alpha
-    and der beta = xd.beta init init_cond.beta
-    and der phi = xd.phi init init_cond.phi
-    and der theta = xd.theta init init_cond.theta
-    and der psi = xd.psi init init_cond.psi
-    and der p = xd.p init init_cond.p
-    and der q = xd.q init init_cond.q
-    and der r = xd.r init init_cond.r
-    and der x9 = xd.x9 init init_cond.x9
-    and der x10 = xd.x10 init init_cond.x10
-    and der alt = xd.alt init init_cond.alt
-    and der power = xd.power init init_cond.power
+    and vt = integrate (init_cond.vt, xd.vt, tstep)
+    and alpha = integrate (init_cond.alpha, xd.alpha, tstep)
+    and beta = integrate (init_cond.beta, xd.beta, tstep)
+    and phi = integrate (init_cond.phi, xd.phi, tstep)
+    and theta = integrate (init_cond.theta, xd.theta, tstep)
+    and psi = integrate (init_cond.psi, xd.psi, tstep)
+    and p = integrate (init_cond.p, xd.p, tstep)
+    and q = integrate (init_cond.q, xd.q, tstep)
+    and r = integrate (init_cond.r, xd.r, tstep)
+    and x9 = integrate (init_cond.x9, xd.x9, tstep)
+    and x10 = integrate (init_cond.x10, xd.x10, tstep)
+    and alt = integrate (init_cond.alt, xd.alt, tstep)
+    and power = integrate (init_cond.power, xd.power, tstep)

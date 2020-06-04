@@ -5,15 +5,49 @@ open Scope
 (* for printing and drawing *)
 let static tstep = 0.01
 
-let hybrid run_model () =
+(* initial cond (paper):
+    roll: [0.2pi, 0.2833pi] = [0.6283, 0.8900]
+    pitch: [-0.5pi, -0.54pi] = [-1.5708, -1.6965]
+    yaw: [0.25pi, 0.375pi] = [0.7854, 1.1781]
+*)
+(* initial cond (staliro):
+    roll: [0.2pi, 0.2833pi] = [0.6283, 0.8901]
+    pitch: [-0.4pi, -0.35pi] = [-1.2566, -1.0996]
+    yaw: [-0.375pi, -0.125pi] = [-1.1781, -0.3927]
+*)
+
+let node print_state (t, s) =
+    let init tmp =
+        print_endline "t\tvt\talpha\tbeta\tphi\ttheta\tpsi\tp\tq\tr\tpn\tpe\th\tpow\tint-e-Nz\tint-e-ps\tint-e-Ny-r"
+    in
+    print_float t; print_string "\t";
+    print_float s.f16.vt; print_string "\t";
+    print_float s.f16.alpha; print_string "\t";
+    print_float s.f16.beta; print_string "\t";
+    print_float s.f16.phi; print_string "\t";
+    print_float s.f16.theta; print_string "\t";
+    print_float s.f16.psi; print_string "\t";
+    print_float s.f16.p; print_string "\t";
+    print_float s.f16.q; print_string "\t";
+    print_float s.f16.r; print_string "\t";
+    print_float s.f16.x9; print_string "\t";
+    print_float s.f16.x10; print_string "\t";
+    print_float s.f16.alt; print_string "\t";
+    print_float s.f16.power; print_string "\t";
+    print_float s.nz; print_string "\t";
+    print_float s.ps; print_string "\t";
+    print_float s.ny_r; print_string "\t";
+    print_newline ()
+
+let node run_model () =
     let initial_cond_f16 = {
         vt = 540.;
         alpha = 2.1215 *. dtor; beta = 0.;
-        phi = 1.61686455757; theta = -0.347990119426; psi = -1.06805421104;
-        (* phi = pi /. 4.; theta = (-2. *. pi /. 5.); psi = -. pi /. 4.; *)
+        (* phi = 1.61686455757; theta = -0.347990119426; psi = -1.06805421104; *)
+        phi = 0.25 *. pi; theta = -0.38 *. pi; psi = -0.3 *. pi;
         p = 0.; q = 0.; r = 0.;
         x9 = 0.; x10 = 0.;
-        alt = 4000.; power = 9.;
+        alt = 4040.; power = 9.;
     } in
     let initial_cond = {
         f16 = initial_cond_f16;
@@ -22,75 +56,30 @@ let hybrid run_model () =
     let ctrlLimits = defaultCtrlLimits in
 
     let u, u_ref, state, state_der =
-        Controlledf16.model (initial_cond, ctrlLimits) in
+        Controlledf16.model (tstep, initial_cond, ctrlLimits) in
     u, state, state_der
 
 open Scope
-let hybrid main () =
-    let der t = 1. init 0. in
+let node main () =
+    let t = Utils.integrate(0., 1., tstep) in
     let u, state, state_der = run_model () in
 
-    present (period(tstep)) ->
-        let rec min_alt = state.f16.alt -> min (pre min_alt) state.f16.alt in
-        print_string ("Minimum altitude : " ^ (string_of_float min_alt) ^ "\r");
-        flush stdout;
-        let s1 = scope (0., 15000., ("altitude", linear, state.f16.alt)) in
-        let s2 = scopen(-90., 90., [
-                        ("Roll phi (deg)", linear, rtod *. state.f16.phi);
-                        ("Roll rate (deg/s)", linear, rtod *. state.f16.p);
-                        ("Pitch theta (deg)", linear, rtod *. state.f16.theta);
-                        ("Pitch rate (deg/s)", linear, rtod *. state.f16.q);
-                        ("Yaw psi (deg)", linear, rtod *. state.f16.psi);
-                        ("Yaw rate (deg/s)", linear, rtod *. state.f16.r)]) in
-        let s3 = scope2(-30., 50.,
-                        ("alpha (deg)", linear, rtod *. state.f16.alpha),
-                        ("beta (deg)", linear, rtod *. state.f16.beta)) in
-        let s4 = scope (0., 600.,
-                        ("vt (ft/sec)", linear, state.f16.vt)) in
-        window4("Controlled F16", 15., t, s1, s2, s3, s4)
-    else ()
+    let () = print_state (t, state) in
 
-(* open Dump
-let discrete dumplist_of_input input =
-    [
-        ("thtlc", linear, input.thtlc);
-        ("el", linear, input.el);
-        ("ail", linear, input.ail);
-        ("rdr", linear, input.rdr)
-    ]
-let discrete dumplist_of_f16state state =
-    [
-        ("vt", linear, state.vt);
-        ("alpha", linear, state.alpha);
-        ("beta", linear, state.beta);
-        ("phi", linear, state.phi);
-        ("theta", linear, state.theta);
-        ("psi", linear, state.psi);
-        ("p", linear, state.p);
-        ("q", linear, state.q);
-        ("r", linear, state.r);
-        ("x9", linear, state.x9);
-        ("x10", linear, state.x10);
-        ("alt", linear, state.alt);
-        ("power", linear, state.power)
-    ]
-let discrete dumplist_of_state state =
-    List.append (dumplist_of_f16state state.f16)
-        [
-            ("nz", linear, state.nz);
-            ("ps", linear, state.ps);
-            ("ny_r", linear, state.ny_r)
-        ]
-let discrete dumplist (input, state) =
-    List.concat [dumplist_of_input input; dumplist_of_state state]
-
-let hybrid main () =
-    let der t = 1. init 0. in
-    let u, state, state_der = run_model () in
-
-    present (period(tstep)) ->
-        let s = scopen(0., 1., dumplist (u, state)) in
-        let s_der = scopen(0., 1., dumplist (u, state_der)) in
-        window("state", 15., t, s);
-        window("state_der", 15., t, s_der)
-    else () *)
+    let rec min_alt = state.f16.alt -> min (pre min_alt) state.f16.alt in
+    (* print_string ("Minimum altitude : " ^ (string_of_float min_alt) ^ "\r");
+    flush stdout; *)
+    let s1 = scope (0., 15000., ("altitude", linear, state.f16.alt)) in
+    let s2 = scopen(-90., 90., [
+                    ("Roll phi (deg)", linear, rtod *. state.f16.phi);
+                    ("Roll rate (deg/s)", linear, rtod *. state.f16.p);
+                    ("Pitch theta (deg)", linear, rtod *. state.f16.theta);
+                    ("Pitch rate (deg/s)", linear, rtod *. state.f16.q);
+                    ("Yaw psi (deg)", linear, rtod *. state.f16.psi);
+                    ("Yaw rate (deg/s)", linear, rtod *. state.f16.r)]) in
+    let s3 = scope2(-30., 50.,
+                    ("alpha (deg)", linear, rtod *. state.f16.alpha),
+                    ("beta (deg)", linear, rtod *. state.f16.beta)) in
+    let s4 = scope (0., 600.,
+                    ("vt (ft/sec)", linear, state.f16.vt)) in
+    window4("Controlled F16", 15., t, s1, s2, s3, s4)
