@@ -5,7 +5,7 @@ INCLUDES += -I $(CHECKLIB) zlscheck.cmxa -I ../ -I ../../common myOp.cmx discret
 
 OBJ=autotransc.cmx autotransd_modes.cmx autotransd.cmx
 
-DEPS=utils.cmx consts.cmx common.cmx common_myop.cmx
+DEPS=at_utils.cmx consts.cmx common.cmx common_myop.cmx
 
 all: $(OBJ)
 opt: autotransd.opt autotransc.opt
@@ -57,21 +57,21 @@ autotransd_modes.cmx: common_myop.cmx
 
 # ------------------------------------
 
-common.ml common_myop.ml: consts.zci utils.zci
-common.cmx common_myop.cmx: consts.cmx utils.cmx
+common.ml common_myop.ml: consts.zci at_utils.zci
+common.cmx common_myop.cmx: consts.cmx at_utils.cmx
 
 # ------------------------------------
 
 export:
 	mkdir $(DISTDIR)/autotrans
-	cp consts.ml consts.zli utils.ml utils.zli common.zls\
+	cp consts.ml consts.zli at_utils.ml at_utils.zli common.zls\
 		 autotrans.zls autotransd.zls Makefile $(DISTDIR)/autotrans/
 
 clean:
 	-@rm -f autotransc_main.ml autotransc.ml
 	-@rm -f autotransd_main.ml autotransd.ml
 	-@rm -f autotransd_modes_main.ml autotransd_modes.ml
-	-@rm -f common.ml
+	-@rm -f common.ml common_myop.ml
 	-@rm -f *.o *.cm[oix] *.annot *.obc *.zci
 
 realclean cleanall: clean
