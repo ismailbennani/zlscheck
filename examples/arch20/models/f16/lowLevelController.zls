@@ -89,10 +89,10 @@ let get_u_deg (ctrlLimits, throttle_ref, state) =
 
     { f16 = x_delta; nz = state.nz; ps = state.ps; ny_r = state.ny_r },
     {
-        thtlc = Utils.saturate (thtlc, ctrlLimits.throttleMin, ctrlLimits.throttleMax);
-        el = Utils.saturate (el, ctrlLimits.elevatorMinDeg, ctrlLimits.elevatorMaxDeg);
-        ail = Utils.saturate (ail, ctrlLimits.aileronMinDeg, ctrlLimits.aileronMaxDeg);
-        rdr = Utils.saturate (rdr, ctrlLimits.rudderMinDeg, ctrlLimits.rudderMaxDeg);
+        thtlc = F16_utils.saturate (thtlc, ctrlLimits.throttleMin, ctrlLimits.throttleMax);
+        el = F16_utils.saturate (el, ctrlLimits.elevatorMinDeg, ctrlLimits.elevatorMaxDeg);
+        ail = F16_utils.saturate (ail, ctrlLimits.aileronMinDeg, ctrlLimits.aileronMaxDeg);
+        rdr = F16_utils.saturate (rdr, ctrlLimits.rudderMinDeg, ctrlLimits.rudderMaxDeg);
     }
 
 let get_integrator_derivatives (u_ref, nz, ps, ny_r) =

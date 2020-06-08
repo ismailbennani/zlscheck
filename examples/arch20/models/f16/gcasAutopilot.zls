@@ -15,20 +15,20 @@ let man_start = make 2.
 let twopi = scale pi 2.
 
 let node state_logic (tstep, alpha, phi, theta, p) =
-    let t = Utils.integrate(make 0., make 1., tstep) in
+    let t = F16_utils.integrate(make 0., make 1., tstep) in
 
     let automaton
     | Start ->
         do state = Start
         until (t > man_start &&
-            (theta - alpha) - twopi * Utils.round ((theta - alpha) / twopi) > path_goal)
+            (theta - alpha) - twopi * F16_utils.round ((theta - alpha) / twopi) > path_goal)
             then do emit trans = Done in Done
         else (t > man_start && abs p < eps_p &&
-                (abs (phi - pi * (Utils.round (phi / pi))) < eps_phi))
+                (abs (phi - pi * (F16_utils.round (phi / pi))) < eps_phi))
                 then do emit trans = Pull in Pull
         else (t > man_start) then do emit trans = Roll in Roll
     | Roll ->
-        let radsFromWingsLevel = Utils.round (phi / pi) in
+        let radsFromWingsLevel = F16_utils.round (phi / pi) in
         let wings_are_level =
             abs (phi - pi * radsFromWingsLevel) < eps_phi
         and rate_is_small = abs p < eps_p
@@ -46,7 +46,7 @@ let node state_logic (tstep, alpha, phi, theta, p) =
         until (wings_are_level && rate_is_small)
         then do emit trans = Pull in Pull
     | Pull ->
-        let radsFromNoseLevel = Utils.round ((theta - alpha) / twopi) in
+        let radsFromNoseLevel = F16_utils.round ((theta - alpha) / twopi) in
         do state = Pull
         (* and present (period(0.1)) -> do
             () = print_endline ("at t = " ^ (string_of_float t) ^ ", STATE : Pull" ^
@@ -76,7 +76,7 @@ let discrete get_u_ref (state, ctrlLimits, x_equil, x) = u_ref where rec
     | Roll ->
         local radsFromWingsLevel, k_prop, k_der
         do
-            radsFromWingsLevel = Utils.round (x.phi / pi)
+            radsFromWingsLevel = F16_utils.round (x.phi / pi)
             and k_prop = make 4.
             and k_der = scale k_prop 0.3
             and ps = - (x.phi - pi * radsFromWingsLevel) * k_prop - x.p * k_der
@@ -93,11 +93,11 @@ let discrete get_u_ref (state, ctrlLimits, x_equil, x) = u_ref where rec
         do
             k_prop = make 1.
             and k_der = scale k_prop 0.3
-            and radsFromWingsLevel = Utils.round (x.phi / pi)
+            and radsFromWingsLevel = F16_utils.round (x.phi / pi)
             and ps = - (x.phi - pi * radsFromWingsLevel) * k_prop - x.p * k_der
             and k_prop2 = make 2.
             and k_der2 = scale k_prop2 0.3
-            and radsFromNoseLevel = Utils.round ((x.theta - x.alpha) / pi)
+            and radsFromNoseLevel = F16_utils.round ((x.theta - x.alpha) / pi)
             and nz = - (x.theta - x.alpha - pi * radsFromNoseLevel) * k_prop2
                      - x.p * k_der2
         done

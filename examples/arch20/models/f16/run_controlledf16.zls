@@ -61,7 +61,7 @@ let node run_model () =
 
 open Scope
 let node main () =
-    let t = Utils.integrate(make 0., make 1., make tstep) in
+    let t = F16_utils.integrate(make 0., make 1., make tstep) in
     let u, state, state_der = run_model () in
 
     let () = print_state (t, state) in

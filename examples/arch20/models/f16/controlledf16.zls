@@ -51,19 +51,33 @@ let node model (tstep, initial_cond, ctrlLimits) = u, u_ref, x, xd where
     and x = { f16 = f16_state; nz = nz; ps = ps; ny_r = ny_r; }
     and u, u_ref, xd = derivatives (tstep, x, ctrlLimits)
 
-    and vt = Utils.integrate(initial_cond.f16.vt, xd.f16.vt, tstep)
-    and alpha = Utils.integrate(initial_cond.f16.alpha, xd.f16.alpha, tstep)
-    and beta = Utils.integrate(initial_cond.f16.beta, xd.f16.beta, tstep)
-    and phi = Utils.integrate(initial_cond.f16.phi, xd.f16.phi, tstep)
-    and theta = Utils.integrate(initial_cond.f16.theta, xd.f16.theta, tstep)
-    and psi = Utils.integrate(initial_cond.f16.psi, xd.f16.psi, tstep)
-    and p = Utils.integrate(initial_cond.f16.p, xd.f16.p, tstep)
-    and q = Utils.integrate(initial_cond.f16.q, xd.f16.q, tstep)
-    and r = Utils.integrate(initial_cond.f16.r, xd.f16.r, tstep)
-    and x9 = Utils.integrate(initial_cond.f16.x9, xd.f16.x9, tstep)
-    and x10 = Utils.integrate(initial_cond.f16.x10, xd.f16.x10, tstep)
-    and alt = Utils.integrate(initial_cond.f16.alt, xd.f16.alt, tstep)
-    and power = Utils.integrate(initial_cond.f16.power, xd.f16.power, tstep)
-    and nz = Utils.integrate(initial_cond.nz, xd.nz, tstep)
-    and ps = Utils.integrate(initial_cond.ps, xd.ps, tstep)
-    and ny_r = Utils.integrate(initial_cond.ny_r, xd.ny_r, tstep)
+    and vt = F16_utils.integrate(initial_cond.f16.vt, xd.f16.vt, tstep)
+    and alpha = F16_utils.integrate(initial_cond.f16.alpha, xd.f16.alpha, tstep)
+    and beta = F16_utils.integrate(initial_cond.f16.beta, xd.f16.beta, tstep)
+    and phi = F16_utils.integrate(initial_cond.f16.phi, xd.f16.phi, tstep)
+    and theta = F16_utils.integrate(initial_cond.f16.theta, xd.f16.theta, tstep)
+    and psi = F16_utils.integrate(initial_cond.f16.psi, xd.f16.psi, tstep)
+    and p = F16_utils.integrate(initial_cond.f16.p, xd.f16.p, tstep)
+    and q = F16_utils.integrate(initial_cond.f16.q, xd.f16.q, tstep)
+    and r = F16_utils.integrate(initial_cond.f16.r, xd.f16.r, tstep)
+    and x9 = F16_utils.integrate(initial_cond.f16.x9, xd.f16.x9, tstep)
+    and x10 = F16_utils.integrate(initial_cond.f16.x10, xd.f16.x10, tstep)
+    and alt = F16_utils.integrate(initial_cond.f16.alt, xd.f16.alt, tstep)
+    and power = F16_utils.integrate(initial_cond.f16.power, xd.f16.power, tstep)
+    and nz = F16_utils.integrate(initial_cond.nz, xd.nz, tstep)
+    and ps = F16_utils.integrate(initial_cond.ps, xd.ps, tstep)
+    and ny_r = F16_utils.integrate(initial_cond.ny_r, xd.ny_r, tstep)
+
+let node go (tstep, phi, theta, psi) = x.f16.alt where
+    rec initial_cond = {
+        f16 = {
+            vt = make 540.;
+            alpha = scale dtor 2.1215; beta = make 0.;
+            phi = phi; theta = theta; psi = psi;
+            p = make 0.; q = make 0.; r = make 0.;
+            x9 = make 0.; x10 = make 0.;
+            alt = make 4040.; power = make 9.;
+        };
+        nz = make 0.; ps = make 0.; ny_r = make 0.;
+    }
+    and u, u_ref, x, xd = model (tstep, initial_cond, defaultCtrlLimits)
