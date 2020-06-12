@@ -3,7 +3,11 @@ let _ =
 
   let models = [
     ("autotransd", (module Defbench.Autotrans.ReplayDiscrete : Common_utils.RunReplay));
-    ("autotransc", (module Defbench.Autotrans.ReplayContinuous : Common_utils.RunReplay))
+    ("autotransc", (module Defbench.Autotrans.ReplayContinuous : Common_utils.RunReplay));
+    ("f16", (module Defbench.F16.ReplayDiscrete : Common_utils.RunReplay));
+    ("cc", (module Defbench.CC.ReplayDiscrete : Common_utils.RunReplay));
+    ("cc_c", (module Defbench.CC.ReplayContinuous : Common_utils.RunReplay));
+    ("wt", (module Defbench.WT.ReplayDiscrete : Common_utils.RunReplay));
   ] in
 
   let models_str = String.concat " | " (fst (List.split models)) ^ " | all" in

@@ -8,16 +8,24 @@ struct
   let name = Bench.name ^ " - offline - " ^ Optim.name
   let bench_name = Bench.name
   let prop_name_in_matlab = Bench.prop_name_in_matlab
+  let model_name_in_matlab = Bench.model_name_in_matlab
 
   let dump_path = ref (Some Bench.dump_path)
   let dump_folder = ref (Some "")
   let matlab_path = ref Bench.matlab_path
+  let save_path = ref ""
+  let save_folder = ref ""
+
+  let repetition_n = ref 0
+  let sim_n = ref 0
 
   let print_optim_params ff () =
     Printf.fprintf ff "Optim:\n%s\n"
       (Optim.string_of_params Optim_globals.params)
 
   let wrap (Node { alloc; step; reset }) (control_points: float array) : float * float array =
+
+    sim_n := !sim_n + 1;
 
     let n_inputs = Array.length control_points in
     let cp_fad = Array.map MyOp.make control_points in
@@ -57,6 +65,12 @@ struct
       | None -> ()
       | Some (temp_path, temp_fd) ->
         close_tmp_dump (temp_path, temp_fd);
+        if !save_path <> "" then begin
+          let save_folder = Filename.concat !save_folder (string_of_int !repetition_n) in
+          let save_path = Filename.concat save_folder ((string_of_int !sim_n) ^ ".csv") in
+          ignore(Unix.system ("mkdir -p " ^ save_folder));
+          ignore (Unix.system ("cp " ^ temp_path ^ " " ^ save_path));
+        end;
         if rob < 0. then
           let Some dump_folder = !dump_folder in
           ignore(Unix.system ("mv " ^ temp_path ^ " " ^ dump_folder))
@@ -70,6 +84,12 @@ struct
       | None -> None
       | Some path -> Some (make_dump_folder path name);
       end;
+
+    save_folder :=
+      if !save_path = "" then "" else make_dump_folder !save_path name;
+
+    repetition_n := !repetition_n + 1;
+    sim_n := 0;
 
     begin match !dump_folder with
     | None -> ()

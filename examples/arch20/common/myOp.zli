@@ -32,6 +32,7 @@ val ( * ) : t -> t -> t
 val ( / ) : t -> t -> t
 val ( ** ) : t -> t -> t
 
+val pow : t -> float -> t
 val cAdd : t -> t -AD-> unit
 
 val sqr : t -> t
@@ -46,6 +47,8 @@ val asin : t -> t
 val acos : t -> t
 val atan : t -> t
 
+val modf : t -> float * float
+
 val ( =? ) : t -> t -> bool
 val ( <>? ) : t -> t -> bool
 val ( >? ) : t -> t -> bool
@@ -57,3 +60,5 @@ val min : t -> t -> t
 val max : t -> t -> t
 
 val bad_sgn : t -> float
+val copysign : t -> t -> t
+val abs : t -> t

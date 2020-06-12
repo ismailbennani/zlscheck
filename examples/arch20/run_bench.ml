@@ -41,7 +41,7 @@ let print_test_all fd results =
     match dump_folder with
     | None -> ()
     | Some dump_folder ->
-      let folder = Filename.concat "dumps" (Filename.basename dump_folder) in
+      let folder = Filename.concat "fals" (Filename.basename dump_folder) in
       Printf.fprintf fd "cd('%s');\nfprintf(\"%s:\");\nrun('test.m');\ncd('../..');\n"
         folder bench
   in
@@ -89,7 +89,8 @@ let run_bench (module Bench : RunBench) n_repet n_runs =
 let _ =
   Random.self_init ();
 
-  let benches = Defbench.Autotrans.([
+  let benches =
+    Defbench.Autotrans.([
       ("AT1", (module Phi1 : RunBench));
       ("AT2", (module Phi2 : RunBench));
       ("AT51", (module Phi51 : RunBench));
@@ -109,7 +110,26 @@ let _ =
       ("AT6a_online", (module Phi6aOnline : RunBench));
       ("AT6b_online", (module Phi6bOnline : RunBench));
       ("AT6c_online", (module Phi6cOnline : RunBench));
-    ]) in
+    ])
+    @
+    Defbench.F16.([
+        ("F16", (module Phi : RunBench))
+      ])
+    @
+    Defbench.CC.([
+        ("CC1", (module Phi1 : RunBench));
+        ("CC2", (module Phi2 : RunBench));
+        ("CC3", (module Phi3 : RunBench));
+        ("CC4", (module Phi4 : RunBench));
+      ])
+    @
+    Defbench.WT.([
+        ("WT1", (module Phi1 : RunBench));
+        ("WT2", (module Phi2 : RunBench));
+        ("WT3", (module Phi3 : RunBench));
+        ("WT4", (module Phi4 : RunBench));
+      ])
+  in
   let all_benches = fst (List.split benches) in
 
   let at_offline = [ "AT1"; "AT2"; "AT51"; "AT52"; "AT53"; "AT54";
@@ -134,6 +154,7 @@ let _ =
   let no_dump = ref false in
   let verbose = ref false in
   let matlab_path = ref "../matlab" in
+  let save_history = ref false in
 
   let opt_args = [
     "-r", Arg.Set_int n_repet, "number of repetitions";
@@ -142,6 +163,7 @@ let _ =
     "-no-dump", Arg.Set no_dump, "don't dump results";
     "-matlab", Arg.Set_string matlab_path, "path to arch20/matlab folder relative to dump path";
     "-v", Arg.Set verbose, "verbose";
+    "-save-hist", Arg.Set save_history, "save history";
   ] in
 
   let usg_msg =
@@ -178,9 +200,11 @@ let _ =
       if !no_dump then
         Bench.dump_path := None
       else if !dump_path <> "" then begin
-        Bench.dump_path := Some (Filename.concat !dump_path "dumps");
+        Bench.dump_path := Some (Filename.concat !dump_path "fals");
         Bench.matlab_path := Filename.concat "../../" !matlab_path;
       end;
+
+      Bench.save_path := if !save_history then Filename.concat !dump_path "hist" else "";
 
       let res = run_bench (module Bench) !n_repet !n_runs in
 
@@ -199,11 +223,11 @@ let _ =
           close_out info_fd;
 
           let matlab_test_fd = open_out (Filename.concat dump_folder "test.m") in
-          print_matlab_test matlab_test_fd
-            !Bench.matlab_path Bench.prop_name_in_matlab dump_folder;
+          print_matlab_test matlab_test_fd !Bench.matlab_path
+            Bench.model_name_in_matlab Bench.prop_name_in_matlab dump_folder;
           close_out matlab_test_fd;
 
-          Printf.printf "Dump saved at %s\n" dump_folder
+          Printf.printf "Dump saved at %s\nmodel_name: %s\n" dump_folder Bench.model_name_in_matlab
       end;
       run_benches (res :: results) q
   in

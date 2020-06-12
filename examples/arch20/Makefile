@@ -23,10 +23,19 @@ MLIS = $(COMMON_MLI) $(BENCH_MLI)
 INCLUDES += $(DIRS:%=-I %) \
 \
 myOp.cmx discrete_obs_fad.cmx zc.cmx zc_utils.cmx \
-consts.cmx utils.cmx common.cmx common_myop.cmx \
+consts.cmx at_utils.cmx common.cmx common_myop.cmx \
 autotransc.cmx autotransd.cmx autotransd_modes.cmx \
 \
-common_utils.cmx online.cmx offline.cmx replay.cmx bench_models.cmx replay_models.cmx
+constants.cmx matrix.cmx f16_types.cmx f16_mlutils.cmx f16_utils.cmx \
+lowLevelController.cmx subf16_model.cmx gcasAutopilot.cmx \
+\
+cc_d.cmx cc_c.cmx \
+\
+interp.cmx wt_common.cmx wt_params.cmx wt_d.cmx \
+\
+common_utils.cmx online.cmx offline.cmx replay.cmx \
+autotrans_bench.cmx f16_bench.cmx cc_bench.cmx wt_bench.cmx \
+replay_models.cmx
 
 TARGET = run_bench.opt replay_bench.opt
 
@@ -34,6 +43,8 @@ all: $(TARGET)
 
 run_bench.opt replay_bench.opt: INCLUDES += defbench.cmx
 run_bench.opt replay_bench.opt: models defbench.cmx
+
+draw_transmission.opt draw_f16.opt: INCLUDES = graphics.cmxa
 
 common: $(COMMON_ML:.ml=.cmx) $(COMMON_ZLI:.zli=.zci) $(COMMON_ZLS:.zls=.cmx)
 
@@ -48,6 +59,7 @@ clean_this:
 	-cd common; rm -f *.cm[iox] *.o *.opt *.zci
 	-rm -f *.cm[iox] *.o *.opt
 	-rm common/discrete_obs_fad.ml
+	-rm draw_transmission.opt
 
 clean: clean_this
 	$(MAKE) -C models clean

@@ -28,24 +28,25 @@ let print_result print_sample { optim; n_runs; best_sample; best_rob;
   Printf.printf "\tbest_sample: %a with rob %g\n"
     print_sample best_sample best_rob
 
-let print_matlab_test fd matlab_path prop_name_in_matlab dump_folder =
+let print_matlab_test fd matlab_path model_name prop_name_in_matlab dump_folder =
   Printf.fprintf fd
-    "addpath(genpath(\"/home/lahkim/Documents/MATLAB/toolbox/S-TALIRO\"));\n\
+    "warning('off','all');\n\
+     addpath(genpath(\"/home/lahkim/Documents/MATLAB/toolbox/S-TALIRO\"));\n\
      addpath(genpath(\"/home/lahkim/Documents/MATLAB/toolbox/matlab_bgl\"));\n\
      addpath(\"%s\");\n\
-     addpath(\"%s\");\n\
-     run(\"spec.m\");\n\
-     [ok, notok] = validate_zlscheck_transmission(%s, preds, \".\");"
+     addpath(genpath(\"%s\"));\n\
+     run(\"spec_%s.m\");\n\
+     [ok, notok] = validate_zlscheck_%s(%s, preds, \".\");"
     matlab_path
     (Filename.concat (Filename.dirname matlab_path)
-       "shared/benchmarks/transmission")
-    prop_name_in_matlab
+       ("shared/benchmarks/" ^ model_name))
+    model_name model_name prop_name_in_matlab
 
 let string_of_op_t_arr arr =
   (String.concat ","
      (Array.to_list
         (Array.map
-           (fun fad_f -> Printf.sprintf "%f" (MyOp.get fad_f))
+           (fun fad_f -> Printf.sprintf "%g" (MyOp.get fad_f))
            arr)))
 
 module type Replay =
@@ -72,6 +73,7 @@ sig
   val sample_every : int (* used by online optim *)
 
   val prop_name_in_matlab : string
+  val model_name_in_matlab : string
 
   val dump_path : string
   val matlab_path : string
@@ -89,9 +91,11 @@ sig
   val name : string
   val bench_name : string
   val prop_name_in_matlab : string
+  val model_name_in_matlab : string
   val dump_path : string option ref
   val dump_folder : string option ref
   val matlab_path : string ref
+  val save_path : string ref
   val print_optim_params : out_channel -> unit -> unit
   val run : unit -> float array result
 end

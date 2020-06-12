@@ -31,19 +31,29 @@ common/zc.cmo : \
 common/zc.cmx : \
     common/myOp.cmx
 defbench.cmo : \
+    models/wt_bench.cmo \
     models/replay_models.cmo \
     common/replay.cmo \
     common/online.cmo \
     common/offline.cmo \
     common/myOp.cmo \
-    models/bench_models.cmo
+    models/f16_bench.cmo \
+    models/cc_bench.cmo \
+    models/autotrans_bench.cmo
 defbench.cmx : \
+    models/wt_bench.cmx \
     models/replay_models.cmx \
     common/replay.cmx \
     common/online.cmx \
     common/offline.cmx \
     common/myOp.cmx \
-    models/bench_models.cmx
+    models/f16_bench.cmx \
+    models/cc_bench.cmx \
+    models/autotrans_bench.cmx
+draw_f16.cmo :
+draw_f16.cmx :
+draw_transmission.cmo :
+draw_transmission.cmx :
 replay_bench.cmo : \
     defbench.cmo \
     common/common_utils.cmo

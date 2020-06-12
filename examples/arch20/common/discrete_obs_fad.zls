@@ -40,7 +40,7 @@ let q_eqi (i1, i2) = (make 0.5) - (abs (i1 - i2))
 
 let implies (a, b) = q_or(q_not a, b)
 
-    node q_up p = p -> q_and (q_lt (pre p, MyOp.zero ()), q_gt (p, MyOp.zero ()))
+node q_up p = p -> q_and (q_lt (pre p, MyOp.zero ()), q_gt (p, MyOp.zero ()))
 node b_up p = p -> (not (pre p) && p)
 
 let static min_cpt = -1.
@@ -60,17 +60,40 @@ node once p = res where rec res = p -> q_or (pre res, p)
         où Y a été vrai (inclus)
     X since last Y : X est a été vrai au moins une fois depuis le dernier instant
         où Y a été vrai (inclus) *)
-node sincefirst (x, y) =
+(* node sincefirst (x, y) =
     automaton
         | INIT -> do q_or (never y, x) until (q_istrue y) () then YTRUE
-        | YTRUE -> do q_or (never y, once x) done
-node sincelast (x, y) =
-                                                                                                                                                                             automaton
-                                                                                                                                                                               | INIT -> do q_or (never y, x) until (q_istrue y) () then YTRUE
-                                                                                                                                                                                                                                  | YTRUE -> do x until (q_isfalse y) () then YFALSE(x)
-                                                                                                                                                                                                                                                                       | YFALSE(last_res) ->
-do q_or (last_res, once x) until (q_istrue y) () then YTRUE
-    node since (x, y) = sincelast (x, y)
+        | YTRUE -> do q_or (never y, once x) done *)
+node sincefirst (x, y) = xsincey where
+    rec firsty = y -> q_and (pre (never y), y)
+    and xsincey = q_true -> if isTrue firsty then x else q_or (pre xsincey, x)
+node sincelast(x, y) = xsincey where
+    rec xsincey = q_true -> if isTrue y then x else q_or (pre xsincey, x)
+(* node sincelast (x, y) =
+    automaton
+    | INIT ->
+        do q_or (never y, x)
+        until (q_istrue y) () then YTRUE
+    | YTRUE ->
+        do x
+        until (q_isfalse y) () then YFALSE(x)
+    | YFALSE(last_res) ->
+        do q_or (last_res, once x)
+        until (q_istrue y) () then YTRUE *)
+(* node sincelast (x, y) =
+    automaton
+    | INIT ->
+        do q_or (never y, x)
+        until (q_istrue y)() then YTRUE
+    | YTRUE ->
+        do x
+        until (q_isfalse y)() on (x < make 0.) then YFALSE(x)
+        else (q_isfalse y)() on (x >= make 0.) then INIT
+    | YFALSE(last_res) ->
+        do q_or (last_res, once x)
+        until (q_istrue y)() then YTRUE
+        else (q_istrue x)() then INIT *)
+node since (x, y) = sincelast (x, y)
 
 (* onceBfromlastAtoC :
 
@@ -177,3 +200,47 @@ node neverBfromfirstA_timed delay (tstep, a, b) =
     alwaysBfromfirstA_timed delay (tstep, a, q_not b)
 node neverBfromA_timed delay (tstep, a, b) =
     neverBfromlastA_timed delay (tstep, a, b)
+
+(*
+    -----------------------------
+    Pattern templates
+    -----------------------------
+*)
+
+(* it is never the case that p holds *)
+node absence p = never p
+
+(* after the first T seconds, it is never the case that p holds *)
+node absence_timed t (tstep, p) = neverBfromA (horizon t tstep, p)
+
+(* it is always the case that once p becomes satisfied, it holds for at
+   least T seconds *)
+node minimum_duration t (tstep, p) =
+    let strt = q_istrue p in
+    let cpt = counter t (tstep, strt, strt) in
+    implies (q_not p, q_lt(cpt, make 0.))
+
+(* it is always the case that once p becomes satisfied, it holds for at
+   most T seconds *)
+node maximum_duration t (tstep, p) =
+    let strt = q_istrue p in
+    let cpt = counter t (tstep, strt, strt) in
+    implies (p, q_ge(cpt, make 0.))
+
+(* it is always the case that p holds at least every T seconds *)
+node bounded_recurrence t (tstep, p) =
+    let strt = q_istrue p in
+    let cpt = counter t (tstep, (q_istrue q_true) -> strt, strt) in
+    q_ge (cpt, make 0.)
+
+(* it is always the case that if p holds, then s holds after at
+   most T seconds *)
+node bounded_response t (tstep, p, s) =
+    reset q_or (never p, onceBfromfirstA_timed t (tstep, p, s))
+    every (isTrue s)
+
+(* it is always the case that if p holds then s holds for at least T seconds *)
+node bounded_invariance t (tstep, p, s) =
+    let strt = q_aretrue2 (p, s) in
+    let cpt = counter t (tstep, strt, strt) in
+    q_or (s, (q_le (cpt, make 0.)))

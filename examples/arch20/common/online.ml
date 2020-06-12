@@ -12,10 +12,16 @@ struct
   let name = Bench.name ^ " - online - " ^ Optim.name ^ " - " ^ OnlineOptim.name
   let bench_name = Bench.name
   let prop_name_in_matlab = Bench.prop_name_in_matlab
+  let model_name_in_matlab = Bench.model_name_in_matlab
   let dump_path = ref (Some Bench.dump_path)
   let dump_folder = ref (Some "")
   let matlab_path = ref Bench.matlab_path
+  let save_path = ref ""
+  let save_folder = ref ""
+
   let cur_tmp_fd = ref None
+  let repetition_n = ref 0
+  let sim_n = ref 0
 
   let print_optim_params ff () =
     Printf.fprintf ff "Optim:\n%s\n\nOnline Optim:\n%s\n"
@@ -63,6 +69,8 @@ struct
       | Some _ -> Some (make_tmp_dump ())
       end;
 
+    sim_n := !sim_n + 1;
+
     let mem = my_alloc () in
     my_reset mem;
 
@@ -77,11 +85,15 @@ struct
     let last_rob = ref (0., [||]) in
     while not !stop do
       (* model step *)
-      if !n mod Bench.sample_every = 0 then begin
-        ignore (OnlineOptim.step (my_step mem) step_params);
-        last_rob := (snd step_params.last_result);
-      end else
-        last_rob := my_step mem (fst step_params.last_result);
+      let rob, grad =
+        if !n mod Bench.sample_every = 0 then begin
+          ignore (OnlineOptim.step (my_step mem) step_params);
+          (snd step_params.last_result)
+        end else
+          my_step mem (fst step_params.last_result);
+      in
+
+      last_rob := rob, grad;
       n := !n + 1;
       stop := mem.time > Bench.max_t;
     done;
@@ -92,6 +104,12 @@ struct
       | Some (temp_path, temp_fd) ->
         close_tmp_dump (temp_path, temp_fd);
         cur_tmp_fd := None;
+        if !save_path <> "" then begin
+          let save_folder = Filename.concat !save_folder (string_of_int !repetition_n) in
+          let save_path = Filename.concat save_folder ((string_of_int !sim_n) ^ ".csv") in
+          ignore(Unix.system ("mkdir -p " ^ save_folder));
+          ignore (Unix.system ("cp " ^ temp_path ^ " " ^ save_path));
+        end;
         if rob < 0. then
           let Some dump_folder = !dump_folder in
           ignore(Unix.system ("mv " ^ temp_path ^ " " ^ dump_folder))
@@ -105,6 +123,12 @@ struct
       | None -> None
       | Some path -> Some (make_dump_folder path name);
       end;
+
+    save_folder :=
+      if !save_path = "" then "" else make_dump_folder !save_path name;
+
+    repetition_n := !repetition_n + 1;
+    sim_n := 0;
 
     begin match !dump_folder with
     | None -> ()
