@@ -8,19 +8,15 @@ autotransc.cmx : \
     common.cmx
 autotransd.cmo : \
     ../../common/myOp.cmo \
-    ../../common/discrete_obs_fad.cmo \
     common_myop.cmo
 autotransd.cmx : \
     ../../common/myOp.cmx \
-    ../../common/discrete_obs_fad.cmx \
     common_myop.cmx
 autotransd_modes.cmo : \
     ../../common/myOp.cmo \
-    ../../common/discrete_obs_fad.cmo \
     common_myop.cmo
 autotransd_modes.cmx : \
     ../../common/myOp.cmx \
-    ../../common/discrete_obs_fad.cmx \
     common_myop.cmx
 common.cmo : \
     ../../common/myOp.cmo \

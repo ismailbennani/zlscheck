@@ -58,7 +58,10 @@ autotransd_modes.cmx: common_myop.cmx
 # ------------------------------------
 
 common.ml common_myop.ml: consts.zci at_utils.zci
-common.cmx common_myop.cmx: consts.cmx at_utils.cmx
+	$(ZELUC) $(ZELUCFLAGS) $(@:.ml=.zls)
+	sed -i "s/Obj.magic ():MyOp.t/create ():MyOp.t/g" $@
+common.cmx: common.ml consts.cmx at_utils.cmx
+common_myop.cmx: common_myop.ml consts.cmx at_utils.cmx
 
 # ------------------------------------
 
@@ -79,7 +82,7 @@ realclean cleanall: clean
 	-@rm -f autotransd.opt
 
 .depend: depend
-depend: $(OBJ:.cmx=.ml)
+depend: $(DEPS:.cmx=.ml) $(OBJ:.cmx=.ml)
 	$(OCAMLDEP) $(INCLUDES) *.mli *.ml > .depend
 
 -include .depend
