@@ -36,7 +36,7 @@ let ur_step step_params incr_runs fn =
 
   incr_runs ();
 
-  if params.verbose then begin
+  if verbose then begin
     print_newline (); flush stdout
   end;
 

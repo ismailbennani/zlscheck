@@ -68,10 +68,32 @@ node sincefirst (x, y) =
     | YTRUE -> do q_or (never y, once x) done
 node sincelast (x, y) =
     automaton
-    | INIT -> do q_or (never y, x) until (q_istrue y) () then YTRUE
-    | YTRUE -> do x until (q_isfalse y) () then YFALSE(x)
+    | INIT ->
+        do q_or (never y, x)
+        until (q_istrue y)() then YTRUE
+    | YTRUE ->
+        do x
+        until (q_isfalse y)() on (x < 0.) then YFALSE(x)
+        else (q_isfalse y)() on (x >= 0.) then INIT
     | YFALSE(last_res) ->
-        do q_or (last_res, once x) until (q_istrue y) () then YTRUE
+        do q_or (last_res, once x)
+        until (q_istrue y)() then YTRUE
+        else (q_istrue x)() then INIT
+(* node sincelast(a, b) = asinceb where
+    rec automaton
+    | INIT ->
+        do asinceb = q_or (never b, a)
+        until (q_istrue b)() then BTRUE
+    | BTRUE ->
+        do asinceb = a
+        until (q_isfalse b)() on (a < 0.) then BFALSE(a)
+        else (q_isfalse b)() on (a >= 0.) then INIT
+    | BFALSE(lastres) ->
+        local oncea
+        do oncea = once a
+        and asinceb = q_or (lastres, oncea) -> q_or (pre asinceb, oncea)
+        until (q_istrue b)() then BTRUE
+        else (q_istrue a)() then INIT *)
 node since (x, y) = sincelast (x, y)
 
 (* onceBfromlastAtoC :

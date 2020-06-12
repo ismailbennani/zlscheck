@@ -31,8 +31,9 @@ struct
     let incr_runs () = step_params.n_runs <- step_params.n_runs + 1 in
 
     if not step_params.online then begin
-      Printf.printf "[%s] Run %d/%d\n"
-        name step_params.n_runs Optim_globals.params.max_n_runs;
+      Printf.printf "[%s] Run %d/%d (Best rob so far: %g)\n"
+        name step_params.n_runs Optim_globals.params.max_n_runs
+        (get_rob_from_output (snd step_params.best_result));
       flush stdout;
     end;
 
@@ -45,12 +46,20 @@ struct
       let (old_best_inp, old_best_out) = step_params.best_result in
       OptimAlg.step step_params incr_runs fn;
       let (new_inp, new_out) = step_params.last_result in
-      let new_best =
-        if get_rob_from_output new_out < get_rob_from_output old_best_out
-        then (new_inp, new_out)
-        else (old_best_inp, old_best_out)
-      in
-      step_params.best_result <- new_best;
+
+      let old_rob = get_rob_from_output old_best_out in
+      let new_rob = get_rob_from_output new_out in
+
+      if not (Float.is_nan new_rob) then begin
+        if not (Float.is_nan old_rob) then
+          let new_best =
+            if new_rob < old_rob
+            then (new_inp, new_out)
+            else (old_best_inp, old_best_out)
+          in step_params.best_result <- new_best
+        else
+          step_params.best_result <- (new_inp, new_out)
+      end;
       false
 
   let run fn =
