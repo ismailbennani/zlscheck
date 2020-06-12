@@ -68,7 +68,7 @@ let node model (tstep, initial_cond, ctrlLimits) = u, u_ref, x, xd where
     and ps = F16_utils.integrate(initial_cond.ps, xd.ps, tstep)
     and ny_r = F16_utils.integrate(initial_cond.ny_r, xd.ny_r, tstep)
 
-let node go (tstep, phi, theta, psi) = x.f16.alt where
+let node go (tstep, phi, theta, psi) = u, x where
     rec initial_cond = {
         f16 = {
             vt = make 540.;
