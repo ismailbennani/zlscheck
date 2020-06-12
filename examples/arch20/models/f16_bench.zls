@@ -1,0 +1,18 @@
+open MyOp
+open Discrete_obs_fad
+open F16_types
+
+node f16_phi (tstep, alt) = always_timed 15. (tstep, q_gt (alt, make 0.))
+
+node f16 tstep inp = next_t, outp, translate rob 10. where
+    rec tstep' = make tstep
+    and next_t = tstep fby (next_t +. tstep)
+    and phi = Array.get inp 0
+    and theta = Array.get inp 1
+    and psi = Array.get inp 2
+    and u, x = Controlledf16.go (tstep', phi, theta, psi)
+    and outp = Array.of_list
+        [ x.f16.alt; x.f16.alpha; x.f16.beta; x.f16.vt;
+          x.f16.phi; x.f16.theta; x.f16.psi;
+          x.f16.p; x.f16.q; x.f16.r ]
+    and rob = f16_phi (tstep', x.f16.alt)

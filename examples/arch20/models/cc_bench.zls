@@ -1,0 +1,105 @@
+open MyOp
+open Discrete_obs_fad
+
+let q_true = make 10.
+let q_false = make (-10.)
+
+(* Fml1: always_[0, 100] y5 - y4 <= 40 *)
+node cc1 (tstep, c4, c5) =
+    always_timed 100. (tstep, q_le (c5 - c4, make 40.))
+
+(* Fml2: always_[0,70] possibly_[0,30] y5-y4 >= 15 *)
+node cc2 (tstep, c4, c5) =
+    always_timed 100. (tstep, bounded_recurrence 30. (tstep, q_ge (c5 - c4, make 15.)))
+
+(* Fml3: always_[0,80] ((always_[0,20]y2-y1<=20) or (possibly_[0,20]y5-y4>=40)) *)
+node cc3 (tstep, c1, c2, c4, c5) = ok where
+    rec p1 = q_le (c2 - c1, make 21.)
+    and p2 = q_ge (c5 - c4, make 40.)
+    and evp2 = bounded_recurrence 20. (tstep, p2)
+    and automaton
+    | Alwp1 ->
+        do ok = q_true
+        until (isFalse p1) then Evp2_strict
+    | Evp2_strict ->
+        do ok = q_true
+        until (isTrue p2) on (isFalse p1) then Evp2
+        else (isTrue p2) on (isTrue p1) then Alwp1
+        else (isFalse evp2) then Err
+    | Evp2 ->
+        do ok = q_true
+        until (isTrue p1) then Alwp1
+        else (isFalse evp2) then Err
+    | Err ->
+        do ok = q_false done
+
+(* Fml4: always_[0,65] possibly_[0,30] always_[0,5]y5-y4 >= 8 *)
+node cc4 (tstep, c4, c5) = ok where
+    rec t = make 0. fby (tstep + t)
+    and p = q_ge (c5 - c4, make 8.)
+    and automaton
+    | Notp(t0) ->
+        let local_t = t - t0 in
+        do
+            ok = q_true
+        until (isTrue p) on (local_t <= make 30.) then Okp(t0, t)
+        else (local_t > make 30.) then Err
+    | Okp(t0, t1) ->
+        let local_t = t - t1 in
+        do
+            ok = q_true
+        until (local_t >= make 5.) on (isTrue p) then Alwaysp
+        else (isFalse p) then Notp(t0)
+    | Alwaysp ->
+        do
+            ok = q_true
+        until (isFalse p) then Notp(t - (make 5.))
+    | Err ->
+        do
+            ok = q_false
+        done
+    init Notp(t)
+
+node cc_cc1 tstep inp = get next_t, outp, translate rob 1. where
+    rec throttle = Array.get inp 0
+    and brake = Array.get inp 1
+    and tstep' = make tstep
+    and next_t = tstep' fby (next_t + tstep')
+    and t = make 0. fby next_t
+    and (c1,c2,c3,c4,c5), rob_optim = Cc_d.chasing_cars (t, throttle, brake)
+    and outp = Array.of_list [c1; c2; c3; c4; c5]
+    and rob_spec = cc1 (tstep', c4, c5)
+    and rob = if isFalse rob_spec then rob_spec else if isTrue rob_optim then rob_optim else rob_spec
+
+node cc_cc2 tstep inp = get next_t, outp, rob where
+    rec throttle = Array.get inp 0
+    and brake = Array.get inp 1
+    and tstep' = make tstep
+    and next_t = tstep' fby (next_t + tstep')
+    and t = make 0. fby next_t
+    and (c1,c2,c3,c4,c5), rob_optim = Cc_d.chasing_cars (t, throttle, brake)
+    and outp = Array.of_list [c1; c2; c3; c4; c5]
+    and rob_spec = cc2 (tstep', c4, c5)
+    and rob = if isFalse rob_spec then rob_spec else if isTrue rob_optim then rob_optim else rob_spec
+
+node cc_cc3 tstep inp = get next_t, outp, rob where
+    rec throttle = Array.get inp 0
+    and brake = Array.get inp 1
+    and tstep' = make tstep
+    and next_t = tstep' fby (next_t + tstep')
+    and t = make 0. fby next_t
+    and (c1,c2,c3,c4,c5), rob_optim = Cc_d.chasing_cars (t, throttle, brake)
+    and outp = Array.of_list [c1; c2; c3; c4; c5]
+    and rob_spec = cc3 (tstep', c1, c2, c4, c5)
+    and rob = if isFalse rob_spec then rob_spec else if isTrue rob_optim then rob_optim else rob_spec
+
+node cc_cc4 tstep inp = get next_t, outp, rob where
+    rec throttle = Array.get inp 0
+    and brake = Array.get inp 1
+    and tstep' = make tstep
+    and next_t = tstep' fby (next_t + tstep')
+    and t = make 0. fby next_t
+    and (c1,c2,c3,c4,c5), rob_optim = Cc_d.chasing_cars (t, throttle, brake)
+    and outp = Array.of_list [c1; c2; c3; c4; c5]
+    and rob_spec = cc4 (tstep', c4, c5)
+    and rob = if isFalse rob_spec then rob_spec else if isTrue rob_optim then rob_optim else rob_spec

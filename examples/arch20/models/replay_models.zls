@@ -35,14 +35,92 @@ node autotransd tstep (times, inp) = () where
         let s1 = scope2(0., 350., ("throttle", linear, get throttle),
                                   ("brake", linear, get brake))
         and s2 = scope2(0., 5000., ("rpm", linear, get rpm),
-                                   ("4750", linear, 4750.))
+                                   ("3000", linear, 3000.))
         and s3 = scope (0., 4., ("gear", linear, get gear))
         and s4 = scope4(0., 130., ("speed", linear, get speed),
                         ("up_th", linear, get up_th), ("dn_th", linear, get dn_th),
-                        ("120", linear, 120.))
+                        ("35", linear, 35.))
         and s5 = scope2(-4., 4., ("rob", linear, get rob),
                                  ("", linear, 0.)) in
         window5("Autotrans", 30., t, s1, s2, s3, s4, s5)
+
+let rtod = 57.29578
+
+node f16 tstep (times, inp) = () where
+    rec n = 0 fby (Stdlib.( + ) n 1)
+    and cur_inp = Array.get inp n
+    and t = Array.get times n
+    and alt = get (Array.get cur_inp 3)
+    and alpha = get (Array.get cur_inp 4)
+    and beta = get (Array.get cur_inp 5)
+    and vt = get (Array.get cur_inp 6)
+    and phi = get (Array.get cur_inp 7)
+    and theta = get (Array.get cur_inp 8)
+    and psi = get (Array.get cur_inp 9)
+    and p = get (Array.get cur_inp 10)
+    and q = get (Array.get cur_inp 11)
+    and r = get (Array.get cur_inp 12)
+    and rob = get (Array.get cur_inp 13)
+
+    and () =
+        let s1 = scope (0., 15000., ("altitude", linear, alt)) in
+        let s2 = scopen(-90., 90., [
+                        ("Roll phi (deg)", linear, (rtod *. phi));
+                        ("Roll rate (deg/s)", linear, rtod *. p);
+                        ("Pitch theta (deg)", linear, rtod *. theta);
+                        ("Pitch rate (deg/s)", linear, rtod *. q);
+                        ("Yaw psi (deg)", linear, rtod *. psi);
+                        ("Yaw rate (deg/s)", linear, rtod *. r)]) in
+        let s3 = scope2(-30., 50.,
+                        ("alpha (deg)", linear, rtod *. alpha),
+                        ("beta (deg)", linear, rtod *. beta)) in
+        let s4 = scope (0., 600.,
+                        ("vt (ft/sec)", linear, vt)) in
+        window4("Controlled F16", 15., t, s1, s2, s3, s4)
+
+node cc tstep (times, inp) = () where
+    rec n = 0 fby (Stdlib.( + ) n 10)
+    and cur_inp = Array.get inp n
+    and t = Array.get times n
+    and throttle = get (Array.get cur_inp 0)
+    and brake = get (Array.get cur_inp 1)
+    and c1 = get (Array.get cur_inp 2)
+    and c2 = get (Array.get cur_inp 3)
+    and c3 = get (Array.get cur_inp 4)
+    and c4 = get (Array.get cur_inp 5)
+    and c5 = get (Array.get cur_inp 6)
+    and rob = get (Array.get cur_inp 7)
+
+    and () =
+        let s1 = scope2(0., 1., ("throttle", linear, throttle),
+                                ("brake", linear, brake)) in
+        let s2 = scopen(-400., 50., [("c1", linear, c1); ("c2", linear, c2);
+                                      ("c3", linear, c3); ("c4", linear, c4);
+                                      ("c5", linear, c5)]) in
+        let s2' = scope3(0., 50., ("c2 - c1", linear, c2 -. c1), ("zero", linear, 0.), ("20", linear, 20.)) in
+        let s2'' = scope3(0., 50., ("c5 - c4", linear, c5 -. c4), ("zero", linear, 0.), ("40", linear, 40.)) in
+        let s3 = scope2(-50., 50., ("rob", linear, rob), ("zero", linear, 0.)) in
+        window5("Chasing cars", 100., t, s1, s2, s2', s2'', s3)
+
+node wt tstep (times, inp) = () where
+    rec n = 0 fby (Stdlib.( + ) n 10)
+    and cur_inp = Array.get inp n
+    and t = Array.get times n
+    and v0 = get (Array.get cur_inp 0)
+    and theta = get (Array.get cur_inp 1)
+    and omega = get (Array.get cur_inp 2)
+    and omega_g = get (Array.get cur_inp 3)
+    and theta_d = get (Array.get cur_inp 4)
+    and blade_pitch_angle = get (Array.get cur_inp 5)
+    and mg_d = get (Array.get cur_inp 6)
+
+    and () =
+        let s1 = scope (8., 16., ("v0", linear, v0)) in
+        let s2 = scope (10., 13., ("omega", linear, omega)) in
+        let s3 = scope (1000., 1300., ("omega_g", linear, omega_g)) in
+        let s4 = scope (2.5e4, 5.e4, ("mg_d", linear, mg_d)) in
+        let s5 = scope3(0., 13., ("theta", linear, theta), ("theta_d", linear, theta_d), ("blade_pitch_angle", linear, blade_pitch_angle)) in
+        windown ("Wind Turbine", 630., t, [s1; s2; s3; s4])
 
 open Node
 
@@ -58,6 +136,53 @@ discrete print_status (t, h, status) =
     | TimeHasPassed -> print_endline "TimeHasPassed"
     | Error -> print_endline "Error"
 
+node cc_c tstep max_t (times, inp) = () where
+    rec init cur_t = 0.
+    and cur_inp = Replay.interp times inp cur_t
+    and throttle = get (Array.get cur_inp 0)
+    and brake = get (Array.get cur_inp 1)
+    and c1 = get (Array.get cur_inp 2)
+    and c2 = get (Array.get cur_inp 3)
+    and c3 = get (Array.get cur_inp 4)
+    and c4 = get (Array.get cur_inp 5)
+    and c5 = get (Array.get cur_inp 6)
+    and rob = get (Array.get cur_inp 7)
+
+    and init h = 0. (* next horizon *)
+
+    and { time = t; status = status; result = res } =
+        solve Cc_c.chasing_cars max_t (h, (throttle, brake))
+
+    (* when to draw stuff on screen*)
+    and tick =
+    present (true fby false) | (match status with
+    | Interpolate | TimeHasPassed -> true
+    | _ -> false) -> (t, res)
+
+    (* print_stuff *)
+    (* and () = print_status (cur_t, h, status) *)
+
+    and present tick(t, (c1_,c2_,c3_,c4_,c5_)) ->
+    do
+        (* advance horizon and update actual t *)
+        next cur_t = t
+        and present (make t >= make h) ->
+        local s1, s2, s3, s4
+        do
+            next h = h +. tstep
+            and s1 = scope2(0., 1., ("throttle", linear, throttle),
+                                    ("brake", linear, brake))
+            and s2 = scopen(-400., 50., [("disc c1", linear, c1); ("c2", linear, c2);
+                                          ("c3", linear, c3); ("c4", linear, c4);
+                                          ("c5", linear, c5)])
+            and s3 = scopen(-400., 50., [("cont c1", linear, c1_); ("c2", linear, c2_);
+                                          ("c3", linear, c3_); ("c4", linear, c4_);
+                                          ("c5", linear, c5_)])
+            and s4 = scope2(-50., 50., ("rob", linear, rob), ("zero", linear, 0.))
+            and () = window4("Chasing cars", 100., t, s1, s2, s3, s4)
+        done
+    done
+
 node autotransc max_t tstep (times, inp) = () where
     rec init cur_t = 0.
     and cur_inp = Replay.interp times inp cur_t
@@ -71,7 +196,7 @@ node autotransc max_t tstep (times, inp) = () where
     and init h = 0. (* next horizon *)
 
     and { time = t; status = status; result = res } =
-        solve Autotransc.autotrans max_t (h, (throttle, brake))
+        solve_ode45 Autotransc.autotrans max_t (h, (throttle, brake))
 
     (* when to draw stuff on screen*)
     and tick =
@@ -100,13 +225,13 @@ node autotransc max_t tstep (times, inp) = () where
                                   ("brake", linear, brake))
         and s2 = scope3(0., 5000., ("replay rpm", linear, rpm),
                                    ("actual rpm", linear, rpm_),
-                                   ("4750", linear, 4750.))
+                                   ("3000", linear, 3000.))
         and s3 = scope2(0., 4., ("replay gear", linear, gear),
                                 ("actual gear", linear, gear_))
         and s4 = scope5(0., 130., ("replay speed", linear, speed),
                         ("actual speed", linear, speed_),
                         ("up_th", linear, up_th), ("dn_th", linear, dn_th),
-                        ("120", linear, 120.))
+                        ("35", linear, 35.))
         and s5 = scope3(-4., 4., ("replay rob", linear, rob),
                                  ("actual rob", linear, rob_),
                                  ("", linear, 0.))
