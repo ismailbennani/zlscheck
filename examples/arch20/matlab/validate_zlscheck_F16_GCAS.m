@@ -1,4 +1,4 @@
-function [ok, notok] = validate_zlscheck_transmission(phi, preds, dump_folder)
+function [ok, notok] = validate_zlscheck_F16_GCAS(phi, preds, dump_folder)
     foldInfo = dir(fullfile(dump_folder, "*.csv"));
 
     n_dumps = length(foldInfo);
@@ -13,7 +13,7 @@ function [ok, notok] = validate_zlscheck_transmission(phi, preds, dump_folder)
         csvfile = fullfile(dump_folder,foldInfo(i).name);
         u = csvread(csvfile);
 
-        [tout, u, yout, r] = compute_rob_transmission(phi, preds, u);
+        [tout, u, yout, r] = compute_rob_F16_GCAS(phi, preds, u);
         
         if r >= 0
             fprintf("KO, input does not falsify %s\n", phi);

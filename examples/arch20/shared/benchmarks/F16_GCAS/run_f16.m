@@ -1,4 +1,4 @@
-function [tout, yout] = run_f16(altg, Vtg, phig, thetag, psig, T)
+function [tout, yout, output] = run_f16(altg, Vtg, phig, thetag, psig, T)
     model_err = false;
     analysisOn = false;
     printOn = false;

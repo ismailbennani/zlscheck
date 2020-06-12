@@ -1,4 +1,5 @@
-function [ok, notok] = validate_zlscheck_transmission(phi, preds, dump_folder)
+function [ok, notok] = validate_zlscheck_wind_turbine(phi, preds, dump_folder)
+    warning('off', 'all');
     foldInfo = dir(fullfile(dump_folder, "*.csv"));
 
     n_dumps = length(foldInfo);
@@ -12,22 +13,23 @@ function [ok, notok] = validate_zlscheck_transmission(phi, preds, dump_folder)
     for i = 1:n_dumps
         csvfile = fullfile(dump_folder,foldInfo(i).name);
         u = csvread(csvfile);
-
-        [tout, u, yout, r] = compute_rob_transmission(phi, preds, u);
+        
+        [tout, u, yout, r] = compute_rob_wind_turbine(phi, preds, u);
         
         if r >= 0
-            fprintf("KO, input does not falsify %s\n", phi);
+            fprintf("KO %d, input does not falsify %s\n", i, phi);
             notok(j).name = foldInfo(i).name;
             notok(j).u = [tout u yout];
             notok(j).r = r;
             j = j + 1;
         else
+            fprintf("OK %d, input falsifies %s\n", i, phi);
             ok(i - j + 1).name = foldInfo(i).name;
             ok(i - j + 1).u = [tout u yout];
             ok(i - j + 1).r = r;
         end
     end
-
-    fprintf("OK: %d/%d\n", n_dumps - length(notok), n_dumps);
-
+    
+    n = length(ok) + length(notok);
+    fprintf("OK: %d/%d\n", n - length(notok), n);
 end
