@@ -36,19 +36,27 @@ struct
   let gd_alpha_high = 100000.
   let gd_alpha_low = 100.
 
+  module type Instance =
+  sig
+    val sample_every : int
+  end
+
+  module Instance1 = struct let sample_every = 50 end
+  module Instance2 = struct let sample_every = 500 end
+
   module type Params =
   sig
     module Optim : Optim.S
     val name : string
     val tstep : float
     val max_t : float
-    val sample_every: int
+    val sample_every : int
     val prop_name_in_matlab : string
     val set_optim_params : unit -> unit
     val node : (MyOp.t array, float * MyOp.t array * MyOp.t) Ztypes.node
   end
 
-  module ParamsPhi1  (Optim : Optim.S)=
+  module ParamsPhi1 (Optim : Optim.S) (Instance : Instance) =
   struct
     module Optim = Optim
     let name = "AT1"
@@ -56,7 +64,7 @@ struct
     let tstep = 0.01
     let max_t = 20.
 
-    let sample_every = 50
+    let sample_every = Instance.sample_every
 
     let prop_name_in_matlab = "AT{1}"
 
@@ -70,7 +78,7 @@ struct
     let node = At_bench.autotrans_at1 tstep
   end
 
-  module ParamsPhi2  (Optim : Optim.S)=
+  module ParamsPhi2 (Optim : Optim.S) (Instance : Instance) =
   struct
     module Optim = Optim
     let name = "AT2"
@@ -78,7 +86,7 @@ struct
     let tstep = 0.01
     let max_t = 10.
 
-    let sample_every = 50
+    let sample_every = Instance.sample_every
 
     let prop_name_in_matlab = "AT{2}"
 
@@ -92,7 +100,7 @@ struct
     let node = At_bench.autotrans_at2 tstep
   end
 
-  module ParamsPhi51 (Optim : Optim.S) =
+  module ParamsPhi51 (Optim : Optim.S) (Instance : Instance) =
   struct
     module Optim = Optim
     let name = "AT51"
@@ -100,7 +108,7 @@ struct
     let tstep = 0.01
     let max_t = 32.5
 
-    let sample_every = 50
+    let sample_every = Instance.sample_every
 
     let prop_name_in_matlab = "AT{3}"
 
@@ -113,7 +121,7 @@ struct
     let node = At_bench.autotrans_at51 tstep
   end
 
-  module ParamsPhi52 (Optim : Optim.S) =
+  module ParamsPhi52 (Optim : Optim.S) (Instance : Instance) =
   struct
     module Optim = Optim
     let name = "AT52"
@@ -121,7 +129,7 @@ struct
     let tstep = 0.01
     let max_t = 32.5
 
-    let sample_every = 50
+    let sample_every = Instance.sample_every
 
     let prop_name_in_matlab = "AT{4}"
 
@@ -134,7 +142,7 @@ struct
     let node = At_bench.autotrans_at52 tstep
   end
 
-  module ParamsPhi53 (Optim : Optim.S) =
+  module ParamsPhi53 (Optim : Optim.S) (Instance : Instance) =
   struct
     module Optim = Optim
     let name = "AT53"
@@ -142,7 +150,7 @@ struct
     let tstep = 0.01
     let max_t = 32.5
 
-    let sample_every = 50
+    let sample_every = Instance.sample_every
 
     let prop_name_in_matlab = "AT{5}"
 
@@ -155,7 +163,7 @@ struct
     let node = At_bench.autotrans_at53 tstep
   end
 
-  module ParamsPhi54 (Optim : Optim.S) =
+  module ParamsPhi54 (Optim : Optim.S) (Instance : Instance) =
   struct
     module Optim = Optim
     let name = "AT54"
@@ -163,7 +171,7 @@ struct
     let tstep = 0.01
     let max_t = 32.5
 
-    let sample_every = 50
+    let sample_every = Instance.sample_every
 
     let prop_name_in_matlab = "AT{6}"
 
@@ -176,7 +184,7 @@ struct
     let node = At_bench.autotrans_at54 tstep
   end
 
-  module ParamsPhi6a (Optim : Optim.S) =
+  module ParamsPhi6a (Optim : Optim.S) (Instance : Instance) =
   struct
     module Optim = Optim
     let name = "AT6a"
@@ -184,7 +192,7 @@ struct
     let tstep = 0.01
     let max_t = 30.
 
-    let sample_every = 50
+    let sample_every = Instance.sample_every
 
     let prop_name_in_matlab = "AT{7}"
 
@@ -198,7 +206,7 @@ struct
     let node = At_bench.autotrans_at6a tstep
   end
 
-  module ParamsPhi6b (Optim : Optim.S) =
+  module ParamsPhi6b (Optim : Optim.S) (Instance : Instance) =
   struct
     module Optim = Optim
     let name = "AT6b"
@@ -206,7 +214,7 @@ struct
     let tstep = 0.01
     let max_t = 30.
 
-    let sample_every = 50
+    let sample_every = Instance.sample_every
 
     let prop_name_in_matlab = "AT{8}"
 
@@ -220,7 +228,7 @@ struct
     let node = At_bench.autotrans_at6b tstep
   end
 
-  module ParamsPhi6c (Optim : Optim.S) =
+  module ParamsPhi6c (Optim : Optim.S) (Instance : Instance) =
   struct
     module Optim = Optim
     let name = "AT6c"
@@ -228,7 +236,7 @@ struct
     let tstep = 0.01
     let max_t = 30.
 
-    let sample_every = 50
+    let sample_every = Instance.sample_every
 
     let prop_name_in_matlab = "AT{9}"
 
@@ -289,25 +297,45 @@ struct
     let interp_fn = pcwse_cste2 h
   end
 
-  module Phi1 = Offline.Make (AutotransBench(ParamsPhi1(Optim.GDClassic)))
-  module Phi2 = Offline.Make (AutotransBench(ParamsPhi2(Optim.GDClassic)))
-  module Phi51 = Online.Make (AutotransBench(ParamsPhi51(Optim.GDClassic)))
-  module Phi52 = Online.Make (AutotransBench(ParamsPhi52(Optim.GDClassic)))
-  module Phi53 = Online.Make (AutotransBench(ParamsPhi53(Optim.GDClassic)))
-  module Phi54 = Online.Make (AutotransBench(ParamsPhi54(Optim.GDClassic)))
-  module Phi6a = Offline.Make (AutotransBench(ParamsPhi6a(Optim.GDClassic)))
-  module Phi6b = Offline.Make (AutotransBench(ParamsPhi6b(Optim.GDClassic)))
-  module Phi6c = Offline.Make (AutotransBench(ParamsPhi6c(Optim.GDClassic)))
+  module Phi1_instance1 = Offline.Make (AutotransBench(ParamsPhi1(Optim.GDClassic)(Instance1)))
+  module Phi2_instance1 = Offline.Make (AutotransBench(ParamsPhi2(Optim.GDClassic)(Instance1)))
+  module Phi51_instance1 = Online.Make (AutotransBench(ParamsPhi51(Optim.GDClassic)(Instance1)))
+  module Phi52_instance1 = Online.Make (AutotransBench(ParamsPhi52(Optim.GDClassic)(Instance1)))
+  module Phi53_instance1 = Online.Make (AutotransBench(ParamsPhi53(Optim.GDClassic)(Instance1)))
+  module Phi54_instance1 = Online.Make (AutotransBench(ParamsPhi54(Optim.GDClassic)(Instance1)))
+  module Phi6a_instance1 = Offline.Make (AutotransBench(ParamsPhi6a(Optim.GDClassic)(Instance1)))
+  module Phi6b_instance1 = Offline.Make (AutotransBench(ParamsPhi6b(Optim.GDClassic)(Instance1)))
+  module Phi6c_instance1 = Offline.Make (AutotransBench(ParamsPhi6c(Optim.GDClassic)(Instance1)))
 
-  module Phi1UR = Offline.Make (AutotransBench(ParamsPhi1(Optim.UR_GDAWARE)))
-  module Phi2UR = Offline.Make (AutotransBench(ParamsPhi2(Optim.UR_GDAWARE)))
-  module Phi51UR = Online.Make (AutotransBench(ParamsPhi51(Optim.UR_GDAWARE)))
-  module Phi52UR = Online.Make (AutotransBench(ParamsPhi52(Optim.UR_GDAWARE)))
-  module Phi53UR = Online.Make (AutotransBench(ParamsPhi53(Optim.UR_GDAWARE)))
-  module Phi54UR = Online.Make (AutotransBench(ParamsPhi54(Optim.UR_GDAWARE)))
-  module Phi6aUR = Offline.Make (AutotransBench(ParamsPhi6a(Optim.UR_GDAWARE)))
-  module Phi6bUR = Offline.Make (AutotransBench(ParamsPhi6b(Optim.UR_GDAWARE)))
-  module Phi6cUR = Offline.Make (AutotransBench(ParamsPhi6c(Optim.UR_GDAWARE)))
+  module Phi1UR_instance1 = Offline.Make (AutotransBench(ParamsPhi1(Optim.UR_GDAWARE)(Instance1)))
+  module Phi2UR_instance1 = Offline.Make (AutotransBench(ParamsPhi2(Optim.UR_GDAWARE)(Instance1)))
+  module Phi51UR_instance1 = Online.Make (AutotransBench(ParamsPhi51(Optim.UR_GDAWARE)(Instance1)))
+  module Phi52UR_instance1 = Online.Make (AutotransBench(ParamsPhi52(Optim.UR_GDAWARE)(Instance1)))
+  module Phi53UR_instance1 = Online.Make (AutotransBench(ParamsPhi53(Optim.UR_GDAWARE)(Instance1)))
+  module Phi54UR_instance1 = Online.Make (AutotransBench(ParamsPhi54(Optim.UR_GDAWARE)(Instance1)))
+  module Phi6aUR_instance1 = Offline.Make (AutotransBench(ParamsPhi6a(Optim.UR_GDAWARE)(Instance1)))
+  module Phi6bUR_instance1 = Offline.Make (AutotransBench(ParamsPhi6b(Optim.UR_GDAWARE)(Instance1)))
+  module Phi6cUR_instance1 = Offline.Make (AutotransBench(ParamsPhi6c(Optim.UR_GDAWARE)(Instance1)))
+
+  module Phi1_instance2 = Offline.Make (AutotransBench(ParamsPhi1(Optim.GDClassic)(Instance2)))
+  module Phi2_instance2 = Offline.Make (AutotransBench(ParamsPhi2(Optim.GDClassic)(Instance2)))
+  module Phi51_instance2 = Online.Make (AutotransBench(ParamsPhi51(Optim.GDClassic)(Instance2)))
+  module Phi52_instance2 = Online.Make (AutotransBench(ParamsPhi52(Optim.GDClassic)(Instance2)))
+  module Phi53_instance2 = Online.Make (AutotransBench(ParamsPhi53(Optim.GDClassic)(Instance2)))
+  module Phi54_instance2 = Online.Make (AutotransBench(ParamsPhi54(Optim.GDClassic)(Instance2)))
+  module Phi6a_instance2 = Offline.Make (AutotransBench(ParamsPhi6a(Optim.GDClassic)(Instance2)))
+  module Phi6b_instance2 = Offline.Make (AutotransBench(ParamsPhi6b(Optim.GDClassic)(Instance2)))
+  module Phi6c_instance2 = Offline.Make (AutotransBench(ParamsPhi6c(Optim.GDClassic)(Instance2)))
+
+  module Phi1UR_instance2 = Offline.Make (AutotransBench(ParamsPhi1(Optim.UR_GDAWARE)(Instance2)))
+  module Phi2UR_instance2 = Offline.Make (AutotransBench(ParamsPhi2(Optim.UR_GDAWARE)(Instance2)))
+  module Phi51UR_instance2 = Online.Make (AutotransBench(ParamsPhi51(Optim.UR_GDAWARE)(Instance2)))
+  module Phi52UR_instance2 = Online.Make (AutotransBench(ParamsPhi52(Optim.UR_GDAWARE)(Instance2)))
+  module Phi53UR_instance2 = Online.Make (AutotransBench(ParamsPhi53(Optim.UR_GDAWARE)(Instance2)))
+  module Phi54UR_instance2 = Online.Make (AutotransBench(ParamsPhi54(Optim.UR_GDAWARE)(Instance2)))
+  module Phi6aUR_instance2 = Offline.Make (AutotransBench(ParamsPhi6a(Optim.UR_GDAWARE)(Instance2)))
+  module Phi6bUR_instance2 = Offline.Make (AutotransBench(ParamsPhi6b(Optim.UR_GDAWARE)(Instance2)))
+  module Phi6cUR_instance2 = Offline.Make (AutotransBench(ParamsPhi6c(Optim.UR_GDAWARE)(Instance2)))
 
   module ReplayDiscrete = Replay.Make (AutotransdReplay)
   module ReplayContinuous = Replay.Make (AutotranscReplay)

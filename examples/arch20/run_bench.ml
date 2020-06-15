@@ -91,25 +91,45 @@ let _ =
 
   let benches =
     Defbench.Autotrans.([
-      ("AT1", (module Phi1 : RunBench));
-      ("AT2", (module Phi2 : RunBench));
-      ("AT51", (module Phi51 : RunBench));
-      ("AT52", (module Phi52 : RunBench));
-      ("AT53", (module Phi53 : RunBench));
-      ("AT54", (module Phi54 : RunBench));
-      ("AT6a", (module Phi6a : RunBench));
-      ("AT6b", (module Phi6b : RunBench));
-      ("AT6c", (module Phi6c : RunBench));
+      ("AT1_inst1", (module Phi1_instance1 : RunBench));
+      ("AT2_inst1", (module Phi2_instance1 : RunBench));
+      ("AT51_inst1", (module Phi51_instance1 : RunBench));
+      ("AT52_inst1", (module Phi52_instance1 : RunBench));
+      ("AT53_inst1", (module Phi53_instance1 : RunBench));
+      ("AT54_inst1", (module Phi54_instance1 : RunBench));
+      ("AT6a_inst1", (module Phi6a_instance1 : RunBench));
+      ("AT6b_inst1", (module Phi6b_instance1 : RunBench));
+      ("AT6c_inst1", (module Phi6c_instance1 : RunBench));
 
-      ("AT1_ur", (module Phi1UR : RunBench));
-      ("AT2_ur", (module Phi2UR : RunBench));
-      ("AT51_ur", (module Phi51UR : RunBench));
-      ("AT52_ur", (module Phi52UR : RunBench));
-      ("AT53_ur", (module Phi53UR : RunBench));
-      ("AT54_ur", (module Phi54UR : RunBench));
-      ("AT6a_ur", (module Phi6aUR : RunBench));
-      ("AT6b_ur", (module Phi6bUR : RunBench));
-      ("AT6c_ur", (module Phi6cUR : RunBench));
+      ("AT1_ur_inst1", (module Phi1UR_instance1 : RunBench));
+      ("AT2_ur_inst1", (module Phi2UR_instance1 : RunBench));
+      ("AT51_ur_inst1", (module Phi51UR_instance1 : RunBench));
+      ("AT52_ur_inst1", (module Phi52UR_instance1 : RunBench));
+      ("AT53_ur_inst1", (module Phi53UR_instance1 : RunBench));
+      ("AT54_ur_inst1", (module Phi54UR_instance1 : RunBench));
+      ("AT6a_ur_inst1", (module Phi6aUR_instance1 : RunBench));
+      ("AT6b_ur_inst1", (module Phi6bUR_instance1 : RunBench));
+      ("AT6c_ur_inst1", (module Phi6cUR_instance1 : RunBench));
+
+      ("AT1_inst2", (module Phi1_instance2 : RunBench));
+      ("AT2_inst2", (module Phi2_instance2 : RunBench));
+      ("AT51_inst2", (module Phi51_instance2 : RunBench));
+      ("AT52_inst2", (module Phi52_instance2 : RunBench));
+      ("AT53_inst2", (module Phi53_instance2 : RunBench));
+      ("AT54_inst2", (module Phi54_instance2 : RunBench));
+      ("AT6a_inst2", (module Phi6a_instance2 : RunBench));
+      ("AT6b_inst2", (module Phi6b_instance2 : RunBench));
+      ("AT6c_inst2", (module Phi6c_instance2 : RunBench));
+
+      ("AT1_ur_inst2", (module Phi1UR_instance2 : RunBench));
+      ("AT2_ur_inst2", (module Phi2UR_instance2 : RunBench));
+      ("AT51_ur_inst2", (module Phi51UR_instance2 : RunBench));
+      ("AT52_ur_inst2", (module Phi52UR_instance2 : RunBench));
+      ("AT53_ur_inst2", (module Phi53UR_instance2 : RunBench));
+      ("AT54_ur_inst2", (module Phi54UR_instance2 : RunBench));
+      ("AT6a_ur_inst2", (module Phi6aUR_instance2 : RunBench));
+      ("AT6b_ur_inst2", (module Phi6bUR_instance2 : RunBench));
+      ("AT6c_ur_inst2", (module Phi6cUR_instance2 : RunBench));
     ])
     @
     Defbench.F16.([
