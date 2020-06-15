@@ -3,21 +3,7 @@ open Scope
 
 open Discrete_obs_fad
 
-(* AT5 *)
-node phi5 geari (tstep, gear) =
-    let start = q_true fby q_false in
-    let switch = q_and(q_not start, q_up (q_eqi (gear, make geari))) in
-    always_timed 30.
-        (make tstep,
-            alwaysBfromA_timed 2.5 (make tstep, switch, q_eqi(gear, make geari)))
-
-node phi51 (tstep, gear) = phi5 1. (tstep, gear)
-node phi52 (tstep, gear) = phi5 2. (tstep, gear)
-node phi53 (tstep, gear) = phi5 3. (tstep, gear)
-node phi54 (tstep, gear) = phi5 4. (tstep, gear)
-
-
-node autotransd tstep (times, inp) = () where
+node autotransd (times, inp) = () where
     rec n = 0 fby (Stdlib.( + ) n 1)
     and cur_inp = Array.get inp n
     and t = Array.get times n
@@ -46,7 +32,7 @@ node autotransd tstep (times, inp) = () where
 
 let rtod = 57.29578
 
-node f16 tstep (times, inp) = () where
+node f16 (times, inp) = () where
     rec n = 0 fby (Stdlib.( + ) n 1)
     and cur_inp = Array.get inp n
     and t = Array.get times n
@@ -78,7 +64,7 @@ node f16 tstep (times, inp) = () where
                         ("vt (ft/sec)", linear, vt)) in
         window4("Controlled F16", 15., t, s1, s2, s3, s4)
 
-node cc tstep (times, inp) = () where
+node cc (times, inp) = () where
     rec n = 0 fby (Stdlib.( + ) n 10)
     and cur_inp = Array.get inp n
     and t = Array.get times n
@@ -102,8 +88,8 @@ node cc tstep (times, inp) = () where
         let s3 = scope2(-50., 50., ("rob", linear, rob), ("zero", linear, 0.)) in
         window5("Chasing cars", 100., t, s1, s2, s2', s2'', s3)
 
-node wt tstep (times, inp) = () where
-    rec n = 0 fby (Stdlib.( + ) n 10)
+node wt (times, inp) = () where
+    rec n = 0 fby (Stdlib.( + ) n 50)
     and cur_inp = Array.get inp n
     and t = Array.get times n
     and v0 = get (Array.get cur_inp 0)
@@ -116,11 +102,31 @@ node wt tstep (times, inp) = () where
 
     and () =
         let s1 = scope (8., 16., ("v0", linear, v0)) in
-        let s2 = scope (10., 13., ("omega", linear, omega)) in
+        let s2 = scope2(10., 13., ("omega", linear, omega), ("14.3", linear, 14.3)) in
         let s3 = scope (1000., 1300., ("omega_g", linear, omega_g)) in
-        let s4 = scope (2.5e4, 5.e4, ("mg_d", linear, mg_d)) in
+        let s4 = scope3(2.5e4, 5.e4, ("mg_d", linear, mg_d), ("21000.", linear, 21000.), ("47500.", linear, 47500.)) in
         let s5 = scope3(0., 13., ("theta", linear, theta), ("theta_d", linear, theta_d), ("blade_pitch_angle", linear, blade_pitch_angle)) in
-        windown ("Wind Turbine", 630., t, [s1; s2; s3; s4])
+        windown ("Wind Turbine", 630., t, [s1; s2; s3; s4; s5])
+
+node afc (times, inp) = () where
+    rec n = 0 fby (Stdlib.( + ) n 50)
+    and cur_inp = Array.get inp n
+    and t = Array.get times n
+    and throttle = get (Array.get cur_inp 0)
+    and engine = get (Array.get cur_inp 1)
+    and abf = get (Array.get cur_inp 2)
+    and abf_ref = get (Array.get cur_inp 3)
+    and mu = get (Array.get cur_inp 4)
+    and mode = get (Array.get cur_inp 5)
+
+    and () =
+        let s1 = scope (0., 85., ("throttle", linear, throttle)) in
+        let s2 = scope (900., 1100., ("engine", linear, engine)) in
+        let s3 = scope2(0., 15., ("abf", linear, abf), ("abf_ref", linear, abf_ref)) in
+        let s4 = scope (-0.1, 0.1, ("mu", linear, mu)) in
+        let s5 = scope (0., 2., ("mode", linear, mode)) in
+
+        windown("Abstract fuel control", 50., t,  [s1; s2; s3; s4; s5])
 
 open Node
 
@@ -136,7 +142,7 @@ discrete print_status (t, h, status) =
     | TimeHasPassed -> print_endline "TimeHasPassed"
     | Error -> print_endline "Error"
 
-node cc_c tstep max_t (times, inp) = () where
+node cc_c max_t tstep (times, inp) = () where
     rec init cur_t = 0.
     and cur_inp = Replay.interp times inp cur_t
     and throttle = get (Array.get cur_inp 0)
@@ -208,13 +214,11 @@ node autotransc max_t tstep (times, inp) = () where
     (* and () = print_status (cur_t, h, status) *)
 
     and present tick(t, (rpm_, gear_, speed_)) ->
-    local rob_, up_th, dn_th, s1, s2, s3, s4, s5
+    local up_th, dn_th, s1, s2, s3, s4, s5
     do
         (* advance horizon and update actual t *)
-        next h = if (make t >= make h) then h +. tstep else h
+        next h = if (make t >= make h) then h +. 0.01 else h
         and next cur_t = t
-
-        and rob_ = MyOp.get (phi51 (tstep, MyOp.make gear_))
 
         (* tmp *)
         and up_th = Common.lookup_interpup(throttle, gear_)
@@ -232,8 +236,7 @@ node autotransc max_t tstep (times, inp) = () where
                         ("actual speed", linear, speed_),
                         ("up_th", linear, up_th), ("dn_th", linear, dn_th),
                         ("35", linear, 35.))
-        and s5 = scope3(-4., 4., ("replay rob", linear, rob),
-                                 ("actual rob", linear, rob_),
+        and s5 = scope2(-4., 4., ("replay rob", linear, rob),
                                  ("", linear, 0.))
         and () = window5("Autotrans", 30., t, s1, s2, s3, s4, s5)
     done

@@ -1,0 +1,219 @@
+open MyOp
+open Afc_utils
+
+node integrate (tstep, dy, y0) = y where
+    rec y = y0 fby (tstep * dy + y)
+
+let saturate (low, high, v) = min (max v low) high
+
+node step (tstep, y0, t0, y1) =
+    let t = integrate (tstep, make 1., make 0.) in
+    if t <= t0 then y0 else y1
+
+node pulse_gen (tstep, a, p, w, delay) =
+    let t = integrate (tstep, make 1., make 0.) in
+    let init pulse_width = p * w in
+    let pulse_rel = mod_t (t - delay) p in
+    let pulse_is_on = pulse_rel <= pulse_width in
+    if t >= delay && pulse_is_on then a else make 0.
+
+node over_under_shoot (abf, abf_ref) = e where
+    rec e = if abf_ref = make 0. then make 0. else translate (abf / abf_ref) (-1.)
+
+node rms_error (tstep, abf, abf_ref) = e where
+    rec de = (pow (abf - abf_ref) 2.) * (step (tstep, make 0.,make 10.,make 1.))
+    and e = sqrt (scale (integrate (tstep, de, make 0.)) (1. /. (simTime -. 10.)))
+
+node calculate_error (tstep, abf, spec_num, abf_ref) = s_aux_out where
+    rec s_aux_out =
+        match spec_num with
+        | 1 -> over_under_shoot (abf, abf_ref)
+        | 2 -> rms_error (tstep, abf, abf_ref)
+        | _ -> make 0. (* should not happen *)
+
+node vv_stub (tstep, abf, abf_ref) = s_aux_out where
+    rec t = integrate (tstep, make 1., make 0.)
+    and s_aux_out =
+        if (t >= make 1.) then
+            calculate_error (tstep, abf, spec_num, abf_ref)
+        else make 0.
+
+node throttle (throttle_angle, manifold_pressure, atmospheric_pressure) =
+        throttle_flow where
+    rec throttle_flow = f_angle * aux * flow_direction
+    and f_angle =  translate
+                    (scale (throttle_angle) (-0.05231)
+                   + scale (throttle_angle * throttle_angle) 0.10299
+                   + scale (throttle_angle * throttle_angle * throttle_angle) (-0.00063))
+                   2.821
+    and aux = if pratio >= make 0.5 then g_pratio else sonic_flow
+    and g_pratio = scale (sqrt (pratio - pratio * pratio)) 2.
+    and sonic_flow = make 1.
+    and pratio = min (manifold_pressure / atmospheric_pressure)
+                     (atmospheric_pressure / manifold_pressure)
+    and flow_direction =
+        if (atmospheric_pressure - manifold_pressure) > make 0. then make 1.
+        else if (atmospheric_pressure - manifold_pressure) < make 0. then make (-1.)
+        else make 0.
+
+node intake_manifold (tstep, throttle_flow, omega) =
+        cyl_air, manifold_pressure where
+    rec cyl_air = scale pumping 0.9
+    and pumping = translate
+                (scale (manifold_pressure * omega) 0.08979
+               - scale (omega * manifold_pressure * manifold_pressure) 0.0337
+               + scale (manifold_pressure * omega * omega) 0.0001)
+               (-0.366)
+    and dmanifold_pressure = scale (throttle_flow - cyl_air) 0.41328
+    and manifold_pressure = integrate (tstep, dmanifold_pressure, make 0.982)
+
+node af_sensor (tstep, x) = scale y af_sensor_tol where
+    rec y = integrate (tstep, scale (x - y) 50., make 14.7)
+
+node cylinder_exhaust (tstep, cyl_air, cyl_fuel, omega, sensor_fault) =
+        abf_meas, cyl_air_charge, abf where
+    rec t = integrate (tstep, make 1., make 0.)
+    and abf_meas = if sensor_fault >= make 0.5 then make (-1.) else abf
+    and cyl_air_charge = scale (cyl_air / omega) pi
+    and abf = af_sensor (tstep, filter_aux_out)
+    and filter_aux_out = integrate (tstep, scale (delayed - filter_aux_out) 10., make 14.7)
+    and delay = lookup_delay (scale omega rad2rpm, cyl_air_charge)
+    and cur_abf = cyl_air / cyl_fuel
+    and delayed = fuel_transport_delay (t, cur_abf, delay)
+
+node wall_wetting (tstep, fuel_injected, omega, cyl_air_charge) = cyl_fuel where
+    rec cyl_fuel = fuel_vapor + fuel_puddle_evap
+    and fuel_vapor = kappa_tolerance * fuel_injected
+    and kappa_tolerance = lookup_kappa (scale omega rad2rpm, cyl_air_charge)
+    and fuel_puddle_evap = aux / tau_ww_tolerance
+    and aux = integrate (tstep, daux, make 0.0112)
+    and daux = fuel_injected * ((make 1.) - kappa_tolerance) - fuel_puddle_evap
+    and tau_ww_tolerance = lookup_tau_ww (omega, cyl_air_charge)
+
+node fup x = b where
+    rec b' = x > make 0.5
+    and b = false -> (b' && not (pre b'))
+
+node sensor_failure_detection abf = fail_on where
+    rec fail_on = (abf <= make (-1.)) || (false fby fail_on)
+
+node normal_mode_detection () = normal_mode where
+    rec samp_time = make 0.01 (* 10 ms *)
+    and normal_mode_start_time = make 10.
+    and t = make 0. fby (t + samp_time)
+    and normal_mode = (t >= normal_mode_start_time) || (false fby normal_mode)
+
+node power_mode_detection throttle_angle = power_on where
+    rec power_on = (throttle_angle >= thresh) || (false fby power_on)
+    and thresh = if (false fby power_on) then make 50. else make 70.
+
+node feedforward_controller (estimated_cyl_air_flow, abf_ref) =
+        desired_fuel_mass where
+    rec desired_fuel_mass = estimated_cyl_air_flow / abf_ref
+
+node air_estimation (throttle_flow, engine_speed) = estimated_cyl_air_flow where
+    rec estimated_cyl_air_flow =
+    translate ((scale (engine_speed * aux) 0.08979)
+             - (scale (aux * aux * engine_speed) 0.0337)
+             + (scale (engine_speed * engine_speed * aux) 0.0001))
+               (-0.366)
+    and aux = make 0.982 fby aux'
+    and aux' = aux +
+        scale (throttle_flow - estimated_cyl_air_flow) (0.01 *. 0.41328)
+
+node feedback_PI_controller (abf_ref, abf_meas) = closed_loop_fuel_trim where
+    rec closed_loop_fuel_trim = (scale (abf_meas - abf_ref) 0.04) + aux
+    and aux = make 0. -> (pre aux + (scale (abf_meas - abf_ref) (0.01 *. 0.14)))
+
+node af_controller (tstep, engine_speed, throttle_angle, throttle_flow, abf_meas) =
+        commanded_fuel, mode, abf_ref where
+    rec trigger_pwon = step (tstep, make 0., make 0.001, make 1.)
+    and trigger_10ms = pulse_gen (tstep, make 1., make 0.01, make 0.5, make 0.01) (* sub sampling at 10ms *)
+    and init commanded_fuel = make 0.1726
+    and init mode = make 0.
+    and init abf_ref = make 0.
+    and present
+        | (fup trigger_pwon) on (trigger_10ms < make 0.5)-> do
+                commanded_fuel = make 0.1726
+            and mode = make 1.
+            and abf_ref = make 14.7
+        done
+        | (fup trigger_10ms) ->
+        local estimated_cyl_air_flow, desired_fuel_mass, fb_fuel_sat, fb_fuel,
+              fail_on, normal_mode, power_on
+        do
+                commanded_fuel =
+                    saturate (make 0.13, make 1.66,
+                              desired_fuel_mass * fb_fuel_sat)
+            and desired_fuel_mass =
+                feedforward_controller (estimated_cyl_air_flow, abf_ref)
+            and estimated_cyl_air_flow =
+                air_estimation (throttle_flow, engine_speed)
+            and fb_fuel_sat = saturate (make 0., infinity, fb_fuel)
+            and fb_fuel = if mode > make 0.5 then make 1. else
+                translate (feedback_PI_controller (abf_ref, abf_meas)) 1.
+            and fail_on = sensor_failure_detection abf_meas
+            and normal_mode = normal_mode_detection ()
+            and power_on = power_mode_detection throttle_angle
+            and mode =
+                if fail_on || not normal_mode || power_on then make 1.
+                else make 0.
+            and abf_ref =
+                if normal_mode && power_on then make 12.5 (* abf ref power*)
+                else make 14.7 (* abf ref *)
+        done
+
+node model_1_transfer_fn (tstep, x) = y where
+    rec dy = scale (x - y) 10.
+    and y = integrate (tstep, dy, make 0.)
+
+let atmospheric_pressure = make 1.
+
+node model_1 (tstep, throttle_in, engine_speed) = abf, abf_ref, mode where
+    rec throttle_flow = throttle (throttle_angle, manifold_pressure,
+                                  atmospheric_pressure)
+    and throttle_angle = saturate (make 0., make 90., translate throttle_delay 8.8)
+    and throttle_delay = model_1_transfer_fn (tstep, throttle_in)
+    and cyl_air, manifold_pressure  = intake_manifold (tstep, throttle_flow, omega)
+    and omega = scale (saturate (make 900., make 1100., engine_speed)) rpm2rad
+    and abf_meas, cyl_air_charge, abf =
+        cylinder_exhaust (tstep, cyl_air, cyl_fuel, omega, af_sensor)
+    and cyl_fuel = wall_wetting (tstep, fuel_injected, omega, cyl_air_charge)
+    and af_sensor = step (tstep, make 0., make fault_time, make 1.)
+    and fuel_injected = scale commanded_fuel fuel_inj_tol
+    and commanded_fuel, mode, abf_ref =
+        af_controller (tstep, omega, throttle_angle,
+                       scale throttle_flow maf_sensor_tol,
+                       scale abf_meas af_sensor_tol)
+
+node afc tstep (throttle, engine) = abf, abf_ref, mu, mode where
+    rec init tstep' = make tstep
+    and mu = vv_stub (tstep', abf, abf_ref)
+    and abf, abf_ref, mode =
+        model_1 (tstep', throttle, engine)
+
+open Scope
+(* should be at least 0.01, preferably a proper divider of 0.01 *)
+(* solution is accurate enough with 5e-5 (automatically chosen by Simulink for ode1),
+   it diverges if higher (tried with 1e-4) *)
+let tstep = 0.00005
+
+node print_dump (t, throttle, engine, abf, abf_ref, mu, mode) =
+    print_float t; print_string ",";
+    print_float throttle; print_string ",";
+    print_float engine; print_string ",";
+    print_float abf; print_string ",";
+    print_float abf_ref; print_string ",";
+    print_float mu; print_string ",";
+    print_float mode; print_string "\n"
+
+node main () =
+    let t = integrate (make tstep, make 1., make 0.) in
+
+    let throttle = make 80. in
+    let engine = make 1100. in
+
+    let abf, abf_ref, mu, mode = afc tstep (throttle, engine) in
+
+    print_string ("t = " ^ (string_of_float (get t)) ^ "\r"); flush stdout
+    (* print_dump (get t, get throttle, get engine, get abf, get abf_ref, get mu, get mode) *)

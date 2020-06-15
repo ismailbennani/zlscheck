@@ -39,7 +39,8 @@ defbench.cmo : \
     common/myOp.cmo \
     models/f16_bench.cmo \
     models/cc_bench.cmo \
-    models/autotrans_bench.cmo
+    models/at_bench.cmo \
+    models/afc_bench.cmo
 defbench.cmx : \
     models/wt_bench.cmx \
     models/replay_models.cmx \
@@ -49,11 +50,12 @@ defbench.cmx : \
     common/myOp.cmx \
     models/f16_bench.cmx \
     models/cc_bench.cmx \
-    models/autotrans_bench.cmx
+    models/at_bench.cmx \
+    models/afc_bench.cmx
+draw_at.cmo :
+draw_at.cmx :
 draw_f16.cmo :
 draw_f16.cmx :
-draw_transmission.cmo :
-draw_transmission.cmx :
 replay_bench.cmo : \
     defbench.cmo \
     common/common_utils.cmo

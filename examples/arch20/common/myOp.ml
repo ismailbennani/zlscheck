@@ -7,3 +7,6 @@ let copysign a b =
 let abs a = max a (-a)
 
 let pow t f = t ** (make f)
+
+let mod_t t1 t2 =
+  t1 - (make (Stdlib.floor ((get t1) /. (get t2)))) * t2

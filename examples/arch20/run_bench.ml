@@ -101,19 +101,20 @@ let _ =
       ("AT6b", (module Phi6b : RunBench));
       ("AT6c", (module Phi6c : RunBench));
 
-      ("AT1_online", (module Phi1Online : RunBench));
-      ("AT2_online", (module Phi2Online : RunBench));
-      ("AT51_online", (module Phi51Online : RunBench));
-      ("AT52_online", (module Phi52Online : RunBench));
-      ("AT53_online", (module Phi53Online : RunBench));
-      ("AT54_online", (module Phi54Online : RunBench));
-      ("AT6a_online", (module Phi6aOnline : RunBench));
-      ("AT6b_online", (module Phi6bOnline : RunBench));
-      ("AT6c_online", (module Phi6cOnline : RunBench));
+      ("AT1_ur", (module Phi1UR : RunBench));
+      ("AT2_ur", (module Phi2UR : RunBench));
+      ("AT51_ur", (module Phi51UR : RunBench));
+      ("AT52_ur", (module Phi52UR : RunBench));
+      ("AT53_ur", (module Phi53UR : RunBench));
+      ("AT54_ur", (module Phi54UR : RunBench));
+      ("AT6a_ur", (module Phi6aUR : RunBench));
+      ("AT6b_ur", (module Phi6bUR : RunBench));
+      ("AT6c_ur", (module Phi6cUR : RunBench));
     ])
     @
     Defbench.F16.([
-        ("F16", (module Phi : RunBench))
+        ("F16", (module Phi : RunBench));
+        ("F16UR", (module PhiUR : RunBench));
       ])
     @
     Defbench.CC.([
@@ -121,6 +122,12 @@ let _ =
         ("CC2", (module Phi2 : RunBench));
         ("CC3", (module Phi3 : RunBench));
         ("CC4", (module Phi4 : RunBench));
+        ("CC5", (module Phi5 : RunBench));
+        ("CC1_ur", (module Phi1UR : RunBench));
+        ("CC2_ur", (module Phi2UR : RunBench));
+        ("CC3_ur", (module Phi3UR : RunBench));
+        ("CC4_ur", (module Phi4UR : RunBench));
+        ("CC5_ur", (module Phi5UR : RunBench));
       ])
     @
     Defbench.WT.([
@@ -128,6 +135,15 @@ let _ =
         ("WT2", (module Phi2 : RunBench));
         ("WT3", (module Phi3 : RunBench));
         ("WT4", (module Phi4 : RunBench));
+        ("WT1_ur", (module Phi1UR : RunBench));
+        ("WT2_ur", (module Phi2UR : RunBench));
+        ("WT3_ur", (module Phi3UR : RunBench));
+        ("WT4_ur", (module Phi4UR : RunBench));
+      ])
+    @
+    Defbench.AFC.([
+        ("AFC27", (module Phi27 : RunBench));
+        ("AFC27_ur", (module Phi27UR : RunBench));
       ])
   in
   let all_benches = fst (List.split benches) in
