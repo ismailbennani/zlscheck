@@ -23,18 +23,21 @@ MLIS = $(COMMON_MLI) $(BENCH_MLI)
 INCLUDES += $(DIRS:%=-I %) \
 \
 myOp.cmx discrete_obs_fad.cmx zc.cmx zc_utils.cmx \
+\
 consts.cmx at_utils.cmx common.cmx common_myop.cmx \
 autotransc.cmx autotransd.cmx autotransd_modes.cmx \
 \
 constants.cmx matrix.cmx f16_types.cmx f16_mlutils.cmx f16_utils.cmx \
 lowLevelController.cmx subf16_model.cmx gcasAutopilot.cmx \
 \
-cc_d.cmx cc_c.cmx \
+cc_prop.cmx cc_d.cmx cc_c.cmx \
 \
-interp.cmx wt_common.cmx wt_params.cmx wt_d.cmx \
+wt_interp.cmx wt_common.cmx wt_params.cmx wt_d.cmx \
+\
+afc_interp.cmx afc_delay.cmx afc_utils.cmx afc_d.cmx \
 \
 common_utils.cmx online.cmx offline.cmx replay.cmx \
-autotrans_bench.cmx f16_bench.cmx cc_bench.cmx wt_bench.cmx \
+at_bench.cmx f16_bench.cmx cc_bench.cmx wt_bench.cmx afc_bench.cmx \
 replay_models.cmx
 
 TARGET = run_bench.opt replay_bench.opt

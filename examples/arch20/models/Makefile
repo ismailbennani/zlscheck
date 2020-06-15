@@ -1,17 +1,16 @@
 include ../../../config
 
-MODELS = autotrans f16 cc wt
+MODELS = at f16 cc wt afc
 
 ZELUCFLAGS += -I $(CHECKLIB) -I ../common $(MODELS:%=-I %)
 INCLUDES += -I $(CHECKLIB) zlscheck.cmxa -I ../common myOp.cmx
 
-BENCH = autotrans_bench f16_bench cc_bench wt_bench
+BENCH = at_bench f16_bench cc_bench wt_bench afc_bench
 
 all: models $(BENCH:=.cmx) replay_models.cmx
 
 $(BENCH:=.cmx): ZELUCFLAGS += -noreduce
-$(BENCH:=.cmx): INCLUDES += $(MODELS:%=-I %) autotransd.cmx controlledf16.cmx \
-							cc_c.cmx cc_d.cmx
+$(BENCH:=.cmx): INCLUDES += $(MODELS:%=-I %)
 
 $(BENCH:=.ml): $(BENCH:=.zls)
 	$(ZELUC) $(ZELUCFLAGS) $(@:.ml=.zls)
@@ -19,8 +18,7 @@ $(BENCH:=.ml): $(BENCH:=.zls)
 	sed -i "s/Obj.magic ():MyOp.t/create ():MyOp.t/g" $@
 
 replay_models.cmx: ZELUCFLAGS += -noreduce
-replay_models.cmx: INCLUDES += $(MODELS:%=-I %) autotransd.cmx \
-							   controlledf16.cmx cc_c.cmx cc_d.cmx
+replay_models.cmx: INCLUDES += $(MODELS:%=-I %)
 
 replay_models.ml: replay_models.zls
 	$(ZELUC) $(ZELUCFLAGS) $<
