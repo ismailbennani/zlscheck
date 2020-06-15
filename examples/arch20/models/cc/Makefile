@@ -5,7 +5,7 @@ INCLUDES += -I $(CHECKLIB) zlscheck.cmxa -I ../ -I ../../common myOp.cmx
 
 # dependencies
 
-all: cc_d.cmx cc_c.cmx dcc_c.cmx
+all: cc_d.cmx cc_c.cmx dcc_c.cmx cc_prop.cmx cc_prop.zci
 
 cc_d.opt: ZELUCFLAGS += -gtk2 -s main -o cc_d_main
 cc_c.opt: ZELUCFLAGS += -gtk2 -s main -o cc_c_main

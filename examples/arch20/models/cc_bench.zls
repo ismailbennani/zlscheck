@@ -60,6 +60,14 @@ node cc4 (tstep, c4, c5) = ok where
         done
     init Notp(t)
 
+(* Fml5: always_[0,72] possibly_[0,8]((always_[0,5] y2-y1 >= 9) -> (always_[5,20]y5-y4>= 9)) *)
+(* sliding window implemented in OCaml *)
+node cc5 (tstep, c1, c2, c4, c5) = ok where
+    rec t = make 0. fby (tstep + t)
+    and init sliding_window = Cc_prop.create ()
+    and impl = Cc_prop.cc5_sliding_window sliding_window (t, c1, c2, c4, c5)
+    and ok = always_timed 100. (tstep, bounded_recurrence 8. (tstep, impl))
+
 node cc_cc1 tstep inp = get next_t, outp, translate rob 1. where
     rec throttle = Array.get inp 0
     and brake = Array.get inp 1
@@ -102,4 +110,15 @@ node cc_cc4 tstep inp = get next_t, outp, rob where
     and (c1,c2,c3,c4,c5), rob_optim = Cc_d.chasing_cars (t, throttle, brake)
     and outp = Array.of_list [c1; c2; c3; c4; c5]
     and rob_spec = cc4 (tstep', c4, c5)
+    and rob = if isFalse rob_spec then rob_spec else if isTrue rob_optim then rob_optim else rob_spec
+
+node cc_cc5 tstep inp = get next_t, outp, rob where
+    rec throttle = Array.get inp 0
+    and brake = Array.get inp 1
+    and tstep' = make tstep
+    and next_t = tstep' fby (next_t + tstep')
+    and t = make 0. fby next_t
+    and (c1,c2,c3,c4,c5), rob_optim = Cc_d.chasing_cars (t, throttle, brake)
+    and outp = Array.of_list [c1; c2; c3; c4; c5]
+    and rob_spec = cc5 (tstep', c1, c2, c4, c5)
     and rob = if isFalse rob_spec then rob_spec else if isTrue rob_optim then rob_optim else rob_spec
