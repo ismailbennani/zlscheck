@@ -5,7 +5,7 @@ INCLUDES += -I $(CHECKLIB) zlscheck.cmxa -I ../ -I ../../common myOp.cmx
 
 OBJ=wt_d.cmx
 
-DEPS=wt_common.zci wt_params.zci
+DEPS=wt_interp.cmx wt_common.cmx wt_params.cmx
 
 %_main.ml: %.zls
 	$(ZELUC) $(ZELUCFLAGS) -s main -gtk2 -o $(@:.ml=) $<
@@ -14,19 +14,18 @@ DEPS=wt_common.zci wt_params.zci
 
 # dependencies
 
-all: wt_d.opt
+all: wt_d.cmx
 
-WT_D_DEPS = interp.cmx wt_common.cmx wt_params.cmx
+wt_d.opt: INCLUDES += $(DEPS)
+wt_d.opt: wt_d_main.ml $(DEPS)
+wt_d.cmx: $(DEPS)
+wt_d.ml: $(DEPS:.cmx=.zci)
 
-wt_d.opt: INCLUDES += $(WT_D_DEPS)
-wt_d.opt: wt_d_main.ml $(WT_D_DEPS)
-wt_d.ml: $(WT_D_DEPS:.cmx=.zci)
-
-interp.zci: array.zci
+wt_interp.zci: array.zci
 wt_params.zci: array.zci wt_common.zci
 wt_params.cmx: wt_common.cmx
-wt_common.zci: interp.zci
-wt_common.cmx: interp.cmx
+wt_common.zci: wt_interp.zci
+wt_common.cmx: wt_interp.cmx
 
 #
 

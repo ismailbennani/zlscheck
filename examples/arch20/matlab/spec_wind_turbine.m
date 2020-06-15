@@ -5,7 +5,7 @@
 % Formula 2, maximum pitch angle
 WT{1} = '[]_[30, 630]p1';
 preds(1).str = 'p1';
-preds(1).A = [0 0 0 0 0 1];
+preds(1).A = [0 2 0 0 0 0];
 preds(1).b = 14.2;
 
 % Formula 3, gnerator torque
