@@ -2,8 +2,8 @@ let _ =
   Random.self_init ();
 
   let models = [
-    ("autotransd", (module Defbench.Autotrans.ReplayDiscrete : Common_utils.RunReplay));
-    ("autotransc", (module Defbench.Autotrans.ReplayContinuous : Common_utils.RunReplay));
+    ("at", (module Defbench.Autotrans.ReplayDiscrete : Common_utils.RunReplay));
+    ("at_c", (module Defbench.Autotrans.ReplayContinuous : Common_utils.RunReplay));
     ("f16", (module Defbench.F16.ReplayDiscrete : Common_utils.RunReplay));
     ("cc", (module Defbench.CC.ReplayDiscrete : Common_utils.RunReplay));
     ("cc_c", (module Defbench.CC.ReplayContinuous : Common_utils.RunReplay));
