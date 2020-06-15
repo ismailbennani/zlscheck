@@ -22,6 +22,7 @@ function [ok, notok] = validate_zlscheck_transmission(phi, preds, dump_folder)
             notok(j).r = r;
             j = j + 1;
         else
+            fprintf("OK %d, input falsifies %s\n", i, phi);
             ok(i - j + 1).name = foldInfo(i).name;
             ok(i - j + 1).u = [tout u yout];
             ok(i - j + 1).r = r;
