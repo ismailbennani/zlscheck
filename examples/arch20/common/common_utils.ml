@@ -1,15 +1,4 @@
-open Ztypes
-
-type 'a result = {
-  optim: string;
-  n_runs: int;
-  samples: 'a array;
-  robs: float array;
-  best_sample: 'a;
-  best_rob: float;
-  falsified: bool;
-  elapsed_time: float (* seconds *)
-}
+open Common_types
 
 let make_dump_folder path name =
   let split = StringLabels.split_on_char ' ' name in
@@ -28,7 +17,7 @@ let print_result print_sample { optim; n_runs; best_sample; best_rob;
   Printf.printf "\tbest_sample: %a with rob %g\n"
     print_sample best_sample best_rob
 
-let print_matlab_test fd matlab_path model_name prop_name_in_matlab dump_folder =
+let print_matlab_validate fd bench_name matlab_path model_name prop_name_in_matlab dump_folder =
   Printf.fprintf fd
     "warning('off','all');\n\
      addpath(genpath(\"/home/lahkim/Documents/MATLAB/toolbox/S-TALIRO\"));\n\
@@ -36,11 +25,49 @@ let print_matlab_test fd matlab_path model_name prop_name_in_matlab dump_folder 
      addpath(\"%s\");\n\
      addpath(genpath(\"%s\"));\n\
      run(\"spec_%s.m\");\n\
-     [ok, notok] = validate_zlscheck_%s(%s, preds, \".\");"
+     [ok, notok] = validate_zlscheck_%s(%s, preds, \".\");\n\
+     validation_results.('%s').('%s').ok = ok;\n\
+     validation_results.('%s').('%s').notok = notok;\n\
+     clear ok notok preds u T;"
     matlab_path
     (Filename.concat (Filename.dirname matlab_path)
        ("shared/benchmarks/" ^ model_name))
     model_name model_name prop_name_in_matlab
+    model_name bench_name model_name bench_name
+
+let print_result print_optim_params ff
+    { bench; desc; n_repet; n_runs; mean_n_runs; median_n_runs;
+      n_falsif; total_time } =
+  Printf.fprintf ff "Result %s: %s\n" bench desc;
+  Printf.fprintf ff "\t%d/%d successfully falsified\n" n_falsif n_repet;
+  Printf.fprintf ff "\tmax runs per falsif: %d\n" n_runs;
+  Printf.fprintf ff "\tmean num runs: %g\n" mean_n_runs;
+  Printf.fprintf ff "\tmedian num runs: %g\n" median_n_runs;
+  Printf.fprintf ff "\ttotal time: %g seconds\n" total_time;
+  Printf.fprintf ff "\n";
+  Printf.fprintf ff "%a" print_optim_params ()
+
+let print_validate_all fd =
+  Printf.fprintf fd
+    "cur_fd = pwd;\n\
+     validation_scripts = find_rec(\".\", \"validate.m\");\n\
+     for i = 1:length(validation_scripts)\n\
+     \tvalidation_script = validation_scripts(i);\n\
+     \t[folder, ~] = fileparts(validation_script);\n\
+     \tfprintf(\"Entering  %%s...\", folder);\n\
+     \tcd(folder);\n\
+     \trun(\"validate.m\");\n\
+     end\n\
+     cd(cur_fd);\n\
+     clear cur_fd validation_scripts validation_script folder i;"
+
+let mk_bench_list_str benches macro_benches =
+  Format.fprintf Format.str_formatter
+    "@[<h>@ @ @ @ @ @[<v>@[<h>@[<v>MACRO:@]@;@[<v>%a@]@]@;@[<h>@[<v>INDIVIDUAL BENCHES:@]@;@[<hov>%a@]@]@]@]"
+    (fun ff l -> List.iter (fun b -> Format.fprintf ff "@[%s@]@," b) l) macro_benches
+    (fun ff l -> List.iter (fun b -> Format.fprintf ff "@[%s,@ @]@," b) l) benches;
+  (* (String.concat ", " benches); *)
+  Format.flush_str_formatter ()
 
 let string_of_op_t_arr arr =
   (String.concat ","
@@ -48,57 +75,6 @@ let string_of_op_t_arr arr =
         (Array.map
            (fun fad_f -> Printf.sprintf "%g" (MyOp.get fad_f))
            arr)))
-
-module type Replay =
-sig
-  val name : string
-  val max_t : float
-  val replay_node : (float array * MyOp.t array array, unit) node
-  val scan_dump_inp : Scanf.Scanning.in_channel -> MyOp.t array
-  (* val print_dump_inp : out_channel -> MyOp.t array -> unit *)
-end
-
-module type RunReplay =
-sig
-  val name : string
-  val run : string -> unit
-end
-
-module type Bench =
-sig
-  module Optim : Optim.S with type input := float array and type output := float * float array
-
-  val name : string
-  val max_t : float
-  val sample_every : int (* used by online optim *)
-
-  val prop_name_in_matlab : string
-  val model_name_in_matlab : string
-
-  val dump_path : string
-  val matlab_path : string
-
-  val node : (MyOp.t array, float * MyOp.t array * MyOp.t) node
-
-  val set_optim_params: unit -> unit
-  (* take k parameters and output a function from time to num_signals values *)
-  val interp_fn : MyOp.t array -> float -> MyOp.t array
-end
-
-module type RunBench =
-sig
-  module Optim : Optim.S with type input := float array and type output := float * float array
-  val name : string
-  val bench_name : string
-  val prop_name_in_matlab : string
-  val model_name_in_matlab : string
-  val dump_path : string option ref
-  val dump_folder : string option ref
-  val matlab_path : string ref
-  val save_path : string ref
-  val print_optim_params : out_channel -> unit -> unit
-  val run : unit -> float array result
-end
 
 let print_grads ff x =
   Printf.fprintf ff "[%s]" (String.concat "; "

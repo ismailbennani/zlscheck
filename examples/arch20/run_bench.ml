@@ -1,53 +1,5 @@
+open Common_types
 open Common_utils
-
-type 'a input = (float * 'a) list
-
-type 'a bench_result = {
-  bench: string;
-  desc: string;
-  n_repet: int;
-  n_runs: int;
-  mean_n_runs: float;
-  median_n_runs: float;
-  fals_inputs: 'a array;
-  n_falsif: int;
-  total_time: float;
-  dump_folder: string option;
-}
-
-let print_result print_optim_params ff
-    { bench; desc; n_repet; n_runs; mean_n_runs; median_n_runs;
-      n_falsif; total_time } =
-  Printf.fprintf ff "Result %s: %s\n" bench desc;
-  Printf.fprintf ff "\t%d/%d successfully falsified\n" n_falsif n_repet;
-  Printf.fprintf ff "\tmax runs per falsif: %d\n" n_runs;
-  Printf.fprintf ff "\tmean num runs: %g\n" mean_n_runs;
-  Printf.fprintf ff "\tmedian num runs: %g\n" median_n_runs;
-  Printf.fprintf ff "\ttotal time: %g seconds\n" total_time;
-  Printf.fprintf ff "\n";
-  Printf.fprintf ff "%a" print_optim_params ()
-
-let print_summary fd results =
-  let aux fd { bench; n_falsif; n_repet; mean_n_runs; median_n_runs;
-               total_time } =
-    Printf.fprintf fd "%s,%d/%d,%f,%f,%f\n"
-      bench n_falsif n_repet mean_n_runs median_n_runs total_time
-  in
-  Printf.fprintf fd "name,FR,mean,median,time\n";
-  List.iter (aux fd) results
-
-let print_test_all fd results =
-  let aux fd { bench; dump_folder } =
-    match dump_folder with
-    | None -> ()
-    | Some dump_folder ->
-      let folder = Filename.concat "fals" (Filename.basename dump_folder) in
-      Printf.fprintf fd "cd('%s');\nfprintf(\"%s:\");\nrun('test.m');\ncd('../..');\n"
-        folder bench
-  in
-  List.iter (aux fd) results
-
-let mk_bench_list_str benches = String.concat "\n\t" benches
 
 let run_bench (module Bench : RunBench) n_repet n_runs =
   Optim_globals.params.max_n_runs <- n_runs;
@@ -74,6 +26,7 @@ let run_bench (module Bench : RunBench) n_repet n_runs =
   let fals_inp_arr = Array.of_list !fals_inputs in
 
   {
+    model_name = Bench.model_name_in_matlab;
     bench = Bench.bench_name;
     desc = Bench.name;
     n_repet = n_repet;
@@ -83,7 +36,6 @@ let run_bench (module Bench : RunBench) n_repet n_runs =
     fals_inputs = fals_inp_arr;
     n_falsif = !n_falsif;
     total_time = time;
-    dump_folder = !Bench.dump_folder;
   }
 
 let _ =
@@ -91,50 +43,50 @@ let _ =
 
   let benches =
     Defbench.Autotrans.([
-      ("AT1_inst1", (module Phi1_instance1 : RunBench));
-      ("AT2_inst1", (module Phi2_instance1 : RunBench));
-      ("AT51_inst1", (module Phi51_instance1 : RunBench));
-      ("AT52_inst1", (module Phi52_instance1 : RunBench));
-      ("AT53_inst1", (module Phi53_instance1 : RunBench));
-      ("AT54_inst1", (module Phi54_instance1 : RunBench));
-      ("AT6a_inst1", (module Phi6a_instance1 : RunBench));
-      ("AT6b_inst1", (module Phi6b_instance1 : RunBench));
-      ("AT6c_inst1", (module Phi6c_instance1 : RunBench));
+        ("AT1_inst1", (module Phi1_instance1 : RunBench));
+        ("AT2_inst1", (module Phi2_instance1 : RunBench));
+        ("AT51_inst1", (module Phi51_instance1 : RunBench));
+        ("AT52_inst1", (module Phi52_instance1 : RunBench));
+        ("AT53_inst1", (module Phi53_instance1 : RunBench));
+        ("AT54_inst1", (module Phi54_instance1 : RunBench));
+        ("AT6a_inst1", (module Phi6a_instance1 : RunBench));
+        ("AT6b_inst1", (module Phi6b_instance1 : RunBench));
+        ("AT6c_inst1", (module Phi6c_instance1 : RunBench));
 
-      ("AT1_ur_inst1", (module Phi1UR_instance1 : RunBench));
-      ("AT2_ur_inst1", (module Phi2UR_instance1 : RunBench));
-      ("AT51_ur_inst1", (module Phi51UR_instance1 : RunBench));
-      ("AT52_ur_inst1", (module Phi52UR_instance1 : RunBench));
-      ("AT53_ur_inst1", (module Phi53UR_instance1 : RunBench));
-      ("AT54_ur_inst1", (module Phi54UR_instance1 : RunBench));
-      ("AT6a_ur_inst1", (module Phi6aUR_instance1 : RunBench));
-      ("AT6b_ur_inst1", (module Phi6bUR_instance1 : RunBench));
-      ("AT6c_ur_inst1", (module Phi6cUR_instance1 : RunBench));
+        ("AT1_inst1_ur", (module Phi1UR_instance1 : RunBench));
+        ("AT2_inst1_ur", (module Phi2UR_instance1 : RunBench));
+        ("AT51_inst1_ur", (module Phi51UR_instance1 : RunBench));
+        ("AT52_inst1_ur", (module Phi52UR_instance1 : RunBench));
+        ("AT53_inst1_ur", (module Phi53UR_instance1 : RunBench));
+        ("AT54_inst1_ur", (module Phi54UR_instance1 : RunBench));
+        ("AT6a_inst1_ur", (module Phi6aUR_instance1 : RunBench));
+        ("AT6b_inst1_ur", (module Phi6bUR_instance1 : RunBench));
+        ("AT6c_inst1_ur", (module Phi6cUR_instance1 : RunBench));
 
-      ("AT1_inst2", (module Phi1_instance2 : RunBench));
-      ("AT2_inst2", (module Phi2_instance2 : RunBench));
-      ("AT51_inst2", (module Phi51_instance2 : RunBench));
-      ("AT52_inst2", (module Phi52_instance2 : RunBench));
-      ("AT53_inst2", (module Phi53_instance2 : RunBench));
-      ("AT54_inst2", (module Phi54_instance2 : RunBench));
-      ("AT6a_inst2", (module Phi6a_instance2 : RunBench));
-      ("AT6b_inst2", (module Phi6b_instance2 : RunBench));
-      ("AT6c_inst2", (module Phi6c_instance2 : RunBench));
+        ("AT1_inst2", (module Phi1_instance2 : RunBench));
+        ("AT2_inst2", (module Phi2_instance2 : RunBench));
+        ("AT51_inst2", (module Phi51_instance2 : RunBench));
+        ("AT52_inst2", (module Phi52_instance2 : RunBench));
+        ("AT53_inst2", (module Phi53_instance2 : RunBench));
+        ("AT54_inst2", (module Phi54_instance2 : RunBench));
+        ("AT6a_inst2", (module Phi6a_instance2 : RunBench));
+        ("AT6b_inst2", (module Phi6b_instance2 : RunBench));
+        ("AT6c_inst2", (module Phi6c_instance2 : RunBench));
 
-      ("AT1_ur_inst2", (module Phi1UR_instance2 : RunBench));
-      ("AT2_ur_inst2", (module Phi2UR_instance2 : RunBench));
-      ("AT51_ur_inst2", (module Phi51UR_instance2 : RunBench));
-      ("AT52_ur_inst2", (module Phi52UR_instance2 : RunBench));
-      ("AT53_ur_inst2", (module Phi53UR_instance2 : RunBench));
-      ("AT54_ur_inst2", (module Phi54UR_instance2 : RunBench));
-      ("AT6a_ur_inst2", (module Phi6aUR_instance2 : RunBench));
-      ("AT6b_ur_inst2", (module Phi6bUR_instance2 : RunBench));
-      ("AT6c_ur_inst2", (module Phi6cUR_instance2 : RunBench));
-    ])
+        ("AT1_inst2_ur", (module Phi1UR_instance2 : RunBench));
+        ("AT2_inst2_ur", (module Phi2UR_instance2 : RunBench));
+        ("AT51_inst2_ur", (module Phi51UR_instance2 : RunBench));
+        ("AT52_inst2_ur", (module Phi52UR_instance2 : RunBench));
+        ("AT53_inst2_ur", (module Phi53UR_instance2 : RunBench));
+        ("AT54_inst2_ur", (module Phi54UR_instance2 : RunBench));
+        ("AT6a_inst2_ur", (module Phi6aUR_instance2 : RunBench));
+        ("AT6b_inst2_ur", (module Phi6bUR_instance2 : RunBench));
+        ("AT6c_inst2_ur", (module Phi6cUR_instance2 : RunBench));
+      ])
     @
     Defbench.F16.([
         ("F16", (module Phi : RunBench));
-        ("F16UR", (module PhiUR : RunBench));
+        ("F16_ur", (module PhiUR : RunBench));
       ])
     @
     Defbench.CC.([
@@ -163,25 +115,49 @@ let _ =
     @
     Defbench.AFC.([
         ("AFC27", (module Phi27 : RunBench));
+        ("AFC29", (module Phi29 : RunBench));
+        ("AFC33", (module Phi33 : RunBench));
         ("AFC27_ur", (module Phi27UR : RunBench));
+        ("AFC29_ur", (module Phi29UR : RunBench));
+        ("AFC33_ur", (module Phi33UR : RunBench));
       ])
   in
   let all_benches = fst (List.split benches) in
 
-  let at_offline = [ "AT1"; "AT2"; "AT51"; "AT52"; "AT53"; "AT54";
-                    "AT6a"; "AT6b"; "AT6c" ]
+  let at_inst1 = [ "AT1_inst1"; "AT2_inst1"; "AT51_inst1"; "AT52_inst1";
+                   "AT53_inst1"; "AT54_inst1"; "AT6a_inst1"; "AT6b_inst1";
+                   "AT6c_inst1" ]
   in
-  let at_online = [ "AT1_online"; "AT2_online";
-                    "AT51_online"; "AT52_online"; "AT53_online"; "AT54_online";
-                    "AT6a_online"; "AT6b_online"; "AT6c_online" ]
+  let at_inst2 = [ "AT1_inst2"; "AT2_inst2"; "AT51_inst2"; "AT52_inst2";
+                   "AT53_inst2"; "AT54_inst2"; "AT6a_inst2"; "AT6b_inst2";
+                   "AT6c_inst2" ]
   in
-
+  let at_inst1_ur = [ "AT1_inst1_ur"; "AT2_inst1_ur"; "AT51_inst1_ur"; "AT52_inst1_ur";
+                      "AT53_inst1_ur"; "AT54_inst1_ur"; "AT6a_inst1_ur"; "AT6b_inst1_ur";
+                      "AT6c_inst1_ur" ]
+  in
+  let at_inst2_ur = [ "AT1_inst2_ur"; "AT2_inst2_ur"; "AT51_inst2_ur"; "AT52_inst2_ur";
+                      "AT53_inst2_ur"; "AT54_inst2_ur"; "AT6a_inst2_ur"; "AT6b_inst2_ur";
+                      "AT6c_inst2_ur" ]
+  in
+  let cc = ["CC1"; "CC2"; "CC3"; "CC4"; "CC5"] in
+  let cc_ur = ["CC1_ur"; "CC2_ur"; "CC3_ur"; "CC4_ur"; "CC5_ur"] in
+  let wt = ["WT1"; "WT2"; "WT3"; "WT4"] in
+  let wt_ur = ["WT1_ur"; "WT2_ur"; "WT3_ur"; "WT4_ur"] in
 
   let macro_benches = [
-    ("AT", at_offline @ at_online);
-    ("AT_offline", at_offline);
-    ("AT_online", at_online);
-    ("all", all_benches)
+    ("AT_inst1", at_inst1);
+    ("AT_inst2", at_inst2);
+    ("AT_inst1_ur", at_inst1_ur);
+    ("AT_inst2_ur", at_inst2_ur);
+    ("AT", at_inst1 @ at_inst2);
+    ("AT_ur", at_inst1_ur @ at_inst2_ur);
+    ("CC", cc);
+    ("CC_ur", cc_ur);
+    ("WT", wt);
+    ("WT_ur", wt_ur);
+    ("all", at_inst1 @ at_inst2 @ cc @ wt);
+    ("all_ur", at_inst1_ur @ at_inst2_ur @ cc_ur @ wt_ur);
   ] in
 
   let n_repet = ref 10 in
@@ -203,8 +179,8 @@ let _ =
   ] in
 
   let usg_msg =
-    Printf.sprintf "usage: ./run_bench.opt [ OPT_ARGS ] BENCH\n\nBENCH can be one of the following:\n\t%s\n\nOptional arguments:"
-      (mk_bench_list_str ((fst (List.split benches)) @ (fst (List.split macro_benches))))
+    Printf.sprintf "usage: ./run_bench.opt [ OPT_ARGS ] BENCH( BENCH)*\n\nBENCH is either a MACRO or an INDIVIDUAL BENCH:\n%s\n\nOptional arguments:"
+      (mk_bench_list_str (fst (List.split benches)) (fst (List.split macro_benches)))
   in
 
   let sel_bench = ref [] in
@@ -258,10 +234,10 @@ let _ =
             (print_result Bench.print_optim_params) res;
           close_out info_fd;
 
-          let matlab_test_fd = open_out (Filename.concat dump_folder "test.m") in
-          print_matlab_test matlab_test_fd !Bench.matlab_path
+          let matlab_validate_fd = open_out (Filename.concat dump_folder "validate.m") in
+          print_matlab_validate matlab_validate_fd Bench.bench_name !Bench.matlab_path
             Bench.model_name_in_matlab Bench.prop_name_in_matlab dump_folder;
-          close_out matlab_test_fd;
+          close_out matlab_validate_fd;
 
           Printf.printf "Dump saved at %s\nmodel_name: %s\n" dump_folder Bench.model_name_in_matlab
       end;
@@ -272,14 +248,10 @@ let _ =
 
   (* write summary.txt *)
   if not !no_dump && !dump_path <> "" then begin
-    let summary_path = (Filename.concat !dump_path "summary") in
-    let summary_fd = open_out summary_path in
-    print_summary summary_fd results;
-    Printf.printf "Summary saved at %s\n" summary_path;
-    close_out summary_fd;
-
-    let test_all_path = (Filename.concat !dump_path "test_all.m") in
-    let test_all_fd = open_out test_all_path in
-    print_test_all test_all_fd results;
-    close_out test_all_fd;
+    let validate_all_path = (Filename.concat !dump_path "validate_all.m") in
+    if not (Sys.file_exists validate_all_path) then begin
+      let validate_all_fd = open_out validate_all_path in
+      print_validate_all validate_all_fd;
+      close_out validate_all_fd;
+    end
   end

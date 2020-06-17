@@ -1,1 +1,0 @@
-val interp: float array -> 'a array -> float -> 'a

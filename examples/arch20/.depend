@@ -1,7 +1,13 @@
-common/common_utils.cmo : \
+common/common_types.cmo : \
     common/myOp.cmo
-common/common_utils.cmx : \
+common/common_types.cmx : \
     common/myOp.cmx
+common/common_utils.cmo : \
+    common/myOp.cmo \
+    common/common_types.cmo
+common/common_utils.cmx : \
+    common/myOp.cmx \
+    common/common_types.cmx
 common/discrete_obs_fad.cmo : \
     common/myOp.cmo
 common/discrete_obs_fad.cmx : \
@@ -10,26 +16,28 @@ common/myOp.cmo :
 common/myOp.cmx :
 common/offline.cmo : \
     common/myOp.cmo \
-    common/common_utils.cmo
+    common/common_utils.cmo \
+    common/common_types.cmo
 common/offline.cmx : \
     common/myOp.cmx \
-    common/common_utils.cmx
+    common/common_utils.cmx \
+    common/common_types.cmx
 common/online.cmo : \
     common/myOp.cmo \
-    common/common_utils.cmo
+    common/common_utils.cmo \
+    common/common_types.cmo
 common/online.cmx : \
     common/myOp.cmx \
-    common/common_utils.cmx
+    common/common_utils.cmx \
+    common/common_types.cmx
 common/replay.cmo : \
     common/myOp.cmo \
-    common/common_utils.cmo
+    common/common_utils.cmo \
+    common/common_types.cmo
 common/replay.cmx : \
     common/myOp.cmx \
-    common/common_utils.cmx
-common/zc.cmo : \
-    common/myOp.cmo
-common/zc.cmx : \
-    common/myOp.cmx
+    common/common_utils.cmx \
+    common/common_types.cmx
 defbench.cmo : \
     models/wt_bench.cmo \
     models/replay_models.cmo \
@@ -58,13 +66,15 @@ draw_f16.cmo :
 draw_f16.cmx :
 replay_bench.cmo : \
     defbench.cmo \
-    common/common_utils.cmo
+    common/common_types.cmo
 replay_bench.cmx : \
     defbench.cmx \
-    common/common_utils.cmx
+    common/common_types.cmx
 run_bench.cmo : \
     defbench.cmo \
-    common/common_utils.cmo
+    common/common_utils.cmo \
+    common/common_types.cmo
 run_bench.cmx : \
     defbench.cmx \
-    common/common_utils.cmx
+    common/common_utils.cmx \
+    common/common_types.cmx

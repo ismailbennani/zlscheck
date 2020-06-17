@@ -1,3 +1,4 @@
+(* cf. zlscheck/src/core/autodiff/extended_FAD_float.ml *)
 include Extended_FAD_float
 
 let copysign a b =

@@ -1,13 +1,14 @@
+open Common_types
+
 let _ =
   Random.self_init ();
 
   let models = [
-    ("at", (module Defbench.Autotrans.ReplayDiscrete : Common_utils.RunReplay));
-    ("at_c", (module Defbench.Autotrans.ReplayContinuous : Common_utils.RunReplay));
-    ("f16", (module Defbench.F16.ReplayDiscrete : Common_utils.RunReplay));
-    ("cc", (module Defbench.CC.ReplayDiscrete : Common_utils.RunReplay));
-    ("cc_c", (module Defbench.CC.ReplayContinuous : Common_utils.RunReplay));
-    ("wt", (module Defbench.WT.ReplayDiscrete : Common_utils.RunReplay));
+    ("at", (module Defbench.Autotrans.ReplayDiscrete : RunReplay));
+    ("f16", (module Defbench.F16.ReplayDiscrete : RunReplay));
+    ("cc", (module Defbench.CC.ReplayDiscrete : RunReplay));
+    ("wt", (module Defbench.WT.ReplayDiscrete : RunReplay));
+    ("afc", (module Defbench.AFC.ReplayDiscrete : RunReplay));
   ] in
 
   let models_str = String.concat " | " (fst (List.split models)) ^ " | all" in

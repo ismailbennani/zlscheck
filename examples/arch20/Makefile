@@ -22,7 +22,7 @@ MLIS = $(COMMON_MLI) $(BENCH_MLI)
 
 INCLUDES += $(DIRS:%=-I %) \
 \
-myOp.cmx discrete_obs_fad.cmx zc.cmx zc_utils.cmx \
+myOp.cmx discrete_obs_fad.cmx \
 \
 consts.cmx at_utils.cmx common.cmx common_myop.cmx \
 autotransc.cmx autotransd.cmx autotransd_modes.cmx \
@@ -36,7 +36,7 @@ wt_interp.cmx wt_common.cmx wt_params.cmx wt_d.cmx \
 \
 afc_interp.cmx afc_delay.cmx afc_utils.cmx afc_d.cmx \
 \
-common_utils.cmx online.cmx offline.cmx replay.cmx \
+common_types.cmx common_utils.cmx online.cmx offline.cmx replay.cmx \
 at_bench.cmx f16_bench.cmx cc_bench.cmx wt_bench.cmx afc_bench.cmx \
 replay_models.cmx
 

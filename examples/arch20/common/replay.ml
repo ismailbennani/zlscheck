@@ -1,4 +1,5 @@
 open Ztypes
+open Common_types
 open Common_utils
 
 module Runtime = Zlsrungtk.MakeDiscrete ()
@@ -26,7 +27,7 @@ let interp times cp =
     interp_i := find_index_in_sorted_array times t !interp_i;
     cp.(!interp_i)
 
-module Make (Replay : Common_utils.Replay) =
+module Make (Replay : Replay) =
 struct
 
   let name = "replay " ^ Replay.name

@@ -1,3 +1,6 @@
+(* Library of synchronous observers with quantitative semantics.
+   It uses FADBADml arithmetic operators in MyOp *)
+
 open MyOp
 
 let q_true = MyOp.infinity

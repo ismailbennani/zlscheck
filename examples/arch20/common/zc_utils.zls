@@ -1,4 +1,0 @@
-let node upd zc x =
-    let res = x > MyOp.make 0. in
-    (present (res) -> Zc.switched zc else ());
-    Zc.register_zc zc x; res

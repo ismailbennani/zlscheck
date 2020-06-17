@@ -38,11 +38,12 @@ struct
 
   module type Instance =
   sig
+    val index : int
     val sample_every : int
   end
 
-  module Instance1 = struct let sample_every = 50 end
-  module Instance2 = struct let sample_every = 500 end
+  module Instance1 = struct let index = 1 let sample_every = 50 end
+  module Instance2 = struct let index = 2 let sample_every = 500 end
 
   module type Params =
   sig
@@ -50,6 +51,7 @@ struct
     val name : string
     val tstep : float
     val max_t : float
+    val instance : int
     val sample_every : int
     val prop_name_in_matlab : string
     val set_optim_params : unit -> unit
@@ -59,11 +61,12 @@ struct
   module ParamsPhi1 (Optim : Optim.S) (Instance : Instance) =
   struct
     module Optim = Optim
-    let name = "AT1"
+    let name = Printf.sprintf "AT1_inst%d" Instance.index
 
     let tstep = 0.01
     let max_t = 20.
 
+    let instance = Instance.index
     let sample_every = Instance.sample_every
 
     let prop_name_in_matlab = "AT{1}"
@@ -81,11 +84,12 @@ struct
   module ParamsPhi2 (Optim : Optim.S) (Instance : Instance) =
   struct
     module Optim = Optim
-    let name = "AT2"
+    let name = Printf.sprintf "AT2_inst%d" Instance.index
 
     let tstep = 0.01
     let max_t = 10.
 
+    let instance = Instance.index
     let sample_every = Instance.sample_every
 
     let prop_name_in_matlab = "AT{2}"
@@ -103,11 +107,12 @@ struct
   module ParamsPhi51 (Optim : Optim.S) (Instance : Instance) =
   struct
     module Optim = Optim
-    let name = "AT51"
+    let name = Printf.sprintf "AT51_inst%d" Instance.index
 
     let tstep = 0.01
     let max_t = 32.5
 
+    let instance = Instance.index
     let sample_every = Instance.sample_every
 
     let prop_name_in_matlab = "AT{3}"
@@ -124,11 +129,12 @@ struct
   module ParamsPhi52 (Optim : Optim.S) (Instance : Instance) =
   struct
     module Optim = Optim
-    let name = "AT52"
+    let name = Printf.sprintf "AT52_inst%d" Instance.index
 
     let tstep = 0.01
     let max_t = 32.5
 
+    let instance = Instance.index
     let sample_every = Instance.sample_every
 
     let prop_name_in_matlab = "AT{4}"
@@ -145,11 +151,12 @@ struct
   module ParamsPhi53 (Optim : Optim.S) (Instance : Instance) =
   struct
     module Optim = Optim
-    let name = "AT53"
+    let name = Printf.sprintf "AT53_inst%d" Instance.index
 
     let tstep = 0.01
     let max_t = 32.5
 
+    let instance = Instance.index
     let sample_every = Instance.sample_every
 
     let prop_name_in_matlab = "AT{5}"
@@ -166,11 +173,12 @@ struct
   module ParamsPhi54 (Optim : Optim.S) (Instance : Instance) =
   struct
     module Optim = Optim
-    let name = "AT54"
+    let name = Printf.sprintf "AT54_inst%d" Instance.index
 
     let tstep = 0.01
     let max_t = 32.5
 
+    let instance = Instance.index
     let sample_every = Instance.sample_every
 
     let prop_name_in_matlab = "AT{6}"
@@ -187,11 +195,12 @@ struct
   module ParamsPhi6a (Optim : Optim.S) (Instance : Instance) =
   struct
     module Optim = Optim
-    let name = "AT6a"
+    let name = Printf.sprintf "AT6a_inst%d" Instance.index
 
     let tstep = 0.01
     let max_t = 30.
 
+    let instance = Instance.index
     let sample_every = Instance.sample_every
 
     let prop_name_in_matlab = "AT{7}"
@@ -209,11 +218,12 @@ struct
   module ParamsPhi6b (Optim : Optim.S) (Instance : Instance) =
   struct
     module Optim = Optim
-    let name = "AT6b"
+    let name = Printf.sprintf "AT6b_inst%d" Instance.index
 
     let tstep = 0.01
     let max_t = 30.
 
+    let instance = Instance.index
     let sample_every = Instance.sample_every
 
     let prop_name_in_matlab = "AT{8}"
@@ -231,11 +241,12 @@ struct
   module ParamsPhi6c (Optim : Optim.S) (Instance : Instance) =
   struct
     module Optim = Optim
-    let name = "AT6c"
+    let name = Printf.sprintf "AT6c_inst%d" Instance.index
 
     let tstep = 0.01
     let max_t = 30.
 
+    let instance = Instance.index
     let sample_every = Instance.sample_every
 
     let prop_name_in_matlab = "AT{9}"
@@ -265,22 +276,6 @@ struct
            Printf.fprintf ff "th=%g, br=%g" (MyOp.get inp.(0)) (MyOp.get inp.(1)) *)
   end
 
-  module AutotranscReplay =
-  struct
-    let name = "ReplayContinuous"
-    let tstep = 0.01 (* used for plotting only *)
-    let max_t = 50.
-
-    let replay_node = Replay_models.autotransc max_t tstep
-    let scan_dump_inp ib =
-      Scanf.bscanf ib "%g,%g,%g,%g,%g,%g"
-        (fun th br rpm gear speed rob ->
-           [| MyOp.make th; MyOp.make br; MyOp.make rpm; MyOp.make gear;
-              MyOp.make speed; MyOp.make rob |])
-        (* let print_dump_inp ff inp =
-           Printf.fprintf ff "th=%g, br=%g" (MyOp.get inp.(0)) (MyOp.get inp.(1)) *)
-  end
-
   module AutotransBench (Params: Params) =
   struct
     module Optim = Params.Optim
@@ -288,7 +283,8 @@ struct
     let name = "autotrans_" ^ Params.name
     let prop_name_in_matlab = Params.prop_name_in_matlab
     let model_name_in_matlab = "transmission"
-    let dump_path = "models/at/bench_results"
+    let folder_name_in_shared = "transmission"
+    let dump_path = Printf.sprintf "benchmarks/at_inst%d" Params.instance
     let matlab_path = "../../../../matlab"
     let max_t = Params.max_t
     let sample_every = Params.sample_every
@@ -338,19 +334,18 @@ struct
   module Phi6cUR_instance2 = Offline.Make (AutotransBench(ParamsPhi6c(Optim.UR_GDAWARE)(Instance2)))
 
   module ReplayDiscrete = Replay.Make (AutotransdReplay)
-  module ReplayContinuous = Replay.Make (AutotranscReplay)
 end
 
 module F16 =
 struct
   let pi = 3.1416
   (* bounds in ARCH git *)
-  (* let bounds = [| pi /. 4. -. pi /. 20., pi /. 4. +. pi /. 20.;
+  let bounds = [| pi /. 4. -. pi /. 20., pi /. 4. +. pi /. 20.;
                   -. pi /. 2. *. 0.8, -. pi /. 2. *. 0.8 +. pi /. 20.;
-                  -. pi /. 4. -. pi /. 8., -. pi /. 4. +. pi /. 8. |] *)
+                  -. pi /. 4. -. pi /. 8., -. pi /. 4. +. pi /. 8. |]
   (* bounds in ARCH report *)
-  let bounds = [| 0.2 *. pi, 0.2833 *. pi; -0.5 *. pi, -0.54 *. pi;
-                  0.25 *. pi, 0.375 *. pi |]
+  (* let bounds = [| 0.2 *. pi, 0.2833 *. pi; -0.5 *. pi, -0.54 *. pi;
+                  0.25 *. pi, 0.375 *. pi |] *)
 
   module F16Bench(Params:
                   sig
@@ -363,7 +358,8 @@ struct
     let name = "f16"
     let prop_name_in_matlab = "F16{1}"
     let model_name_in_matlab = "F16_GCAS"
-    let dump_path = "models/f16/bench_results"
+    let folder_name_in_shared = "F16_GCAS"
+    let dump_path = "benchmarks/f16"
     let matlab_path = "../../../../matlab"
     let max_t = 15.0
     let sample_every = 10
@@ -460,7 +456,8 @@ struct
     let name = "cc" ^ (string_of_int Params.index)
     let prop_name_in_matlab = "CC{" ^ (string_of_int Params.index) ^ "}"
     let model_name_in_matlab = "chasingcars"
-    let dump_path = "models/cc/bench_results"
+    let folder_name_in_shared = "chasing-cars"
+    let dump_path = "benchmarks/cc"
     let matlab_path = "../../../../matlab"
     let max_t = 100.0
     let sample_every = 500
@@ -480,19 +477,6 @@ struct
       let max_t = 100.
 
       let replay_node = Replay_models.cc
-      let scan_dump_inp ib =
-        Scanf.bscanf ib "%g,%g,%g,%g,%g,%g,%g,%g"
-          (fun throttle brake c1 c2 c3 c4 c5 rob ->
-             Array.map MyOp.make
-               [| throttle; brake; c1; c2; c3; c4; c5; rob |])
-    end)
-
-  module ReplayContinuous = Replay.Make (struct
-      let name = "ReplayDiscrete"
-      let tstep = 0.1
-      let max_t = 100.
-
-      let replay_node = Replay_models.cc_c tstep max_t
       let scan_dump_inp ib =
         Scanf.bscanf ib "%g,%g,%g,%g,%g,%g,%g,%g"
           (fun throttle brake c1 c2 c3 c4 c5 rob ->
@@ -535,7 +519,8 @@ struct
     let name = "wt" ^ (string_of_int Params.index)
     let prop_name_in_matlab = "WT{" ^ (string_of_int Params.index) ^ "}"
     let model_name_in_matlab = "wind_turbine"
-    let dump_path = "models/wt/bench_results"
+    let folder_name_in_shared = "wind-turbine"
+    let dump_path = "benchmarks/wt"
     let matlab_path = "../../../../matlab"
     let max_t = max_t
     let sample_every = 500
@@ -629,7 +614,8 @@ struct
     let name = "afc" ^ (string_of_int Params.index)
     let prop_name_in_matlab = "AFC{" ^ (string_of_int Params.index) ^ "}"
     let model_name_in_matlab = "powertrain"
-    let dump_path = "models/afc/bench_results"
+    let folder_name_in_shared = "powertrain"
+    let dump_path = "benchmarks/afc"
     let matlab_path = "../../../../matlab"
     let max_t = max_t
     let sample_every = 500
@@ -646,9 +632,23 @@ struct
 
   module ParamsPhi27 (Optim: Optim.S)= struct
     module Optim = Optim
-    let index = 1
+    let index = 27
     let bounds = offline_bounds_normal_mode
-    let node = Afc_bench.afc_afc27 5e-5
+    let node = Afc_bench.afc_afc1 5e-5
+  end
+
+  module ParamsPhi29 (Optim: Optim.S)= struct
+    module Optim = Optim
+    let index = 29
+    let bounds = offline_bounds_normal_mode
+    let node = Afc_bench.afc_afc2 5e-5
+  end
+
+  module ParamsPhi33 (Optim: Optim.S)= struct
+    module Optim = Optim
+    let index = 33
+    let bounds = offline_bounds_power_mode
+    let node = Afc_bench.afc_afc2 5e-5
   end
 
   module ReplayDiscrete = Replay.Make (struct
@@ -664,5 +664,9 @@ struct
     end)
 
   module Phi27 = Offline.Make(AFCBench(ParamsPhi27(Optim.GDClassic)))
+  module Phi29 = Offline.Make(AFCBench(ParamsPhi29(Optim.GDClassic)))
+  module Phi33 = Offline.Make(AFCBench(ParamsPhi33(Optim.GDClassic)))
   module Phi27UR = Offline.Make(AFCBench(ParamsPhi27(Optim.UR_GDAWARE)))
+  module Phi29UR = Offline.Make(AFCBench(ParamsPhi29(Optim.UR_GDAWARE)))
+  module Phi33UR = Offline.Make(AFCBench(ParamsPhi33(Optim.UR_GDAWARE)))
 end

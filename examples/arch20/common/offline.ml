@@ -1,4 +1,5 @@
 open Ztypes
+open Common_types
 open Common_utils
 
 module Make (Bench : Bench) =
@@ -9,6 +10,7 @@ struct
   let bench_name = Bench.name
   let prop_name_in_matlab = Bench.prop_name_in_matlab
   let model_name_in_matlab = Bench.model_name_in_matlab
+  let folder_name_in_shared = Bench.folder_name_in_shared
 
   let dump_path = ref (Some Bench.dump_path)
   let dump_folder = ref (Some "")
@@ -101,6 +103,9 @@ struct
     let history, (sample, (rob, grad)) = Optim.falsify (wrap Bench.node) in
     let time = Unix.gettimeofday () -. start_time in
     {
+      model_name = model_name_in_matlab;
+      bench = bench_name;
+      desc = name;
       optim = Optim.name;
       n_runs = List.length history;
       samples = Array.of_list (fst (List.split history));
