@@ -9,75 +9,53 @@ AT{7} = '([]_[0, 30] (rpm3000) ->[]_[0, 4] (speed35))';
 AT{8} = '([]_[0, 30] (rpm3000) ->[]_[0, 8] (speed50))';
 AT{9} = '([]_[0, 30] (rpm3000) ->[]_[0, 20] (speed65))';
 
-ii = 1;
-preds(ii).str = 'gear1';
-preds(ii).A = [];
-preds(ii).b = [];
-preds(ii).loc = 1;
+preds(1).str = 'gear1';
+preds(1).A = [];
+preds(1).b = [];
+preds(1).loc = 1;
 
-ii = ii+1;
-preds(ii).str = 'gear2';
-preds(ii).A = [];
-preds(ii).b = [];
-preds(ii).loc = 2;
+preds(2).str = 'gear2';
+preds(2).A = [];
+preds(2).b = [];
+preds(2).loc = 2;
 
-ii = ii+1;
-preds(ii).str = 'gear3';
-preds(ii).A = [];
-preds(ii).b = [];
-preds(ii).loc = 3;
+preds(3).str = 'gear3';
+preds(3).A = [];
+preds(3).b = [];
+preds(3).loc = 3;
 
-ii = ii+1;
-preds(ii).str = 'gear4';
-preds(ii).A = [];
-preds(ii).b = [];
-preds(ii).loc = 4;
+preds(4).str = 'gear4';
+preds(4).A = [];
+preds(4).b = [];
+preds(4).loc = 4;
 
-ii = ii+1;
-preds(ii).str='speed120';
-preds(ii).A = [1 0];
-% preds(ii).A = [1];
-% preds(ii).proj = 1;
-preds(ii).b = 120;
-preds(ii).loc = 1:4;
+preds(5).str='speed120';
+preds(5).A = [1 0];
+preds(5).b = 120;
+preds(5).loc = 1:4;
 
-ii = ii+1;
-preds(ii).str='speed35';
-preds(ii).A = [1 0];
-% preds(ii).A = [1];
-% preds(ii).proj = 1;
-preds(ii).b = 35;
-preds(ii).loc = 1:4;
+preds(6).str='speed35';
+preds(6).A = [1 0];
+preds(6).b = 35;
+preds(6).loc = 1:4;
 
-ii = ii+1;
-preds(ii).str='speed50';
-preds(ii).A = [1 0];
-% preds(ii).A = [1];
-% preds(ii).proj = 1;
-preds(ii).b = 50;
-preds(ii).loc = 1:4;
+preds(7).str='speed50';
+preds(7).A = [1 0];
+preds(7).b = 50;
+preds(7).loc = 1:4;
 
-ii = ii+1;
-preds(ii).str='speed65';
-preds(ii).A = [1 0];
-% preds(ii).A = [1];
-% preds(ii).proj = 1;
-preds(ii).b = 65;
-preds(ii).loc = 1:4;
+preds(8).str='speed65';
+preds(8).A = [1 0];
+preds(8).b = 65;
+preds(8).loc = 1:4;
 
 
-ii = ii+1;
-preds(ii).str='rpm3000';
-preds(ii).A = [0 1];
-% preds(ii).A = [1];
-% preds(ii).proj = 2;
-preds(ii).b = 3000;
-preds(ii).loc = 1:4;
+preds(9).str='rpm3000';
+preds(9).A = [0 1];
+preds(9).b = 3000;
+preds(9).loc = 1:4;
 
-ii = ii+1;
-preds(ii).str='rpm4750';
-preds(ii).A = [0 1];
-% preds(ii).A = [1];
-% preds(ii).proj = 2;
-preds(ii).b = 4750;
-preds(ii).loc = 1:4;
+preds(10).str='rpm4750';
+preds(10).A = [0 1];
+preds(10).b = 4750;
+preds(10).loc = 1:4;
