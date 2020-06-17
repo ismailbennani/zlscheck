@@ -3,17 +3,18 @@ open Discrete_obs_fad
 
 (* always_[11, 50] ((rise or fall) ==> (always_[1,5] (abs(mu) < 0.008))) *)
 node afc1 (tstep, inp, outp) =
-    let rec t = make 0. fby (t + tstep) in
-    let throttle = Array.get inp 0 in
+    let rec throttle = Array.get inp 0 in
     let mu = Array.get outp 2 in
     let throttle_40 = q_ge (throttle, make 40.) in
     let throttle_8_8 = q_le (throttle, make 8.8) in
     let abs_mu_0_008 = q_le (abs mu, make 0.008) in
-    let rise = q_and (throttle_40, once_timed 0.05 (tstep, throttle_8_8)) in
-    let fall = q_and (throttle_8_8, once_timed 0.05 (tstep, throttle_40)) in
+    let rise = q_false -> q_and (throttle_40, pre throttle_8_8) in
+    let fall = q_false -> q_and (throttle_8_8, pre throttle_40) in
     let rise_or_fall = q_or (rise, fall) in
-    let prop = implies (abs_mu_0_008, once_timed 5. (tstep, rise_or_fall)) in
-    always_timed 55. (tstep, implies (q_ge (t, make 12.), prop))
+    reset
+        let rec t = make 0. fby (t + tstep) in
+        always_timed 5. (tstep, implies (q_ge (t, make 1.), abs_mu_0_008))
+    every (isTrue rise_or_fall)
 
 (* always_[11, 50] abs(mu) < 0.007 *)
 node afc2 (tstep, inp, outp) =

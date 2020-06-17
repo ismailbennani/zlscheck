@@ -24,6 +24,17 @@ let pcwse_cste2 h control_points =
   else
     [| control_points.(2*index); control_points.(2*index+1) |]
 
+let pcwse_cste_afc h control_points =
+  fun t ->
+  (* piecewise constant signal interpolation in 1D for first coordinate
+     and return first value for second coordinate *)
+  let index = truncate (t /. h) in
+  let cp_n = Array.length control_points in
+  if 2 * index + 1 >= cp_n then
+    [| control_points.(cp_n - 2); control_points.(1) |]
+  else
+    [| control_points.(2*index); control_points.(1) |]
+
 module Autotrans =
 struct
 
@@ -620,14 +631,14 @@ struct
     let max_t = max_t
     let sample_every = 500
     let set_optim_params () =
-      Optim_globals.params.meth.gd.alpha <- 1e4;
+      Optim_globals.params.meth.gd.alpha <- 1e7;
       Optim_globals.params.meth.gd.do_restart <- true;
       Optim_globals.params.bounds <- Params.bounds;
       Optim_globals.params.verbose <- !verbose;
       Optim_globals.params.vverbose <- !verbose
 
     let node = Params.node
-    let interp_fn = pcwse_cste2 h
+    let interp_fn = pcwse_cste_afc h
   end
 
   module ParamsPhi27 (Optim: Optim.S)= struct
