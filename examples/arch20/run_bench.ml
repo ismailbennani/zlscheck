@@ -7,11 +7,20 @@ let run_bench (module Bench : RunBench) n_repet n_runs =
   let n_falsif = ref 0 in
   let fals_inputs = ref [] in
   let n_runs_l = ref [] in
+  let model_name = ref "" in
+  let bench = ref "" in
+  let desc = ref "" in
+  let optim = ref "" in
   let start_time = Unix.gettimeofday () in
 
   for i = 0 to n_repet - 1 do
     Printf.printf "-- Bench %d/%d\n" (i+1) n_repet;
     let res = Bench.run () in
+
+    model_name := res.model_name;
+    bench := res.bench;
+    desc := res.desc;
+    optim := res.optim;
 
     if res.falsified then begin
       n_falsif := !n_falsif + 1;
@@ -26,9 +35,10 @@ let run_bench (module Bench : RunBench) n_repet n_runs =
   let fals_inp_arr = Array.of_list !fals_inputs in
 
   {
-    model_name = Bench.model_name_in_matlab;
-    bench = Bench.bench_name;
-    desc = Bench.name;
+    model_name = !model_name;
+    bench = !bench;
+    desc = !desc;
+    optim = !optim;
     n_repet = n_repet;
     n_runs = n_runs;
     mean_n_runs = compute_mean n_runs_arr;
