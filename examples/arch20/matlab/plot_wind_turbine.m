@@ -1,7 +1,7 @@
 function [out] = plot_wind_turbine(u)
     T = u(end, 1);
     
-    tout = u(:,1)
+    tout = u(:,1);
     xin = interp1(tout, u(:,2), tout, 'previous');
     yout = u(:,3:end);
     
