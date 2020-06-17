@@ -79,12 +79,18 @@ struct
   (* vec is an ordered float array
    * returns i such that vec.(i) < v < vec.(i+1) (or i = 0 or i = length vec) *)
   let ifind v queue =
-    let res = ref 0 in
-    let stop = ref false in
-    while not !stop && !res < BoundedQueue.length queue do
-      if MyOp.(BoundedQueue.get queue !res < v) then res := !res + 1
-      else stop := true
-    done; !res
+    let rec aux start_i end_i =
+      if start_i = end_i then start_i
+      else
+        let i = (start_i + end_i) / 2 in
+        let v_i = BoundedQueue.get queue i in
+        let v_ip1 = BoundedQueue.get queue (i+1) in
+        if MyOp.(v_i < v && v < v_ip1) then i
+        else if MyOp.(v_i > v) then aux start_i (max 0 (i-1))
+        else if MyOp.(v > v_ip1) then
+          aux (min (BoundedQueue.length queue - 1) (i+1)) end_i
+        else assert false
+    in aux 0 (BoundedQueue.length queue - 1)
 
   (* linear interpolatiion, x1 <= xi <= x2 *)
   let interp x1 x2 val1 val2 xi =
@@ -110,10 +116,6 @@ struct
     let vals = this.buffer_v in
     try
       let li = ifind t line in
-      (* Printf.printf "interp1\n\t[%s]\n\t[%s]\n\t %g, li = %d\n"
-        (String.concat ";" (Array.to_list (Array.map string_of_float (BoundedQueue.to_array line))))
-        (String.concat ";" (Array.to_list (Array.map string_of_float (BoundedQueue.to_array vals))))
-        t li; *)
       if li = 0 then
         extrap (BoundedQueue.get line 0) (BoundedQueue.get line 1)
           (BoundedQueue.get vals 0) (BoundedQueue.get vals 1) t

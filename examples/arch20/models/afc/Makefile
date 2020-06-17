@@ -21,8 +21,7 @@ afc_d.opt: afc_d_main.ml $(DEPS)
 afc_d.cmx: $(DEPS)
 afc_d.ml: $(DEPS:.cmx=.zci)
 
-afc_interp.zci: array.zci
-afc_utils.zci afc_utils.ml: array.zci afc_interp.zci afc_delay.zci
+afc_utils.zci afc_utils.ml: afc_interp.zci afc_delay.zci
 afc_utils.cmx: afc_interp.cmx afc_delay.cmx
 
 #

@@ -6,11 +6,19 @@ INCLUDES += -I $(CHECKLIB) zlscheck.cmxa -I ../ -I ../../common myOp.cmx
 OBJ=wt_d.cmx
 
 DEPS=wt_interp.cmx wt_common.cmx wt_params.cmx
+#
+# wt_params.ml: wt_params.zls
+# 	$(ZELUC) $(ZELUCFLAGS) $<
+# 	sed -i "s/Obj.magic ():MyOp.t/MyOp.create ():MyOp.t/g" $@
+#
+# wt_common.ml: wt_common.zls
+# 	$(ZELUC) $(ZELUCFLAGS) $<
+# 	sed -i "s/Obj.magic ():MyOp.t/MyOp.create ():MyOp.t/g" $@
 
 %_main.ml: %.zls
 	$(ZELUC) $(ZELUCFLAGS) -s main -gtk2 -o $(@:.ml=) $<
-	sed -i "s/Obj.magic ():MyOp.t/create ():MyOp.t/g" $(@:_main.ml=.ml)
-	sed -i "s/Obj.magic ():MyOp.t/create ():MyOp.t/g" $@
+	sed -i "s/Obj.magic ():MyOp.t/MyOp.create ():MyOp.t/g" $(@:_main.ml=.ml)
+	sed -i "s/Obj.magic ():MyOp.t/MyOp.create ():MyOp.t/g" $@
 
 # dependencies
 
@@ -20,11 +28,12 @@ wt_d.opt: INCLUDES += $(DEPS)
 wt_d.opt: wt_d_main.ml $(DEPS)
 wt_d.cmx: $(DEPS)
 wt_d.ml: $(DEPS:.cmx=.zci)
+	$(ZELUC) $(ZELUCFLAGS) $(@:.ml=.zls)
+	sed -i "s/Obj.magic ():MyOp.t/MyOp.create ():MyOp.t/g" $@
 
-wt_interp.zci: array.zci
-wt_params.zci: array.zci wt_common.zci
+wt_params.ml: wt_common.zci
 wt_params.cmx: wt_common.cmx
-wt_common.zci: wt_interp.zci
+wt_common.ml: wt_interp.zci
 wt_common.cmx: wt_interp.cmx
 
 #
