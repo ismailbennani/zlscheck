@@ -19,7 +19,7 @@ let update_sliding_window size x q =
 
 (* Fml5: always_[0,72] possibly_[0,8]((always_[0,5] y2-y1 >= 9) -> (always_[5,20]y5-y4>= 9)) *)
 let cc5_sliding_window state (t, c1, c2, c4, c5) =
-  update_sliding_window 5. (t, c1, c2, c4, c5) state.q;
+  update_sliding_window 20. (t, c1, c2, c4, c5) state.q;
   let always_c2_c1 =
     Queue.fold (fun acc (t0, c1, c2, c4, c5) ->
         if MyOp.get t0 <= MyOp.get t -. 15. then
