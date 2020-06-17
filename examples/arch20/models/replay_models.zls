@@ -109,7 +109,7 @@ node wt (times, inp) = () where
         windown ("Wind Turbine", 630., t, [s1; s2; s3; s4; s5])
 
 node afc (times, inp) = () where
-    rec n = 0 fby (Stdlib.( + ) n 50)
+    rec n = 0 fby (Stdlib.( + ) n 2000)
     and cur_inp = Array.get inp n
     and t = Array.get times n
     and throttle = get (Array.get cur_inp 0)
