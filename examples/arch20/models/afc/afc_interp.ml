@@ -7,12 +7,14 @@ let ifind v vec =
       let i = (start_i + end_i) / 2 in
       let v_i = vec.(i) in
       let v_ip1 = vec.(i+1) in
-      if MyOp.(v_i <= v && v < v_ip1) then i
-      else if MyOp.(v_i > v) then aux start_i (max 0 (i-1))
-      else if MyOp.(v >= v_ip1) then
+      if MyOp.(v_i < v && v <= v_ip1) then i
+      else if MyOp.(v_i >= v) then aux start_i (max 0 (i-1))
+      else if MyOp.(v > v_ip1) then
         aux (min (Array.length vec - 1) (i+1)) end_i
       else assert false
-  in aux 0 (Array.length vec - 1)
+  in if v < vec.(0) then 0
+  else if v > vec.(Array.length vec - 1) then Array.length vec
+  else (aux 0 (Array.length vec - 1)) + 1
 
 (* linear interpolatiion, x1 <= xi <= x2 *)
 let interp x1 x2 val1 val2 xi =
