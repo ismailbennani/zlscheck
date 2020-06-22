@@ -1,56 +1,19 @@
 open Common_types
 open Common_utils
 
-let run_bench (module Bench : RunBench) n_repet n_runs =
-  Optim_globals.params.max_n_runs <- n_runs;
+type run_bench_inputs = {
+  in_n_repet : int;
+  in_n_runs : int;
+  in_n_processes : int;
+  dump_path : string;
+  no_dump : bool;
+  verbose : bool;
+  matlab_path : string;
+  save_history : bool;
+  benches : (module Common_types.RunBench) list;
+}
 
-  let n_falsif = ref 0 in
-  let fals_inputs = ref [] in
-  let n_runs_l = ref [] in
-  let model_name = ref "" in
-  let bench = ref "" in
-  let desc = ref "" in
-  let optim = ref "" in
-  let start_time = Unix.gettimeofday () in
-
-  for i = 0 to n_repet - 1 do
-    Printf.printf "-- Bench %d/%d\n" (i+1) n_repet;
-    let res = Bench.run () in
-
-    model_name := res.model_name;
-    bench := res.bench;
-    desc := res.desc;
-    optim := res.optim;
-
-    if res.falsified then begin
-      n_falsif := !n_falsif + 1;
-      fals_inputs := res.best_sample :: !fals_inputs;
-      n_runs_l := res.n_runs :: !n_runs_l
-    end
-  done;
-
-  let time = Unix.gettimeofday () -. start_time in
-
-  let n_runs_arr = Array.of_list !n_runs_l in
-  let fals_inp_arr = Array.of_list !fals_inputs in
-
-  {
-    model_name = !model_name;
-    bench = !bench;
-    desc = !desc;
-    optim = !optim;
-    n_repet = n_repet;
-    n_runs = n_runs;
-    mean_n_runs = compute_mean n_runs_arr;
-    median_n_runs = compute_median n_runs_arr;
-    fals_inputs = fals_inp_arr;
-    n_falsif = !n_falsif;
-    total_time = time;
-  }
-
-let _ =
-  Random.self_init ();
-
+let get_inputs () =
   let benches =
     Defbench.Autotrans.([
         ("AT1_inst1", (module Phi1_instance1 : RunBench));
@@ -183,6 +146,7 @@ let _ =
 
   let n_repet = ref 10 in
   let n_runs = ref 100 in
+  let n_processes = ref 1 in
   let dump_path = ref "" in
   let no_dump = ref false in
   let verbose = ref false in
@@ -192,6 +156,7 @@ let _ =
   let opt_args = [
     "-r", Arg.Set_int n_repet, "number of repetitions";
     "-n", Arg.Set_int n_runs, "budget for each repetition: max number of simulations allowed";
+    "-j", Arg.Set_int n_processes, "max number of processes to spawn";
     "-d", Arg.Set_string dump_path, "dump path";
     "-no-dump", Arg.Set no_dump, "don't dump results";
     "-matlab", Arg.Set_string matlab_path, "path to arch20/matlab folder relative to dump path";
@@ -215,64 +180,234 @@ let _ =
 
   Arg.parse opt_args anon_args usg_msg;
 
-
   if !sel_bench = [] then begin
     Printf.printf "no valid bench selected.\n\n";
     Arg.usage opt_args usg_msg;
     raise Exit
   end;
+  {
+    in_n_repet = !n_repet;
+    in_n_runs = !n_runs;
+    in_n_processes = !n_processes;
+    dump_path = !dump_path;
+    no_dump = !no_dump;
+    verbose = !verbose;
+    matlab_path = !matlab_path;
+    save_history = !save_history;
+    benches = !sel_bench;
+  }
 
-  let rec run_benches results b =
-    match b with
-    | [] -> print_endline "done running benches"; results
-    | (module Bench : RunBench) :: q ->
-      (* set verbose *)
-      Defbench.verbose := !verbose;
+let run_bench (module Bench : RunBench) n_repet n_runs =
+  Optim_globals.params.max_n_runs <- n_runs;
 
-      (* set bench params *)
-      if !no_dump then
-        Bench.dump_path := None
-      else if !dump_path <> "" then begin
-        Bench.dump_path := Some (Filename.concat !dump_path "fals");
-        Bench.matlab_path := Filename.concat "../../" !matlab_path;
-      end;
+  let n_falsif = ref 0 in
+  let fals_inputs = ref [] in
+  let n_runs_l = ref [] in
+  let start_time = Unix.gettimeofday () in
 
-      Bench.save_path := if !save_history then Filename.concat !dump_path "hist" else "";
+  for i = 0 to n_repet - 1 do
+    Printf.printf "-- Bench %d/%d\n" (i+1) n_repet;
 
-      let res = run_bench (module Bench) !n_repet !n_runs in
+    let res = Bench.run () in
 
-      Printf.printf "%a\n"
-        (print_result Bench.print_optim_params) res;
+    if res.falsified then begin
+      n_falsif := !n_falsif + 1;
+      fals_inputs := res.best_sample :: !fals_inputs;
+      n_runs_l := res.n_runs :: !n_runs_l
+    end
+  done;
 
-      begin match !Bench.dump_path with
-        | None -> ()
-        | Some path ->
-          let dump_folder = make_dump_folder path Bench.name in
+  let time = Unix.gettimeofday () -. start_time in
 
-          let info_path = Filename.concat dump_folder "info" in
-          let info_fd = open_out info_path in
-          Printf.fprintf info_fd "%a\n"
-            (print_result Bench.print_optim_params) res;
-          close_out info_fd;
+  let n_runs_arr = Array.of_list !n_runs_l in
+  let fals_inp_arr = Array.of_list !fals_inputs in
 
-          let matlab_validate_fd = open_out (Filename.concat dump_folder "validate.m") in
-          print_matlab_validate matlab_validate_fd Bench.bench_name !Bench.matlab_path
-            Bench.model_name_in_matlab Bench.prop_name_in_matlab Bench.folder_name_in_shared;
-          close_out matlab_validate_fd;
+  {
+    model_name = Bench.model_name_in_matlab;
+    bench = Bench.bench_name;
+    desc = Bench.name;
+    optim = Bench.Optim.name;
+    n_repet = n_repet;
+    n_runs = n_runs;
+    mean_n_runs = compute_mean n_runs_arr;
+    median_n_runs = compute_median n_runs_arr;
+    fals_inputs = fals_inp_arr;
+    n_falsif = !n_falsif;
+    total_time = time;
+  }
 
-          Printf.printf "Dump saved at %s\nmodel_name: %s\n" dump_folder Bench.model_name_in_matlab
-      end;
-      run_benches (res :: results) q
+let run_bench_parallel (module Bench : RunBench) n_repet n_runs n_processes =
+  Optim_globals.params.max_n_runs <- n_runs;
+
+  (* n_repets for each child *)
+  let n_repets = Array.make n_processes (n_repet / n_processes) in
+  for i = 0 to (n_repet mod n_processes) - 1 do
+    n_repets.(i) <- n_repets.(i) + 1;
+  done;
+  (* one run is done by main process to set Bench global state *)
+  n_repets.(0) <- n_repets.(0) - 1;
+
+  (* where to write results *)
+  let outp_fd =
+    Array.init n_processes
+      (fun _ -> Filename.open_temp_file "benchresult" "")
   in
 
-  let results = run_benches [] !sel_bench in
+  Printf.printf "Output files: [%s]\n\n"
+    (String.concat "; " (Array.to_list (Array.map fst outp_fd)));
+
+  flush stdout;
+  (* spawn children with unique ids *)
+  for i = 0 to n_processes - 1 do
+    match Unix.fork () with
+    | 0 ->
+      let n_repet = n_repets.(i) in
+      let start_time = Unix.gettimeofday () in
+
+      let n_falsif = ref 0 in
+      let n_runs_l = ref [] in
+      let start_time = Unix.gettimeofday () in
+
+      for j = 0 to n_repet - 1 do
+        Printf.printf "[Process %d] -- Bench %d/%d\n" i (j+1) n_repet;
+
+        let res = Bench.run () in
+
+        if res.falsified then begin
+          n_falsif := !n_falsif + 1;
+          n_runs_l := res.n_runs :: !n_runs_l
+        end
+      done;
+
+      let time = Unix.gettimeofday () -. start_time in
+
+      (* write results *)
+      let (_, out_fd) = outp_fd.(i) in
+      Printf.fprintf out_fd "repet:%d\n" n_repet;
+      Printf.fprintf out_fd "n_falsif:%d\n" !n_falsif;
+      List.iter (fun n_runs -> Printf.fprintf out_fd "n_runs:%d\n" n_runs) !n_runs_l;
+      Printf.fprintf out_fd "time:%g\n" time;
+      flush out_fd; close_out out_fd;
+      exit 0
+    | id ->
+      Printf.printf "Spawned child %d with id %d ...\n" i id;
+  done;
+
+  (* one run is done by main process to set Bench global state *)
+  let start_time = Unix.gettimeofday () in
+  let res = Bench.run () in
+  let time = Unix.gettimeofday () -. start_time in
+
+  let n_runs_l = ref (if res.falsified then [res.n_runs] else []) in
+  let total_falsif = ref (if res.falsified then 1 else 0) in
+  let total_time = ref time in
+
+  (* wait for children termination and read results *)
+  for i = 0 to n_processes - 1 do
+    let (pid,_) = Unix.waitpid [] (-1) in
+
+    let tmp_file, _ = outp_fd.(i) in
+    Printf.printf "Child with pid %d done. Reading results in %s ...\n"
+      pid tmp_file;
+
+    let fd = Scanf.Scanning.open_in tmp_file in
+
+    let this_n_falsif = ref 0 in
+    Scanf.bscanf fd "repet:%d\n" (fun n_repet -> ());
+    Scanf.bscanf fd "n_falsif:%d\n"
+      (fun n_falsif ->
+         this_n_falsif := n_falsif;
+         total_falsif := n_falsif + !total_falsif);
+    for i = 0 to !this_n_falsif - 1 do
+      Scanf.bscanf fd "n_runs:%d\n"
+        (fun n_runs -> n_runs_l := n_runs :: !n_runs_l);
+    done;
+    Scanf.bscanf fd "time:%g"
+      (fun time -> total_time := time +. !total_time);
+
+    Scanf.Scanning.close_in fd;
+  done;
+
+  {
+    model_name = Bench.model_name_in_matlab;
+    bench = Bench.bench_name;
+    desc = Bench.name;
+    optim = Bench.Optim.name;
+    n_repet = n_repet;
+    n_runs = n_runs;
+    mean_n_runs = compute_mean (Array.of_list !n_runs_l);
+    median_n_runs = compute_median (Array.of_list !n_runs_l);
+    fals_inputs = [||];
+    n_falsif = !total_falsif;
+    total_time = !total_time;
+  }
+
+let rec run_benches inputs results b =
+  match b with
+  | [] -> print_endline "done running benches"; results
+  | (module Bench : RunBench) :: q ->
+    Printf.printf "Starting bench %s\n" Bench.name;
+
+    (* set verbose *)
+    Defbench.verbose := inputs.verbose;
+
+    (* set bench params *)
+    if inputs.no_dump then
+      Bench.dump_path := None
+    else if inputs.dump_path <> "" then begin
+      Bench.dump_path := Some (Filename.concat inputs.dump_path "fals");
+      Bench.matlab_path := Filename.concat "../../" inputs.matlab_path;
+    end;
+
+    Bench.save_path :=
+      if inputs.save_history
+      then Filename.concat inputs.dump_path "hist"
+      else "";
+
+    let res =
+      if inputs.in_n_processes = 1 then
+        run_bench (module Bench) inputs.in_n_repet inputs.in_n_runs
+      else
+        run_bench_parallel (module Bench)
+          inputs.in_n_repet inputs.in_n_runs inputs.in_n_processes
+    in
+
+    Printf.printf "%a\n"
+      (print_result Bench.print_optim_params) res;
+
+    begin match !Bench.dump_path with
+      | None -> ()
+      | Some path ->
+        let dump_folder = make_dump_folder path Bench.name in
+
+        let info_path = Filename.concat dump_folder "info" in
+        let info_fd = open_out info_path in
+        Printf.fprintf info_fd "%a\n"
+          (print_result Bench.print_optim_params) res;
+        close_out info_fd;
+
+        let matlab_validate_fd = open_out (Filename.concat dump_folder "validate.m") in
+        print_matlab_validate matlab_validate_fd Bench.bench_name !Bench.matlab_path
+          Bench.model_name_in_matlab Bench.prop_name_in_matlab Bench.folder_name_in_shared;
+        close_out matlab_validate_fd;
+
+        Printf.printf "Dump saved at %s\nmodel_name: %s\n"
+          dump_folder Bench.model_name_in_matlab
+    end;
+    run_benches inputs (res :: results) q
+
+let _ =
+  Random.self_init ();
+
+  let inputs = get_inputs () in
+  let results = run_benches inputs [] inputs.benches in
 
   (* write summary.txt *)
-  if not !no_dump && !dump_path <> "" then begin
-    let validate_all_path = (Filename.concat !dump_path "validate_all.m") in
+  if not inputs.no_dump && inputs.dump_path <> "" then begin
+    let validate_all_path = (Filename.concat inputs.dump_path "validate_all.m") in
     if not (Sys.file_exists validate_all_path) then begin
       let validate_all_fd = open_out validate_all_path in
-      print_validate_all validate_all_fd !matlab_path;
+      print_validate_all validate_all_fd inputs.matlab_path;
       close_out validate_all_fd;
     end
   end
