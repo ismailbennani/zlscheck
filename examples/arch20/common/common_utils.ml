@@ -49,7 +49,7 @@ let print_result print_optim_params ff
 
 let print_validate_all fd matlab_path =
   Printf.fprintf fd
-    "addpath(%s)\n\
+    "addpath(\"%s\")\n\
      cur_fd = pwd;\n\
      validation_scripts = find_rec(\".\", \"validate.m\");\n\
      for i = 1:length(validation_scripts)\n\
