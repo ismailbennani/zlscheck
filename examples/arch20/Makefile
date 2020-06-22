@@ -22,7 +22,7 @@ MLIS = $(COMMON_MLI) $(BENCH_MLI)
 
 INCLUDES += $(DIRS:%=-I %) \
 \
-myOp.cmx discrete_obs_fad.cmx \
+myOp.cmx discrete_obs_fad.cmx interp.cmx \
 \
 consts.cmx at_utils.cmx common.cmx common_myop.cmx \
 autotransc.cmx autotransd.cmx autotransd_modes.cmx \
@@ -32,12 +32,14 @@ lowLevelController.cmx subf16_model.cmx gcasAutopilot.cmx \
 \
 cc_prop.cmx cc_d.cmx cc_c.cmx \
 \
-wt_interp.cmx wt_common.cmx wt_params.cmx wt_d.cmx \
+wt_common.cmx wt_params.cmx wt_d.cmx \
 \
-afc_interp.cmx afc_delay.cmx afc_utils.cmx afc_d.cmx \
+afc_delay.cmx afc_utils.cmx afc_d.cmx \
+\
+sc_utils.cmx sc_d.cmx \
 \
 common_types.cmx common_utils.cmx online.cmx offline.cmx replay.cmx \
-at_bench.cmx f16_bench.cmx cc_bench.cmx wt_bench.cmx afc_bench.cmx \
+at_bench.cmx f16_bench.cmx cc_bench.cmx wt_bench.cmx afc_bench.cmx sc_bench.cmx \
 replay_models.cmx
 
 TARGET = run_bench.opt replay_bench.opt
@@ -47,13 +49,14 @@ all: $(TARGET)
 run_bench.opt replay_bench.opt: INCLUDES += defbench.cmx
 run_bench.opt replay_bench.opt: models defbench.cmx
 
-draw_transmission.opt draw_f16.opt: INCLUDES = graphics.cmxa
+draw_transmission.opt draw_f16.opt draw_steamcondenser.opt: INCLUDES = graphics.cmxa
 
 common: $(COMMON_ML:.ml=.cmx) $(COMMON_ZLI:.zli=.zci) $(COMMON_ZLS:.zls=.cmx)
 
 models: common
 	$(MAKE) -C models
 
+common/interp.zci: common/myOp.zci
 common/discrete_obs_fad.ml: common/discrete_obs_fad.zls common/myOp.zci
 	$(ZELUC) $(ZELUCFLAGS) $<
 	sed -i "s/Obj.magic ():MyOp.t/create ():MyOp.t/g" $@

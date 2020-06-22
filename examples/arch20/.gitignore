@@ -1,3 +1,7 @@
 common/discrete_obs_fad.ml
 *slprj/
 *.slxc
+
+test_*/
+bench_*/
+final_benchmarks/

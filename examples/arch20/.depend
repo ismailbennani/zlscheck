@@ -12,6 +12,10 @@ common/discrete_obs_fad.cmo : \
     common/myOp.cmo
 common/discrete_obs_fad.cmx : \
     common/myOp.cmx
+common/interp.cmo : \
+    common/myOp.cmo
+common/interp.cmx : \
+    common/myOp.cmx
 common/myOp.cmo :
 common/myOp.cmx :
 common/offline.cmo : \
@@ -40,22 +44,26 @@ common/replay.cmx : \
     common/common_types.cmx
 defbench.cmo : \
     models/wt_bench.cmo \
+    models/sc_bench.cmo \
     models/replay_models.cmo \
     common/replay.cmo \
     common/online.cmo \
     common/offline.cmo \
     common/myOp.cmo \
+    common/interp.cmo \
     models/f16_bench.cmo \
     models/cc_bench.cmo \
     models/at_bench.cmo \
     models/afc_bench.cmo
 defbench.cmx : \
     models/wt_bench.cmx \
+    models/sc_bench.cmx \
     models/replay_models.cmx \
     common/replay.cmx \
     common/online.cmx \
     common/offline.cmx \
     common/myOp.cmx \
+    common/interp.cmx \
     models/f16_bench.cmx \
     models/cc_bench.cmx \
     models/at_bench.cmx \
@@ -64,6 +72,8 @@ draw_at.cmo :
 draw_at.cmx :
 draw_f16.cmo :
 draw_f16.cmx :
+draw_steamcondenser.cmo :
+draw_steamcondenser.cmx :
 replay_bench.cmo : \
     defbench.cmo \
     common/common_types.cmo
