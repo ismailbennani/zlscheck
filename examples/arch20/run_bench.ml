@@ -248,17 +248,12 @@ let run_bench_parallel (module Bench : RunBench) n_repet n_runs n_processes =
   n_repets.(0) <- n_repets.(0) - 1;
 
   (* where to write results *)
-  let outp_fd =
-    Array.init n_processes
-      (fun _ -> Filename.open_temp_file "benchresult" "")
-  in
-
-  Printf.printf "Output files: [%s]\n\n"
-    (String.concat "; " (Array.to_list (Array.map fst outp_fd)));
+  let outp_filenames = Hashtbl.create n_processes in
 
   flush stdout;
   (* spawn children with unique ids *)
   for i = 0 to n_processes - 1 do
+    let tmp_file = Filename.temp_file "benchresult" "" in
     match Unix.fork () with
     | 0 ->
       let n_repet = n_repets.(i) in
@@ -269,7 +264,8 @@ let run_bench_parallel (module Bench : RunBench) n_repet n_runs n_processes =
       let start_time = Unix.gettimeofday () in
 
       for j = 0 to n_repet - 1 do
-        Printf.printf "[Process %d] -- Bench %d/%d\n" i (j+1) n_repet;
+        Printf.printf "[Child %d] -- Bench %d/%d\n"
+          (Unix.getpid ()) (j+1) n_repet;
 
         let res = Bench.run () in
 
@@ -282,15 +278,16 @@ let run_bench_parallel (module Bench : RunBench) n_repet n_runs n_processes =
       let time = Unix.gettimeofday () -. start_time in
 
       (* write results *)
-      let (_, out_fd) = outp_fd.(i) in
-      Printf.fprintf out_fd "repet:%d\n" n_repet;
-      Printf.fprintf out_fd "n_falsif:%d\n" !n_falsif;
-      List.iter (fun n_runs -> Printf.fprintf out_fd "n_runs:%d\n" n_runs) !n_runs_l;
-      Printf.fprintf out_fd "time:%g\n" time;
-      flush out_fd; close_out out_fd;
+      let out_fd = open_out tmp_file in
+      Printf.fprintf out_fd "repet:%d\nn_falsif:%d\n%atime:%g\n"
+        n_repet !n_falsif
+        (fun ff l -> List.iter (fun n -> Printf.fprintf ff "n_runs:%d\n" n) l)
+        !n_runs_l time;
+      close_out out_fd;
       exit 0
     | id ->
-      Printf.printf "Spawned child %d with id %d ...\n" i id;
+      Printf.printf "Spawned child with id %d ...\n" id; flush stdout;
+      Hashtbl.add outp_filenames id tmp_file;
   done;
 
   (* one run is done by main process to set Bench global state *)
@@ -306,26 +303,39 @@ let run_bench_parallel (module Bench : RunBench) n_repet n_runs n_processes =
   for i = 0 to n_processes - 1 do
     let (pid,_) = Unix.waitpid [] (-1) in
 
-    let tmp_file, _ = outp_fd.(i) in
-    Printf.printf "Child with pid %d done. Reading results in %s ...\n"
+    let tmp_file = Hashtbl.find outp_filenames pid in
+    Printf.printf "Child %d done. Reading results in %s ...\n"
       pid tmp_file;
 
-    let fd = Scanf.Scanning.open_in tmp_file in
+    let fd = ref (Scanf.Scanning.open_in tmp_file) in
 
-    let this_n_falsif = ref 0 in
-    Scanf.bscanf fd "repet:%d\n" (fun n_repet -> ());
-    Scanf.bscanf fd "n_falsif:%d\n"
-      (fun n_falsif ->
-         this_n_falsif := n_falsif;
-         total_falsif := n_falsif + !total_falsif);
-    for i = 0 to !this_n_falsif - 1 do
-      Scanf.bscanf fd "n_runs:%d\n"
-        (fun n_runs -> n_runs_l := n_runs :: !n_runs_l);
+    let n_retry = ref 0 in
+    while Scanf.Scanning.end_of_input !fd && !n_retry < 10 do
+      Scanf.Scanning.close_in !fd;
+      Printf.printf "File %s empty, retry in 1 sec (%d/10)\n" tmp_file !n_retry;
+      Unix.sleep 1;
+      fd := Scanf.Scanning.open_in tmp_file;
+      n_retry := !n_retry + 1;
     done;
-    Scanf.bscanf fd "time:%g"
-      (fun time -> total_time := time +. !total_time);
 
-    Scanf.Scanning.close_in fd;
+    if (Scanf.Scanning.end_of_input !fd) then
+      Printf.printf "File %s empty, ignoring it.\n" tmp_file
+    else begin
+      let this_n_falsif = ref 0 in
+      Scanf.bscanf !fd "repet:%d\n" (fun n_repet -> ());
+      Scanf.bscanf !fd "n_falsif:%d\n"
+        (fun n_falsif ->
+           this_n_falsif := n_falsif;
+           total_falsif := n_falsif + !total_falsif);
+      for i = 0 to !this_n_falsif - 1 do
+        Scanf.bscanf !fd "n_runs:%d\n"
+          (fun n_runs -> n_runs_l := n_runs :: !n_runs_l);
+      done;
+      Scanf.bscanf !fd "time:%g"
+        (fun time -> total_time := time +. !total_time);
+    end;
+
+    Scanf.Scanning.close_in !fd;
   done;
 
   {
