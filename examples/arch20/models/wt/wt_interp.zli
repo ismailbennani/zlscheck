@@ -1,1 +1,0 @@
-val interp1 : MyOp.t Array.t * MyOp.t Array.t -> MyOp.t -A-> MyOp.t

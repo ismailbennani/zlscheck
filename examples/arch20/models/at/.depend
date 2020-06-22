@@ -20,20 +20,20 @@ autotransd_modes.cmx : \
     common_myop.cmx
 common.cmo : \
     ../../common/myOp.cmo \
-    consts.cmo \
-    at_utils.cmo
+    ../../common/interp.cmo \
+    consts.cmo
 common.cmx : \
     ../../common/myOp.cmx \
-    consts.cmx \
-    at_utils.cmx
+    ../../common/interp.cmx \
+    consts.cmx
 common_myop.cmo : \
     ../../common/myOp.cmo \
-    consts.cmo \
-    at_utils.cmo
+    ../../common/interp.cmo \
+    consts.cmo
 common_myop.cmx : \
     ../../common/myOp.cmx \
-    consts.cmx \
-    at_utils.cmx
+    ../../common/interp.cmx \
+    consts.cmx
 consts.cmo : \
     ../../common/myOp.cmo
 consts.cmx : \

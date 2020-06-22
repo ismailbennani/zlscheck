@@ -13,7 +13,8 @@ node afc1 (tstep, inp, outp) =
     let rise_or_fall = q_or (rise, fall) in
     reset
         let rec t = make 0. fby (t + tstep) in
-        always_timed 5. (tstep, implies (q_ge (t, make 1.), abs_mu_0_008))
+        always_timed 5. (tstep, implies (rise_or_fall,
+            implies (q_ge (t, make 1.), abs_mu_0_008)))
     every (isTrue rise_or_fall)
 
 (* always_[11, 50] abs(mu) < 0.007 *)

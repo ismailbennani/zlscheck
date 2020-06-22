@@ -1,11 +1,11 @@
 include ../../../config
 
-MODELS = at f16 cc wt afc
+MODELS = at f16 cc wt afc sc
 
 ZELUCFLAGS += -I $(CHECKLIB) -I ../common $(MODELS:%=-I %)
 INCLUDES += -I $(CHECKLIB) zlscheck.cmxa -I ../common myOp.cmx
 
-BENCH = at_bench f16_bench cc_bench wt_bench afc_bench
+BENCH = at_bench f16_bench cc_bench wt_bench afc_bench sc_bench
 
 all: models $(BENCH:=.cmx) replay_models.cmx
 

@@ -5,7 +5,7 @@ INCLUDES += -I $(CHECKLIB) zlscheck.cmxa -I ../ -I ../../common myOp.cmx
 
 OBJ=afc_d.cmx
 
-DEPS=afc_interp.cmx afc_delay.cmx afc_utils.cmx
+DEPS=afc_delay.cmx afc_utils.cmx
 
 %_main.ml: %.zls
 	$(ZELUC) $(ZELUCFLAGS) -s main -o $(@:.ml=) $<
@@ -21,8 +21,8 @@ afc_d.opt: afc_d_main.ml $(DEPS)
 afc_d.cmx: $(DEPS)
 afc_d.ml: $(DEPS:.cmx=.zci)
 
-afc_utils.zci afc_utils.ml: afc_interp.zci afc_delay.zci
-afc_utils.cmx: afc_interp.cmx afc_delay.cmx
+afc_utils.zci afc_utils.ml: afc_delay.zci
+afc_utils.cmx: afc_delay.cmx
 
 #
 

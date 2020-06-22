@@ -5,7 +5,7 @@ INCLUDES += -I $(CHECKLIB) zlscheck.cmxa -I ../ -I ../../common myOp.cmx
 
 OBJ=wt_d.cmx
 
-DEPS=wt_interp.cmx wt_common.cmx wt_params.cmx
+DEPS=wt_common.cmx wt_params.cmx
 #
 # wt_params.ml: wt_params.zls
 # 	$(ZELUC) $(ZELUCFLAGS) $<
@@ -31,10 +31,7 @@ wt_d.ml: $(DEPS:.cmx=.zci)
 	$(ZELUC) $(ZELUCFLAGS) $(@:.ml=.zls)
 	sed -i "s/Obj.magic ():MyOp.t/MyOp.create ():MyOp.t/g" $@
 
-wt_params.ml: wt_common.zci
 wt_params.cmx: wt_common.cmx
-wt_common.ml: wt_interp.zci
-wt_common.cmx: wt_interp.cmx
 
 #
 

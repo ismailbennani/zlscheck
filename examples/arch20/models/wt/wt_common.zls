@@ -15,4 +15,4 @@ let rad2deg(u) = scale u (180. /. pi)
 let deg2rad(u) = scale u (pi /. 180.)
 
 let interp1 (x_arr, v_arr, x) =
-    Wt_interp.interp1 (x_arr, v_arr) x
+    Interp.interp1 (x_arr, v_arr) x
