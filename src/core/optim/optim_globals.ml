@@ -25,7 +25,8 @@ let params = {
       alpha = 0.5;
       beta1 = 0.9;
       beta2 = 0.999;
-      do_restart = false
+      do_restart = false;
+      restart_fn = fun _ -> ();
     }
   }
 }
