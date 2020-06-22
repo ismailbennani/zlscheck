@@ -15,7 +15,7 @@ node sc1 (tstep, outp) =
             else pre res) in
     res
 (* get (translate rob a) = (get rob) +. a *)
-node sc_sc1 tstep inp = get next_t, outp, translate rob 0.006 where
+node sc_sc1 tstep inp = get next_t, outp, translate rob 0.007 where
     rec init tstep' = make tstep
     and next_t = tstep' fby (next_t + tstep')
     and t = make 0. fby next_t

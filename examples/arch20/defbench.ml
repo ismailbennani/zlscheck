@@ -709,7 +709,7 @@ end
 
 module SC =
 struct
-  let h = 0.5
+  let h = 0.2
   let max_t = 40.
   let n_pieces = truncate (ceil (max_t /. h))
 
@@ -722,13 +722,14 @@ struct
     Array.concat [Array.make 12 (3990., 4010.); Array.make 11 (0., 40.)]
 
   module SCBench (Optim : Optim.S) (Params: sig
+      val name : string
       val set_optim_params : unit -> unit
       val interp_fn : MyOp.t array -> float -> MyOp.t array
     end) =
   struct
     module Optim = Optim
 
-    let name = "sc"
+    let name = Params.name
     let prop_name_in_matlab = "SC{1}"
     let model_name_in_matlab = "steamcondenser"
     let folder_name_in_shared = "SteamCondenser"
@@ -745,51 +746,41 @@ struct
     let interp_fn = Params.interp_fn
   end
 
-  module Phi = Offline.Make(
-      SCBench (Optim.GDClassic)
-        (struct
-          let set_optim_params () =
-            Optim_globals.params.meth.gd.alpha <- 5.;
-            Optim_globals.params.bounds <- offline_bounds;
-            Optim_globals.params.meth.gd.do_restart <- true
-          let interp_fn = pcwse_cste h
-        end)
-    )
+  module ParamsInst1 =
+    struct
+      let h = 2.
+      let n_pieces = truncate (ceil (max_t /. h))
+      let offline_bounds = Array.make n_pieces online_bounds.(0)
 
-  module Phi_inst2 = Offline.Make(
-      SCBench (Optim.GDClassic)
-        (struct
-          let times = Array.create 12 (MyOp.make 0.)
-          let sample_times () =
-            let new_times = Array.init 11 (fun _ -> Random.float max_t) in
-            Array.sort compare new_times;
-            Array.blit (Array.map MyOp.make new_times) 0 times 1 11;
-            Printf.printf "times: [%s]\n" (String.concat "; " (Array.to_list (Array.map string_of_float new_times)))
-          let set_optim_params () =
-            sample_times ();
-            Optim_globals.params.bounds <- instance2_bounds;
-            Optim_globals.params.meth.gd.alpha <- 10.;
-            Optim_globals.params.meth.gd.do_restart <- true;
-            Optim_globals.params.meth.gd.restart_fn <- sample_times
-          let interp_fn = pcwse_cste_variable_times times
-        end)
-    )
+      let name = "sc_inst1"
 
-  module Phi_inst2_sa = Offline.Make(
-      SCBench (Optim.SA_GDAWARE)
-        (struct
-          let set_optim_params () =
-            Optim_globals.params.bounds <- instance2_sa_bounds
-          let interp_fn = pcwse_cste_variable_times_sa
-        end)
-    )
+      let set_optim_params () =
+        Optim_globals.params.meth.gd.alpha <- 5.;
+        Optim_globals.params.bounds <- offline_bounds;
+        Optim_globals.params.meth.gd.do_restart <- true
+      let interp_fn = pcwse_cste h
+    end
 
-  module PhiUR = Offline.Make
-      (SCBench (Optim.UR_GDAWARE) (struct
-         let set_optim_params () =
-           Optim_globals.params.bounds <- offline_bounds
-         let interp_fn = pcwse_cste 2.
-       end))
+  module ParamsInst2 =
+    struct
+      let h = 0.2
+      let n_pieces = truncate (ceil (max_t /. h))
+      let offline_bounds = Array.make n_pieces online_bounds.(0)
+
+      let name = "sc_inst2"
+
+      let set_optim_params () =
+        Optim_globals.params.meth.gd.alpha <- 5.;
+        Optim_globals.params.bounds <- offline_bounds;
+        Optim_globals.params.meth.gd.do_restart <- true
+      let interp_fn = pcwse_cste h
+    end
+
+  module Phi_inst1 = Offline.Make(SCBench(Optim.GDClassic)(ParamsInst1))
+  module Phi_inst2 = Offline.Make(SCBench(Optim.GDClassic)(ParamsInst2))
+  module PhiUR_inst1 = Offline.Make(SCBench(Optim.UR_GDAWARE)(ParamsInst1))
+  module PhiUR_inst2 = Offline.Make(SCBench(Optim.UR_GDAWARE)(ParamsInst2))
+
 
   module ReplayDiscrete = Replay.Make (struct
       let name = "ReplayDiscrete"
