@@ -84,6 +84,7 @@ sig
   val prop_name_in_matlab : string
   val model_name_in_matlab : string
   val folder_name_in_shared : string
+  val pindex : int ref
   val dump_path : string option ref
   val dump_folder : string option ref
   val matlab_path : string ref

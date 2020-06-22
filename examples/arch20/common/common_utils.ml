@@ -7,7 +7,7 @@ let make_dump_folder path name =
   let foldername = Printf.sprintf "dump_%s" name in
   Filename.concat path foldername
 
-let make_tmp_dump () = Filename.open_temp_file "dump" ".csv"
+let make_tmp_dump i = Filename.open_temp_file ("dump_" ^ (string_of_int i) ^ "_") ".csv"
 let close_tmp_dump (path, fd) = close_out fd
 
 let print_result print_sample { optim; n_runs; best_sample; best_rob;

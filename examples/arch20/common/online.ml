@@ -15,6 +15,7 @@ struct
   let prop_name_in_matlab = Bench.prop_name_in_matlab
   let model_name_in_matlab = Bench.model_name_in_matlab
   let folder_name_in_shared = Bench.folder_name_in_shared
+  let pindex = ref 0
   let dump_path = ref (Some Bench.dump_path)
   let dump_folder = ref (Some "")
   let matlab_path = ref Bench.matlab_path
@@ -68,7 +69,7 @@ struct
     cur_tmp_fd :=
       begin match !dump_folder with
       | None -> None
-      | Some _ -> Some (make_tmp_dump ())
+      | Some _ -> Some (make_tmp_dump !pindex)
       end;
 
     sim_n := !sim_n + 1;

@@ -15,6 +15,7 @@ struct
   let dump_path = ref (Some Bench.dump_path)
   let dump_folder = ref (Some "")
   let matlab_path = ref Bench.matlab_path
+  let pindex = ref 0
   let save_path = ref ""
   let save_folder = ref ""
 
@@ -37,7 +38,7 @@ struct
 
     let fd = match !dump_folder with
       | None -> None
-      | Some _ -> Some (make_tmp_dump ())
+      | Some _ -> Some (make_tmp_dump !pindex)
     in
 
     let mem = alloc () in
@@ -68,7 +69,7 @@ struct
       | Some (temp_path, temp_fd) ->
         close_tmp_dump (temp_path, temp_fd);
         if !save_path <> "" then begin
-          let save_folder = Filename.concat !save_folder (string_of_int !repetition_n) in
+          let save_folder = Filename.concat !save_folder (Printf.sprintf "%d_%d" !pindex !repetition_n) in
           let save_path = Filename.concat save_folder ((string_of_int !sim_n) ^ ".csv") in
           ignore(Unix.system ("mkdir -p " ^ save_folder));
           ignore (Unix.system ("cp " ^ temp_path ^ " " ^ save_path));

@@ -96,10 +96,10 @@ let get_inputs () =
       ])
     @
     Defbench.SC.([
-          ("SC", (module Phi : RunBench));
-          ("SC_inst2", (module Phi_inst2 : RunBench));
-          ("SC_inst2_sa", (module Phi_inst2_sa : RunBench));
-          ("SC_ur", (module PhiUR : RunBench));
+        ("SC_inst1", (module Phi_inst1 : RunBench));
+        ("SC_inst2", (module Phi_inst2 : RunBench));
+        ("SC_inst1_ur", (module PhiUR_inst1 : RunBench));
+        ("SC_inst2_ur", (module PhiUR_inst2 : RunBench));
       ])
   in
   let all_benches = fst (List.split benches) in
@@ -124,8 +124,8 @@ let get_inputs () =
   let cc_ur = ["CC1_ur"; "CC2_ur"; "CC3_ur"; "CC4_ur"; "CC5_ur"] in
   let wt = ["WT1"; "WT2"; "WT3"; "WT4"] in
   let wt_ur = ["WT1_ur"; "WT2_ur"; "WT3_ur"; "WT4_ur"] in
-  let sc = ["SC"] in
-  let sc_ur = ["SC_ur"] in
+  let sc = ["SC_inst1"; "SC_inst2"] in
+  let sc_ur = ["SC_inst1_ur"; "SC_inst2_ur"] in
 
   let macro_benches = [
     ("AT_inst1", at_inst1);
@@ -256,8 +256,11 @@ let run_bench_parallel (module Bench : RunBench) n_repet n_runs n_processes =
     let tmp_file = Filename.temp_file "benchresult" "" in
     match Unix.fork () with
     | 0 ->
+      Random.self_init ();
       let n_repet = n_repets.(i) in
       let start_time = Unix.gettimeofday () in
+
+      Bench.pindex := i + 1;
 
       let n_falsif = ref 0 in
       let n_runs_l = ref [] in
