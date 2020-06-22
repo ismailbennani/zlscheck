@@ -9,6 +9,7 @@ let _ =
     ("cc", (module Defbench.CC.ReplayDiscrete : RunReplay));
     ("wt", (module Defbench.WT.ReplayDiscrete : RunReplay));
     ("afc", (module Defbench.AFC.ReplayDiscrete : RunReplay));
+    ("sc", (module Defbench.SC.ReplayDiscrete : RunReplay));
   ] in
 
   let models_str = String.concat " | " (fst (List.split models)) ^ " | all" in

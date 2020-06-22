@@ -131,6 +131,13 @@ let _ =
         ("AFC29_ur", (module Phi29UR : RunBench));
         ("AFC33_ur", (module Phi33UR : RunBench));
       ])
+    @
+    Defbench.SC.([
+          ("SC", (module Phi : RunBench));
+          ("SC_inst2", (module Phi_inst2 : RunBench));
+          ("SC_inst2_sa", (module Phi_inst2_sa : RunBench));
+          ("SC_ur", (module PhiUR : RunBench));
+      ])
   in
   let all_benches = fst (List.split benches) in
 
@@ -154,6 +161,8 @@ let _ =
   let cc_ur = ["CC1_ur"; "CC2_ur"; "CC3_ur"; "CC4_ur"; "CC5_ur"] in
   let wt = ["WT1"; "WT2"; "WT3"; "WT4"] in
   let wt_ur = ["WT1_ur"; "WT2_ur"; "WT3_ur"; "WT4_ur"] in
+  let sc = ["SC"] in
+  let sc_ur = ["SC_ur"] in
 
   let macro_benches = [
     ("AT_inst1", at_inst1);
@@ -166,8 +175,10 @@ let _ =
     ("CC_ur", cc_ur);
     ("WT", wt);
     ("WT_ur", wt_ur);
-    ("all", at_inst1 @ at_inst2 @ cc @ wt);
-    ("all_ur", at_inst1_ur @ at_inst2_ur @ cc_ur @ wt_ur);
+    ("SC", sc);
+    ("SC_ur", sc_ur);
+    ("all", at_inst1 @ at_inst2 @ cc @ wt @ sc);
+    ("all_ur", at_inst1_ur @ at_inst2_ur @ cc_ur @ wt_ur @ sc_ur);
   ] in
 
   let n_repet = ref 10 in
@@ -246,7 +257,7 @@ let _ =
 
           let matlab_validate_fd = open_out (Filename.concat dump_folder "validate.m") in
           print_matlab_validate matlab_validate_fd Bench.bench_name !Bench.matlab_path
-            Bench.model_name_in_matlab Bench.prop_name_in_matlab dump_folder;
+            Bench.model_name_in_matlab Bench.prop_name_in_matlab Bench.folder_name_in_shared;
           close_out matlab_validate_fd;
 
           Printf.printf "Dump saved at %s\nmodel_name: %s\n" dump_folder Bench.model_name_in_matlab
@@ -261,7 +272,7 @@ let _ =
     let validate_all_path = (Filename.concat !dump_path "validate_all.m") in
     if not (Sys.file_exists validate_all_path) then begin
       let validate_all_fd = open_out validate_all_path in
-      print_validate_all validate_all_fd;
+      print_validate_all validate_all_fd !matlab_path;
       close_out validate_all_fd;
     end
   end

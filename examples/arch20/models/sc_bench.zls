@@ -1,0 +1,25 @@
+open MyOp
+open Discrete_obs_fad
+
+(* □_[30 35] (87<= pressure <=87.5) *)
+node sc1 (tstep, outp) =
+    let rec t = make 0. fby (t + tstep) in
+    let p = Array.get outp 3 in
+    let t_ge_30 = q_ge (t, make 30.) in
+    let t_le_35 = q_le (t, make 35.) in
+    let p_in_range = q_and (q_ge (p, make 87.),
+                            q_le (p, make 87.5)) in
+    let rec res = make 10000000. ->
+        (if isTrue t_ge_30 && isTrue t_le_35
+            then q_and (p_in_range, pre res)
+            else pre res) in
+    res
+(* get (translate rob a) = (get rob) +. a *)
+node sc_sc1 tstep inp = get next_t, outp, translate rob 0.006 where
+    rec init tstep' = make tstep
+    and next_t = tstep' fby (next_t + tstep')
+    and t = make 0. fby next_t
+    and fs = Array.get inp 0
+    and temp, fcw, q, p = Sc_d.sc (tstep', fs)
+    and outp = Array.of_list [temp; fcw; q; p]
+    and rob = sc1 (tstep', outp)

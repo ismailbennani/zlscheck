@@ -26,14 +26,38 @@ let pcwse_cste2 h control_points =
 
 let pcwse_cste_afc h control_points =
   fun t ->
-  (* piecewise constant signal interpolation in 1D for first coordinate
-     and return first value for second coordinate *)
+  (* first coordinate of control_points is the value of the second coordinate of
+     the input, the rest of the array is to be interpolated for first coordinate
+     of input *)
   let index = truncate (t /. h) in
   let cp_n = Array.length control_points in
-  if 2 * index + 1 >= cp_n then
-    [| control_points.(cp_n - 2); control_points.(1) |]
+  if index + 1 >= cp_n then
+    [| control_points.(cp_n - 1); control_points.(0) |]
   else
-    [| control_points.(2*index); control_points.(1) |]
+    [| control_points.(1 + index); control_points.(0) |]
+
+let pcwse_cste_variable_times times values t =
+  let i = Interp.ifind (MyOp.make t) times in
+  if i = 0 then [| values.(0) |] else [| values.(i-1) |]
+
+let myop_compare x y =
+  if MyOp.(x < y) then -1
+  else if MyOp.(x > y) then 1
+  else 0
+
+let pcwse_cste_variable_times_sa control_points =
+  let times = Array.sub control_points 12 11 in
+  Array.sort myop_compare times;
+  let times' = Array.create 12 (MyOp.make 0.) in
+  Array.blit times 0 times' 1 11;
+  Printf.printf "times: [%s]\n" (String.concat "; " (Array.to_list (Array.map string_of_float (Array.map MyOp.get times))));
+  let values = Array.map (fun x -> MyOp.scale x 0.001) (Array.sub control_points 0 12) in
+  fun t ->
+  let i = Interp.ifind (MyOp.make t) times in
+  if i = 0 then [| values.(0) |] else [| values.(i-1) |]
+
+let pcwse_linear times values t =
+  [| Interp.interp1 (times, values) (MyOp.make t) |]
 
 module Autotrans =
 struct
@@ -296,7 +320,7 @@ struct
     let model_name_in_matlab = "transmission"
     let folder_name_in_shared = "transmission"
     let dump_path = Printf.sprintf "benchmarks/at_inst%d" Params.instance
-    let matlab_path = "../../../../matlab"
+    let matlab_path = "../../matlab"
     let max_t = Params.max_t
     let sample_every = Params.sample_every
     let set_optim_params = Params.set_optim_params
@@ -371,7 +395,7 @@ struct
     let model_name_in_matlab = "F16_GCAS"
     let folder_name_in_shared = "F16_GCAS"
     let dump_path = "benchmarks/f16"
-    let matlab_path = "../../../../matlab"
+    let matlab_path = "../../matlab"
     let max_t = 15.0
     let sample_every = 10
     let set_optim_params () =
@@ -469,7 +493,7 @@ struct
     let model_name_in_matlab = "chasingcars"
     let folder_name_in_shared = "chasing-cars"
     let dump_path = "benchmarks/cc"
-    let matlab_path = "../../../../matlab"
+    let matlab_path = "../../matlab"
     let max_t = 100.0
     let sample_every = 500
     let set_optim_params () =
@@ -532,7 +556,7 @@ struct
     let model_name_in_matlab = "wind_turbine"
     let folder_name_in_shared = "wind-turbine"
     let dump_path = "benchmarks/wt"
-    let matlab_path = "../../../../matlab"
+    let matlab_path = "../../matlab"
     let max_t = max_t
     let sample_every = 500
     let set_optim_params () =
@@ -600,21 +624,18 @@ struct
 
   let online_bounds_normal_mode = [| 0., 61.1; 900., 1100. |]
   let offline_bounds_normal_mode =
-    [| 0., 61.1; 900., 1100.; 0., 61.1; 900., 1100.; 0., 61.1; 900., 1100.;
-       0., 61.1; 900., 1100.; 0., 61.1; 900., 1100.; 0., 61.1; 900., 1100.;
-       0., 61.1; 900., 1100.; 0., 61.1; 900., 1100.; 0., 61.1; 900., 1100.;
-       0., 61.1; 900., 1100. |]
+    [| 900., 1100.; 0., 61.1; 0., 61.1; 0., 61.1; 0., 61.1; 0., 61.1; 0., 61.1;
+       0., 61.1; 0., 61.1; 0., 61.1; 0., 61.1 |]
   let online_bounds_power_mode = [| 61.2, 81.2; 900., 1100. |]
   let offline_bounds_power_mode =
-    [| 61.2, 81.2; 900., 1100.; 61.2, 81.2; 900., 1100.; 61.2, 81.2; 900., 1100.;
-       61.2, 81.2; 900., 1100.; 61.2, 81.2; 900., 1100.; 61.2, 81.2; 900., 1100.;
-       61.2, 81.2; 900., 1100.; 61.2, 81.2; 900., 1100.; 61.2, 81.2; 900., 1100.;
-       61.2, 81.2; 900., 1100. |]
+    [| 900., 1100.; 61.2, 81.2; 61.2, 81.2; 61.2, 81.2; 61.2, 81.2; 61.2, 81.2;
+       61.2, 81.2; 61.2, 81.2; 61.2, 81.2; 61.2, 81.2; 61.2, 81.2 |]
 
   module type Params =
   sig
     module Optim : Optim.S
     val index : int
+    val gd_alpha : float
     val bounds : (float * float) array
     val node : (MyOp.t array, float * MyOp.t array * MyOp.t) Ztypes.node
   end
@@ -627,11 +648,11 @@ struct
     let model_name_in_matlab = "powertrain"
     let folder_name_in_shared = "powertrain"
     let dump_path = "benchmarks/afc"
-    let matlab_path = "../../../../matlab"
+    let matlab_path = "../../matlab"
     let max_t = max_t
     let sample_every = 500
     let set_optim_params () =
-      Optim_globals.params.meth.gd.alpha <- 1e7;
+      Optim_globals.params.meth.gd.alpha <- Params.gd_alpha;
       Optim_globals.params.meth.gd.do_restart <- true;
       Optim_globals.params.bounds <- Params.bounds;
       Optim_globals.params.verbose <- !verbose;
@@ -645,6 +666,7 @@ struct
     module Optim = Optim
     let index = 27
     let bounds = offline_bounds_normal_mode
+    let gd_alpha = 10.
     let node = Afc_bench.afc_afc1 5e-5
   end
 
@@ -652,6 +674,7 @@ struct
     module Optim = Optim
     let index = 29
     let bounds = offline_bounds_normal_mode
+    let gd_alpha = 1e7
     let node = Afc_bench.afc_afc2 5e-5
   end
 
@@ -659,6 +682,7 @@ struct
     module Optim = Optim
     let index = 33
     let bounds = offline_bounds_power_mode
+    let gd_alpha = 1e9
     let node = Afc_bench.afc_afc2 5e-5
   end
 
@@ -668,10 +692,11 @@ struct
 
       let replay_node = Replay_models.afc
       let scan_dump_inp ib =
-        Scanf.bscanf ib "%g,%g,%g,%g,%g,%g,%g"
-          (fun throttle engine abf abf_ref mu mode rob ->
-             Array.map MyOp.make
-               [| throttle; engine; abf; abf_ref; mu; mode; rob |])
+        Scanf.bscanf ib "%s"
+          (fun s ->
+             let nums = Array.of_list (String.split_on_char ',' s) in
+             let no_rob = Array.sub nums 0 (Array.length nums - 1) in
+             Array.map MyOp.make (Array.map float_of_string no_rob))
     end)
 
   module Phi27 = Offline.Make(AFCBench(ParamsPhi27(Optim.GDClassic)))
@@ -680,4 +705,101 @@ struct
   module Phi27UR = Offline.Make(AFCBench(ParamsPhi27(Optim.UR_GDAWARE)))
   module Phi29UR = Offline.Make(AFCBench(ParamsPhi29(Optim.UR_GDAWARE)))
   module Phi33UR = Offline.Make(AFCBench(ParamsPhi33(Optim.UR_GDAWARE)))
+end
+
+module SC =
+struct
+  let h = 0.5
+  let max_t = 40.
+  let n_pieces = truncate (ceil (max_t /. h))
+
+  let online_bounds = [| 3.99, 4.01 |]
+  let offline_bounds = Array.make n_pieces online_bounds.(0)
+  let instance2_bounds = Array.make 12 online_bounds.(0)
+  let instance2_minsize = 1.
+  let instance2_maxsize = 5.
+  let instance2_sa_bounds =
+    Array.concat [Array.make 12 (3990., 4010.); Array.make 11 (0., 40.)]
+
+  module SCBench (Optim : Optim.S) (Params: sig
+      val set_optim_params : unit -> unit
+      val interp_fn : MyOp.t array -> float -> MyOp.t array
+    end) =
+  struct
+    module Optim = Optim
+
+    let name = "sc"
+    let prop_name_in_matlab = "SC{1}"
+    let model_name_in_matlab = "steamcondenser"
+    let folder_name_in_shared = "SteamCondenser"
+    let dump_path = "benchmarks/sc"
+    let matlab_path = "../../matlab"
+    let max_t = 40.0
+    let sample_every = 200
+    let set_optim_params () =
+      Params.set_optim_params ();
+      Optim_globals.params.verbose <- !verbose;
+      Optim_globals.params.vverbose <- !verbose
+
+    let node = Sc_bench.sc_sc1 0.01
+    let interp_fn = Params.interp_fn
+  end
+
+  module Phi = Offline.Make(
+      SCBench (Optim.GDClassic)
+        (struct
+          let set_optim_params () =
+            Optim_globals.params.meth.gd.alpha <- 5.;
+            Optim_globals.params.bounds <- offline_bounds;
+            Optim_globals.params.meth.gd.do_restart <- true
+          let interp_fn = pcwse_cste h
+        end)
+    )
+
+  module Phi_inst2 = Offline.Make(
+      SCBench (Optim.GDClassic)
+        (struct
+          let times = Array.create 12 (MyOp.make 0.)
+          let sample_times () =
+            let new_times = Array.init 11 (fun _ -> Random.float max_t) in
+            Array.sort compare new_times;
+            Array.blit (Array.map MyOp.make new_times) 0 times 1 11;
+            Printf.printf "times: [%s]\n" (String.concat "; " (Array.to_list (Array.map string_of_float new_times)))
+          let set_optim_params () =
+            sample_times ();
+            Optim_globals.params.bounds <- instance2_bounds;
+            Optim_globals.params.meth.gd.alpha <- 10.;
+            Optim_globals.params.meth.gd.do_restart <- true;
+            Optim_globals.params.meth.gd.restart_fn <- sample_times
+          let interp_fn = pcwse_cste_variable_times times
+        end)
+    )
+
+  module Phi_inst2_sa = Offline.Make(
+      SCBench (Optim.SA_GDAWARE)
+        (struct
+          let set_optim_params () =
+            Optim_globals.params.bounds <- instance2_sa_bounds
+          let interp_fn = pcwse_cste_variable_times_sa
+        end)
+    )
+
+  module PhiUR = Offline.Make
+      (SCBench (Optim.UR_GDAWARE) (struct
+         let set_optim_params () =
+           Optim_globals.params.bounds <- offline_bounds
+         let interp_fn = pcwse_cste 2.
+       end))
+
+  module ReplayDiscrete = Replay.Make (struct
+      let name = "ReplayDiscrete"
+      let max_t = 15.
+
+      let replay_node = Replay_models.sc
+      let scan_dump_inp ib =
+        Scanf.bscanf ib "%g,%g,%g,%g,%g,%g"
+          (fun fs temp fcw q p rob ->
+             Array.map MyOp.make
+               [| fs; temp; fcw; q; p; rob |])
+    end)
 end

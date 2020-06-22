@@ -75,7 +75,11 @@ struct
     in Node { alloc; step; reset }
 
   let run dump_file =
+    Printf.printf "Reading %s..\n" dump_file;
+
     let inp_cp = read_dump dump_file in
+
+    Printf.printf "Running simulation\n";
 
     (* simulation (discrete) function *)
     let main =

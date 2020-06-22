@@ -72,30 +72,6 @@ node sincefirst (x, y) = xsincey where
     and xsincey = q_true -> if isTrue firsty then x else q_or (pre xsincey, x)
 node sincelast(x, y) = xsincey where
     rec xsincey = q_true -> if isTrue y then x else q_or (pre xsincey, x)
-(* node sincelast (x, y) =
-    automaton
-    | INIT ->
-        do q_or (never y, x)
-        until (q_istrue y) () then YTRUE
-    | YTRUE ->
-        do x
-        until (q_isfalse y) () then YFALSE(x)
-    | YFALSE(last_res) ->
-        do q_or (last_res, once x)
-        until (q_istrue y) () then YTRUE *)
-(* node sincelast (x, y) =
-    automaton
-    | INIT ->
-        do q_or (never y, x)
-        until (q_istrue y)() then YTRUE
-    | YTRUE ->
-        do x
-        until (q_isfalse y)() on (x < make 0.) then YFALSE(x)
-        else (q_isfalse y)() on (x >= make 0.) then INIT
-    | YFALSE(last_res) ->
-        do q_or (last_res, once x)
-        until (q_istrue y)() then YTRUE
-        else (q_istrue x)() then INIT *)
 node since (x, y) = sincelast (x, y)
 
 (* onceBfromlastAtoC :

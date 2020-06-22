@@ -120,10 +120,36 @@ node afc (times, inp) = () where
     and mode = get (Array.get cur_inp 5)
 
     and () =
-        let s1 = scope (0., 85., ("throttle", linear, throttle)) in
+        let s1 = scope3(0., 85., ("throttle", linear, throttle),
+                                 ("8.8", linear, 8.8),
+                                 ("40.", linear, 40.)) in
         let s2 = scope (900., 1100., ("engine", linear, engine)) in
         let s3 = scope2(0., 15., ("abf", linear, abf), ("abf_ref", linear, abf_ref)) in
-        let s4 = scope (-0.1, 0.1, ("mu", linear, mu)) in
+        let s4 = scopen(-0.02, 0.02,[("mu", linear, mu);
+                                     ("0.008", linear, 0.008);
+                                     ("-0.008", linear, -0.008);
+                                     ("0.007", linear, 0.007);
+                                     ("-0.007", linear, -0.007)]) in
         let s5 = scope (0., 2., ("mode", linear, mode)) in
 
         windown("Abstract fuel control", 50., t,  [s1; s2; s3; s4; s5])
+
+node sc (times, inp) = () where
+    rec n = 0 fby (Stdlib.( + ) n 10)
+    and cur_inp = Array.get inp n
+    and t = Array.get times n
+    and fs = get (Array.get cur_inp 0)
+    and temp = get (Array.get cur_inp 1)
+    and fcw = get (Array.get cur_inp 2)
+    and q = get (Array.get cur_inp 3)
+    and p = get (Array.get cur_inp 4)
+    and rob = get (Array.get cur_inp 5)
+
+    and () =
+        let s1 = scope (3.99, 4.01, ("Fs", linear, fs)) in
+        (* let s2 = scope (78.5, 80., ("T", linear, temp)) in
+        let s3 = scope (100., 140., ("Fcw", linear, fcw)) in
+        let s4 = scope (8000., 10000., ("Q", linear, q)) in *)
+        let s5 = scope3(80., 90., ("P", linear, p), ("", linear, 87.), ("", linear, 87.5)) in
+        let s6 = scope (80., 90., ("rob", linear, rob)) in
+        windown("Steam condenser RNN", 40., t, [s1; (* s2; s3; s4; *) s5; s6])

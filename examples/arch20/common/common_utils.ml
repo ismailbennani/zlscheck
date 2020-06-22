@@ -17,7 +17,7 @@ let print_result print_sample { optim; n_runs; best_sample; best_rob;
   Printf.printf "\tbest_sample: %a with rob %g\n"
     print_sample best_sample best_rob
 
-let print_matlab_validate fd bench_name matlab_path model_name prop_name_in_matlab dump_folder =
+let print_matlab_validate fd bench_name matlab_path model_name prop_name_in_matlab model_folder =
   Printf.fprintf fd
     "warning('off','all');\n\
      addpath(genpath(\"/home/lahkim/Documents/MATLAB/toolbox/S-TALIRO\"));\n\
@@ -31,7 +31,7 @@ let print_matlab_validate fd bench_name matlab_path model_name prop_name_in_matl
      clear ok notok preds u T;"
     matlab_path
     (Filename.concat (Filename.dirname matlab_path)
-       ("shared/benchmarks/" ^ model_name))
+       ("shared/benchmarks/" ^ model_folder))
     model_name model_name prop_name_in_matlab
     model_name bench_name model_name bench_name
 
@@ -47,9 +47,10 @@ let print_result print_optim_params ff
   Printf.fprintf ff "\n";
   Printf.fprintf ff "%a" print_optim_params ()
 
-let print_validate_all fd =
+let print_validate_all fd matlab_path =
   Printf.fprintf fd
-    "cur_fd = pwd;\n\
+    "addpath(%s)\n\
+     cur_fd = pwd;\n\
      validation_scripts = find_rec(\".\", \"validate.m\");\n\
      for i = 1:length(validation_scripts)\n\
      \tvalidation_script = validation_scripts(i);\n\
@@ -60,6 +61,7 @@ let print_validate_all fd =
      end\n\
      cd(cur_fd);\n\
      clear cur_fd validation_scripts validation_script folder i;"
+    matlab_path
 
 let mk_bench_list_str benches macro_benches =
   Format.fprintf Format.str_formatter
