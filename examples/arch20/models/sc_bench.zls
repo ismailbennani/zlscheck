@@ -9,11 +9,8 @@ node sc1 (tstep, outp) =
     let t_le_35 = q_le (t, make 35.) in
     let p_in_range = q_and (q_ge (p, make 87.),
                             q_le (p, make 87.5)) in
-    let rec res = make 10000000. ->
-        (if isTrue t_ge_30 && isTrue t_le_35
-            then q_and (p_in_range, pre res)
-            else pre res) in
-    res
+    always_timed 35. (tstep, implies (t_ge_30, p_in_range))
+    
 (* get (translate rob a) = (get rob) +. a *)
 node sc_sc1 tstep inp = get next_t, outp, translate rob 0.007 where
     rec init tstep' = make tstep
