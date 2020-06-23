@@ -633,15 +633,14 @@ struct
 
   module type Params =
   sig
-    module Optim : Optim.S
     val index : int
     val gd_alpha : float
     val bounds : (float * float) array
     val node : (MyOp.t array, float * MyOp.t array * MyOp.t) Ztypes.node
   end
-  module AFCBench (Params: Params) =
+  module AFCBench (Params: Params) (Optim: Optim.S) =
   struct
-    module Optim = Params.Optim
+    module Optim = Optim
 
     let name = "afc" ^ (string_of_int Params.index)
     let prop_name_in_matlab = "AFC{" ^ (string_of_int Params.index) ^ "}"
@@ -662,24 +661,21 @@ struct
     let interp_fn = pcwse_cste_afc h
   end
 
-  module ParamsPhi27 (Optim: Optim.S)= struct
-    module Optim = Optim
+  module ParamsPhi27 = struct
     let index = 27
     let bounds = offline_bounds_normal_mode
     let gd_alpha = 10.
     let node = Afc_bench.afc_afc1 5e-5
   end
 
-  module ParamsPhi29 (Optim: Optim.S)= struct
-    module Optim = Optim
+  module ParamsPhi29 = struct
     let index = 29
     let bounds = offline_bounds_normal_mode
     let gd_alpha = 1e7
     let node = Afc_bench.afc_afc2 5e-5
   end
 
-  module ParamsPhi33 (Optim: Optim.S)= struct
-    module Optim = Optim
+  module ParamsPhi33 = struct
     let index = 33
     let bounds = offline_bounds_power_mode
     let gd_alpha = 1e9
@@ -699,12 +695,12 @@ struct
              Array.map MyOp.make (Array.map float_of_string no_rob))
     end)
 
-  module Phi27 = Offline.Make(AFCBench(ParamsPhi27(Optim.GDClassic)))
-  module Phi29 = Offline.Make(AFCBench(ParamsPhi29(Optim.GDClassic)))
-  module Phi33 = Offline.Make(AFCBench(ParamsPhi33(Optim.GDClassic)))
-  module Phi27UR = Offline.Make(AFCBench(ParamsPhi27(Optim.UR_GDAWARE)))
-  module Phi29UR = Offline.Make(AFCBench(ParamsPhi29(Optim.UR_GDAWARE)))
-  module Phi33UR = Offline.Make(AFCBench(ParamsPhi33(Optim.UR_GDAWARE)))
+  module Phi27 = Offline.Make(AFCBench(ParamsPhi27)(Optim.GDClassic))
+  module Phi29 = Offline.Make(AFCBench(ParamsPhi29)(Optim.GDClassic))
+  module Phi33 = Offline.Make(AFCBench(ParamsPhi33)(Optim.GDClassic))
+  module Phi27UR = Offline.Make(AFCBench(ParamsPhi27)(Optim.UR_GDAWARE))
+  module Phi29UR = Offline.Make(AFCBench(ParamsPhi29)(Optim.UR_GDAWARE))
+  module Phi33UR = Offline.Make(AFCBench(ParamsPhi33)(Optim.UR_GDAWARE))
 end
 
 module SC =
