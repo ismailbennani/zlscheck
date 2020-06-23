@@ -38,8 +38,11 @@ afc_delay.cmx afc_utils.cmx afc_d.cmx \
 \
 sc_utils.cmx sc_d.cmx \
 \
+nn_utils.cmx nn_d.cmx \
+\
 common_types.cmx common_utils.cmx online.cmx offline.cmx replay.cmx \
 at_bench.cmx f16_bench.cmx cc_bench.cmx wt_bench.cmx afc_bench.cmx sc_bench.cmx \
+nn_bench.cmx \
 replay_models.cmx
 
 TARGET = run_bench.opt replay_bench.opt

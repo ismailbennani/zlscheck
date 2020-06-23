@@ -47,6 +47,8 @@ val asin : t -> t
 val acos : t -> t
 val atan : t -> t
 
+val floor : t -> t
+
 val mod_t : t -> t -> t
 val modf : t -> float * float
 

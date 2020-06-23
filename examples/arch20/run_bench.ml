@@ -101,6 +101,17 @@ let get_inputs () =
         ("SC_inst1_ur", (module PhiUR_inst1 : RunBench));
         ("SC_inst2_ur", (module PhiUR_inst2 : RunBench));
       ])
+    @
+    Defbench.NN.([
+        ("NN1_inst1", (module Phi1_inst1 : RunBench));
+        ("NN1_inst2", (module Phi1_inst2 : RunBench));
+        ("NN2_inst1", (module Phi2_inst1 : RunBench));
+        ("NN2_inst2", (module Phi2_inst2 : RunBench));
+        ("NN1_inst1_ur", (module Phi1UR_inst1 : RunBench));
+        ("NN1_inst2_ur", (module Phi1UR_inst2 : RunBench));
+        ("NN2_inst1_ur", (module Phi2UR_inst1 : RunBench));
+        ("NN2_inst2_ur", (module Phi2UR_inst2 : RunBench));
+      ])
   in
   let all_benches = fst (List.split benches) in
 
@@ -126,6 +137,8 @@ let get_inputs () =
   let wt_ur = ["WT1_ur"; "WT2_ur"; "WT3_ur"; "WT4_ur"] in
   let sc = ["SC_inst1"; "SC_inst2"] in
   let sc_ur = ["SC_inst1_ur"; "SC_inst2_ur"] in
+  let nn = ["NN1_inst1"; "NN1_inst2"; "NN2_inst1"; "NN2_inst2"] in
+  let nn_ur = ["NN1_inst1_ur"; "NN1_inst2_ur"; "NN2_inst1_ur"; "NN2_inst2_ur"] in
 
   let macro_benches = [
     ("AT_inst1", at_inst1);
@@ -140,8 +153,10 @@ let get_inputs () =
     ("WT_ur", wt_ur);
     ("SC", sc);
     ("SC_ur", sc_ur);
-    ("all", at_inst1 @ at_inst2 @ cc @ wt @ sc);
-    ("all_ur", at_inst1_ur @ at_inst2_ur @ cc_ur @ wt_ur @ sc_ur);
+    ("NN", nn);
+    ("NN_ur", nn_ur);
+    ("all", at_inst1 @ at_inst2 @ cc @ wt @ sc @ nn);
+    ("all_ur", at_inst1_ur @ at_inst2_ur @ cc_ur @ wt_ur @ sc_ur @ nn_ur);
   ] in
 
   let n_repet = ref 10 in

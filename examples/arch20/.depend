@@ -62,6 +62,7 @@ defbench.cmo : \
     common/replay.cmo \
     common/online.cmo \
     common/offline.cmo \
+    models/nn_bench.cmo \
     common/myOp.cmo \
     common/interp.cmo \
     models/f16_bench.cmo \
@@ -76,6 +77,7 @@ defbench.cmx : \
     common/replay.cmx \
     common/online.cmx \
     common/offline.cmx \
+    models/nn_bench.cmx \
     common/myOp.cmx \
     common/interp.cmx \
     models/f16_bench.cmx \

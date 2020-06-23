@@ -780,7 +780,7 @@ struct
 
   module ReplayDiscrete = Replay.Make (struct
       let name = "ReplayDiscrete"
-      let max_t = 15.
+      let max_t = 40.
 
       let replay_node = Replay_models.sc
       let scan_dump_inp ib =
@@ -788,5 +788,129 @@ struct
           (fun fs temp fcw q p rob ->
              Array.map MyOp.make
                [| fs; temp; fcw; q; p; rob |])
+    end)
+end
+
+module NN =
+struct
+  let h = 0.2
+  let max_t = 40.
+  let n_pieces = truncate (ceil (max_t /. h))
+
+  let online_bounds = [| 1., 3. |]
+
+  module type Params =
+  sig
+    val name : string
+    val node : float -> (MyOp.t array, float * MyOp.t array * MyOp.t) Ztypes.node
+    val set_optim_params : unit -> unit
+    val interp_fn : MyOp.t array -> float -> MyOp.t array
+  end
+
+  module NNBench (Optim : Optim.S) (Params: Params) =
+  struct
+    module Optim = Optim
+
+    let name = Params.name
+    let prop_name_in_matlab = "NN{1}"
+    let model_name_in_matlab = "neural"
+    let folder_name_in_shared = "neural"
+    let dump_path = "benchmarks/nn"
+    let matlab_path = "../../matlab"
+    let max_t = 40.0
+    let sample_every = 200
+    let set_optim_params () =
+      Params.set_optim_params ();
+      Optim_globals.params.verbose <- !verbose;
+      Optim_globals.params.vverbose <- !verbose
+
+    let node = Params.node 0.001
+    let interp_fn = Params.interp_fn
+  end
+
+  module ParamsInst1 : Params =
+    struct
+      let h = 3.
+      let n_pieces = truncate (ceil (max_t /. h))
+      let offline_bounds = Array.make n_pieces online_bounds.(0)
+
+      let name = "nn_inst1"
+      let node = Nn_bench.nn_nn1
+
+      let set_optim_params () =
+        Optim_globals.params.meth.gd.alpha <- 1.;
+        Optim_globals.params.bounds <- offline_bounds;
+        Optim_globals.params.meth.gd.do_restart <- true
+      let interp_fn = pcwse_cste h
+    end
+
+  module ParamsInst2 : Params =
+    struct
+      let n_pieces = 3
+      let h = max_t /. (float n_pieces)
+      let offline_bounds = Array.make n_pieces online_bounds.(0)
+
+      let name = "nn_inst2"
+      let node = Nn_bench.nn_nn1
+
+      let set_optim_params () =
+        Optim_globals.params.meth.gd.alpha <- 1.;
+        Optim_globals.params.bounds <- offline_bounds;
+        Optim_globals.params.meth.gd.do_restart <- true
+      let interp_fn = pcwse_cste h
+    end
+
+  module ParamsInst1_2 : Params =
+    struct
+      let h = 3.
+      let n_pieces = truncate (ceil (max_t /. h))
+      let offline_bounds = Array.make n_pieces online_bounds.(0)
+
+      let name = "nn_inst1_0_04"
+      let node = Nn_bench.nn_nn2
+
+      let set_optim_params () =
+        Optim_globals.params.meth.gd.alpha <- 1.;
+        Optim_globals.params.bounds <- offline_bounds;
+        Optim_globals.params.meth.gd.do_restart <- true
+      let interp_fn = pcwse_cste h
+    end
+
+  module ParamsInst2_2 : Params =
+    struct
+      let n_pieces = 3
+      let h = max_t /. (float n_pieces)
+      let offline_bounds = Array.make n_pieces online_bounds.(0)
+
+      let name = "nn_inst2_0_04"
+      let node = Nn_bench.nn_nn2
+
+      let set_optim_params () =
+        Optim_globals.params.meth.gd.alpha <- 1.;
+        Optim_globals.params.bounds <- offline_bounds;
+        Optim_globals.params.meth.gd.do_restart <- true
+      let interp_fn = pcwse_cste h
+    end
+
+  module Phi1_inst1 = Offline.Make(NNBench(Optim.GDClassic)(ParamsInst1))
+  module Phi1_inst2 = Offline.Make(NNBench(Optim.GDClassic)(ParamsInst2))
+  module Phi2_inst1 = Offline.Make(NNBench(Optim.GDClassic)(ParamsInst1_2))
+  module Phi2_inst2 = Offline.Make(NNBench(Optim.GDClassic)(ParamsInst2_2))
+  module Phi1UR_inst1 = Offline.Make(NNBench(Optim.UR_GDAWARE)(ParamsInst1))
+  module Phi1UR_inst2 = Offline.Make(NNBench(Optim.UR_GDAWARE)(ParamsInst2))
+  module Phi2UR_inst1 = Offline.Make(NNBench(Optim.UR_GDAWARE)(ParamsInst1_2))
+  module Phi2UR_inst2 = Offline.Make(NNBench(Optim.UR_GDAWARE)(ParamsInst2_2))
+
+
+  module ReplayDiscrete = Replay.Make (struct
+      let name = "ReplayDiscrete"
+      let max_t = 40.
+
+      let replay_node = Replay_models.nn
+      let scan_dump_inp ib =
+        Scanf.bscanf ib "%g,%g,%g,%g"
+          (fun reference pos nnpos rob ->
+             Array.map MyOp.make
+               [| reference; pos; nnpos; rob |])
     end)
 end

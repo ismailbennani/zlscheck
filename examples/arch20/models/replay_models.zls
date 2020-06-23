@@ -152,4 +152,26 @@ node sc (times, inp) = () where
         let s4 = scope (8000., 10000., ("Q", linear, q)) in *)
         let s5 = scope3(80., 90., ("P", linear, p), ("", linear, 87.), ("", linear, 87.5)) in
         let s6 = scope (80., 90., ("rob", linear, rob)) in
+
         windown("Steam condenser RNN", 40., t, [s1; (* s2; s3; s4; *) s5; s6])
+
+node nn (times, inp) = () where
+    rec n = 0 fby (Stdlib.( + ) n 50)
+    and cur_inp = Array.get inp n
+    and t = Array.get times n
+    and ref = get (Array.get cur_inp 0)
+    and pos = get (Array.get cur_inp 1)
+    and nnpos = get (Array.get cur_inp 2)
+    and rob = get (Array.get cur_inp 3)
+
+    and alpha = make 0.005
+    and beta = make 0.03
+    and margin = get (alpha + (beta * (abs (make ref))))
+
+    and () =
+        let s1 = scope4(0., 4., ("ref", linear, ref), ("pos", linear, pos),
+                                ("", linear, ref +. margin),
+                                ("", linear, ref -. margin)) in
+        let s2 = scope (-1., 1., ("nnpos", linear, nnpos)) in
+        let s3 = scope2(-1., 1., ("rob", linear, rob), ("", linear, 0.)) in
+        window3("Neural", 40., t, s1, s2, s3)

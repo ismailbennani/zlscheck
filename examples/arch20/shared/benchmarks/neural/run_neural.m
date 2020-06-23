@@ -4,7 +4,7 @@ function [tout, yout] = run_neural(u, T)
     
     tin = 0:0.01:T;
     xin = interp1(ts, us, tin, 'previous');
-    u = [tin' xin];
+    u = [tin' xin'];
     
     assignin('base','u',u);
     assignin('base','T',T);
