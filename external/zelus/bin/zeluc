@@ -1,0 +1,4 @@
+#!/bin/sh
+ZLLIB=/home/lahkim/zlscheck/external/zelus/lib
+export ZLLIB
+exec ocamlrun /home/lahkim/zlscheck/external/zelus/compiler/zeluc.byte $@

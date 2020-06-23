@@ -1,0 +1,132 @@
+basics.cmo :
+basics.cmx :
+defaultsolver.cmo : \
+    solvers/sundials_cvode.cmi
+defaultsolver.cmx : \
+    solvers/sundials_cvode.cmx
+dump.cmo : \
+    ztypes.cmi \
+    basics.cmo
+dump.cmx : \
+    ztypes.cmi \
+    basics.cmx
+gen.cmo : \
+    ztypes.cmi
+gen.cmx : \
+    ztypes.cmi
+gtkplot.cmo : \
+    gtkplot.cmi
+gtkplot.cmx : \
+    gtkplot.cmi
+gtkplot.cmi :
+input.cmo :
+input.cmx :
+lift.cmo : \
+    ztypes.cmi \
+    zls.cmo
+lift.cmx : \
+    ztypes.cmi \
+    zls.cmx
+node.cmo : \
+    ztypes.cmi \
+    zls.cmo \
+    solvers/sundials_cvode.cmi \
+    solvers/odexx.cmo \
+    lift.cmo \
+    solvers/illinois.cmi
+node.cmx : \
+    ztypes.cmi \
+    zls.cmx \
+    solvers/sundials_cvode.cmx \
+    solvers/odexx.cmx \
+    lift.cmx \
+    solvers/illinois.cmx
+obs.cmo : \
+    ztypes.cmi
+obs.cmx : \
+    ztypes.cmi
+run.cmo : \
+    ztypes.cmi
+run.cmx : \
+    ztypes.cmi
+scope.cmo : \
+    ztypes.cmi \
+    gtkplot.cmi \
+    basics.cmo
+scope.cmx : \
+    ztypes.cmi \
+    gtkplot.cmx \
+    basics.cmx
+solvers/illinois.cmo : \
+    zls.cmo \
+    solvers/illinois.cmi
+solvers/illinois.cmx : \
+    zls.cmx \
+    solvers/illinois.cmi
+solvers/illinois.cmi : \
+    zls.cmo
+solvers/odexx.cmo : \
+    zls.cmo
+solvers/odexx.cmx : \
+    zls.cmx
+solvers/sundials_cvode.cmo : \
+    zls.cmo \
+    solvers/sundials_cvode.cmi
+solvers/sundials_cvode.cmx : \
+    zls.cmx \
+    solvers/sundials_cvode.cmi
+solvers/sundials_cvode.cmi : \
+    zls.cmo
+vbool.cmo : \
+    ztypes.cmi
+vbool.cmx : \
+    ztypes.cmi
+zlmachines.cmo : \
+    ztypes.cmi
+zlmachines.cmx : \
+    ztypes.cmi
+zlmachines_in_place.cmo : \
+    ztypes.cmi
+zlmachines_in_place.cmx : \
+    ztypes.cmi
+zls.cmo : \
+    ztypes.cmi
+zls.cmx : \
+    ztypes.cmi
+zlsolve.cmo : \
+    zls.cmo \
+    zlsolve.cmi
+zlsolve.cmx : \
+    zls.cmx \
+    zlsolve.cmi
+zlsolve.cmi : \
+    zls.cmo
+zlsrun.cmo : \
+    ztypes.cmi \
+    zlsolve.cmi \
+    zls.cmo \
+    solvers/illinois.cmi \
+    zlsrun.cmi
+zlsrun.cmx : \
+    ztypes.cmi \
+    zlsolve.cmx \
+    zls.cmx \
+    solvers/illinois.cmx \
+    zlsrun.cmi
+zlsrun.cmi : \
+    zls.cmo
+zlsrungtk.cmo : \
+    ztypes.cmi \
+    zlsolve.cmi \
+    zls.cmo \
+    solvers/illinois.cmi \
+    zlsrungtk.cmi
+zlsrungtk.cmx : \
+    ztypes.cmi \
+    zlsolve.cmx \
+    zls.cmx \
+    solvers/illinois.cmx \
+    zlsrungtk.cmi
+zlsrungtk.cmi : \
+    zls.cmo
+ztypes.cmi :

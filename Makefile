@@ -2,10 +2,20 @@ include config
 
 all: src lib
 
-src:
+src: ext config
 	$(MAKE) -C src
 
-# lib
+config:
+	./configure
+
+ext: zelus fadbadml
+
+zelus:
+	cd external/zelus; ./configure
+	$(MAKE) -C external/zelus
+
+fadbadml:
+	$(MAKE) -C external/fadbadml
 
 lib:
 	rm -rf lib
@@ -21,10 +31,12 @@ lib:
 # CLEANING STUFF
 
 clean:
-	-@$(MAKE) -C src clean
+	-$(MAKE) -C src clean
 
 realclean cleanall:
-	-@$(MAKE) -C src cleanall
-	-@rm -rf lib
+	-$(MAKE) -C src cleanall
+	-$(MAKE) -C external/zelus cleanall
+	-$(MAKE) -C external/fadbadml cleanall
+	-rm -rf lib config
 
 .PHONY: src lib

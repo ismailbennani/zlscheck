@@ -12,11 +12,11 @@ OCAMLFIND ?= ocamlfind
 MENHIR    ?= menhir
 OTAGS	    ?= otags
 
-ZLLIB = /home/lahkim/zlscheck/zelus/lib
-ZELUC = /home/lahkim/zlscheck/zelus/bin/zeluc.byte
+ZLLIB = /home/lahkim/zlscheck/external/zelus/lib
+ZELUC = /home/lahkim/zlscheck/external/zelus/bin/zeluc
 ZELUCFLAGS = -I $(ZLLIB)
 
-FADBADLIB = /home/lahkim/zlscheck/fadbadml/lib
+FADBADLIB = /home/lahkim/zlscheck/external/fadbadml/lib
 
 CHECKLIB = /home/lahkim/zlscheck/lib
 
@@ -24,7 +24,7 @@ INCLUDES += \
 	unix.cma bigarray.cma \
 	-I $(shell ocamlfind query lablgtk2) lablgtk.cma \
 	-I $(shell ocamlfind query sundialsml) sundials.cma \
-	-I $(ZLLIB) zllibgtk.cma \
+	-I $(ZLLIB) -I $(ZLLIB)/solvers zllibgtk.cma \
 	-I $(FADBADLIB) fadbad.cma
 
 OCAMLFLAGS ?=
