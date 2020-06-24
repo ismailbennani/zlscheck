@@ -270,7 +270,6 @@ fi
 # Check for graphics installation
 graphics="${GRAPHICS:-${ocaml_libpath}}"
 if [ ${for_compile} -eq 1 ]; then
-    echo ${graphics}/graphics.cmi
     if [ ! -e "${graphics}/graphics.cmi" ]; then
         graphics="${ocaml_libpath}graphics"
         if [ ! -e "${graphics}/graphics.cmi" ]; then
