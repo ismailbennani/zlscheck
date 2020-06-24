@@ -11,11 +11,13 @@ OCAMLFIND ?= ocamlfind
 MENHIR    ?= menhir
 OTAGS	    ?= otags
 
-ZLLIB = @extdir@/zelus/lib
-ZELUC = @extdir@/zelus/bin/zeluc
+ZLDIR = @extdir@/zelus
+ZLLIB = $(ZLDIR)/lib
+ZELUC = $(ZLDIR)/bin/zeluc
 ZELUCFLAGS = -I $(ZLLIB)
 
-FADBADLIB = @extdir@/fadbadml/lib
+FADBADDIR = @extdir@/fadbadml
+FADBADLIB = $(FADBADDIR)/lib
 
 CHECKLIB = @curdir@/lib
 
