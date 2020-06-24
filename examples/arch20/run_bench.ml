@@ -137,8 +137,10 @@ let get_inputs () =
   let wt_ur = ["WT1_ur"; "WT2_ur"; "WT3_ur"; "WT4_ur"] in
   let sc = ["SC_inst1"; "SC_inst2"] in
   let sc_ur = ["SC_inst1_ur"; "SC_inst2_ur"] in
-  let nn = ["NN1_inst1"; "NN1_inst2"; "NN2_inst1"; "NN2_inst2"] in
-  let nn_ur = ["NN1_inst1_ur"; "NN1_inst2_ur"; "NN2_inst1_ur"; "NN2_inst2_ur"] in
+  let nn_inst1 = ["NN1_inst1"; "NN2_inst1"] in
+  let nn_inst2 = ["NN1_inst2"; "NN2_inst2"] in
+  let nn_inst1_ur = ["NN1_inst1_ur"; "NN2_inst1_ur"] in
+  let nn_inst2_ur = ["NN1_inst2_ur"; "NN2_inst2_ur"] in
 
   let macro_benches = [
     ("AT_inst1", at_inst1);
@@ -153,10 +155,14 @@ let get_inputs () =
     ("WT_ur", wt_ur);
     ("SC", sc);
     ("SC_ur", sc_ur);
-    ("NN", nn);
-    ("NN_ur", nn_ur);
-    ("all", at_inst1 @ at_inst2 @ cc @ wt @ sc @ nn);
-    ("all_ur", at_inst1_ur @ at_inst2_ur @ cc_ur @ wt_ur @ sc_ur @ nn_ur);
+    ("NN_inst1", nn_inst1);
+    ("NN_inst2", nn_inst2);
+    ("NN_inst1_ur", nn_inst1_ur);
+    ("NN_inst2_ur", nn_inst2_ur);
+    ("NN", nn_inst1 @ nn_inst2);
+    ("NN_ur", nn_inst1_ur @ nn_inst2_ur);
+    ("all", at_inst1 @ at_inst2 @ cc @ wt @ sc @ nn_inst1 @ nn_inst2);
+    ("all_ur", at_inst1_ur @ at_inst2_ur @ cc_ur @ wt_ur @ sc_ur @ nn_inst1_ur @ nn_inst2_ur);
   ] in
 
   let n_repet = ref 10 in
@@ -172,16 +178,16 @@ let get_inputs () =
     "-r", Arg.Set_int n_repet, "number of repetitions";
     "-n", Arg.Set_int n_runs, "budget for each repetition: max number of simulations allowed";
     "-j", Arg.Set_int n_processes, "max number of processes to spawn";
-    "-d", Arg.Set_string dump_path, "dump path";
+    "-d", Arg.Set_string dump_path, "dump path (default: benchmarks/modelname)";
     "-no-dump", Arg.Set no_dump, "don't dump results";
     "-matlab", Arg.Set_string matlab_path, "path to arch20/matlab folder relative to dump path";
     "-v", Arg.Set verbose, "verbose";
-    "-save-hist", Arg.Set save_history, "save history";
+    "-save-hist", Arg.Set save_history, "save history in addition to falsifying runs";
   ] in
 
   let usg_msg =
     Printf.sprintf "usage: ./run_bench.opt [ OPT_ARGS ] BENCH( BENCH)*\n\nBENCH is either a MACRO or an INDIVIDUAL BENCH:\n%s\n\nOptional arguments:"
-      (mk_bench_list_str (fst (List.split benches)) (fst (List.split macro_benches)))
+      (mk_bench_list_str (fst (List.split benches)) macro_benches)
   in
 
   let sel_bench = ref [] in

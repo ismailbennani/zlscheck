@@ -64,10 +64,24 @@ let print_validate_all fd matlab_path =
     matlab_path
 
 let mk_bench_list_str benches macro_benches =
+  let max_macro_length =
+    List.fold_left max 0 (List.map (fun (m,_) -> String.length m) macro_benches)
+  in
+  let new_macro_benches =
+    List.map (fun (m,l) ->
+        let new_m = Bytes.make (max_macro_length+2) ' ' in
+        String.blit m 0 new_m 0 (String.length m);
+        new_m.[String.length m] <- ':';
+        (Bytes.unsafe_to_string new_m, l)) macro_benches
+  in
+
   Format.fprintf Format.str_formatter
-    "@[<h>@ @ @ @ @ @[<v>@[<h>@[<v>MACRO:@]@;@[<v>%a@]@]@;@[<h>@[<v>INDIVIDUAL BENCHES:@]@;@[<hov>%a@]@]@]@]"
-    (fun ff l -> List.iter (fun b -> Format.fprintf ff "@[%s@]@," b) l) macro_benches
-    (fun ff l -> List.iter (fun b -> Format.fprintf ff "@[%s,@ @]@," b) l) benches;
+    "@[<h>@ @ @ @ @ @[<v>MACROs:@;@[<h>@;@[<v>%a@]@]@;@[<h>@[<v>INDIVIDUAL BENCHES:@]@;@[<hov>%a@]@]@]@]"
+    (fun ff l -> List.iter (fun (m,b) ->
+         Format.fprintf ff "@[@[<h>%s@ [@[<hov>%a@]],@]@ @]@," m
+           (fun ff l -> List.iter (fun b -> Format.fprintf ff "@[%s@],@;" b) l) b) l)
+    new_macro_benches
+    (fun ff l -> List.iter (fun b -> Format.fprintf ff "@[%s@],@;" b) l) benches;
   (* (String.concat ", " benches); *)
   Format.flush_str_formatter ()
 
