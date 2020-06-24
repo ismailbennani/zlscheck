@@ -54,7 +54,7 @@ clean:
 	-@rm -f autotransd_main.ml autotransd.ml
 	-@rm -f autotransd_modes_main.ml autotransd_modes.ml
 	-@rm -f common.ml common_myop.ml
-	-@rm -f *.o *.cm[oix] *.annot *.obc *.zci
+	-@rm -f *.o *.cm[oix] *.annot *.obc *.zci .depend
 
 realclean cleanall: clean
 	-@rm -f autotransd.opt
