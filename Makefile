@@ -29,7 +29,7 @@ lib:
 docker_build:
 	docker build -t zlscheck -f zlscheck.docker .
 docker_run:
-	docker run -ti --rm -e DISPLAY=$DISPLAY -v /tmp/.X11-unix/:/tmp/.X11-unix zlscheck bash
+	docker run -e DISPLAY=$$DISPLAY -v $$XAUTH:/root/.Xauthority -v /tmp/.X11-unix:/tmp/.X11-unix --rm -ti zlscheck bash
 zlscheck_docker.tar: docker_build
 	docker save zlscheck > zlscheck_docker.tar
 docker_load:
