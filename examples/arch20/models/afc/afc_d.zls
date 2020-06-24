@@ -191,29 +191,3 @@ node afc tstep (throttle, engine) = abf, abf_ref, mu, mode where
     and mu = vv_stub (tstep', abf, abf_ref)
     and abf, abf_ref, mode =
         model_1 (tstep', throttle, engine)
-
-open Scope
-(* should be at least 0.01, preferably a proper divider of 0.01 *)
-(* solution is accurate enough with 5e-5 (automatically chosen by Simulink for ode1),
-   it diverges if higher (tried with 1e-4) *)
-let tstep = 0.00005
-
-node print_dump (t, throttle, engine, abf, abf_ref, mu, mode) =
-    print_float t; print_string ",";
-    print_float throttle; print_string ",";
-    print_float engine; print_string ",";
-    print_float abf; print_string ",";
-    print_float abf_ref; print_string ",";
-    print_float mu; print_string ",";
-    print_float mode; print_string "\n"
-
-node main () =
-    let t = integrate (make tstep, make 1., make 0.) in
-
-    let throttle = make 80. in
-    let engine = make 1100. in
-
-    let abf, abf_ref, mu, mode = afc tstep (throttle, engine) in
-
-    print_string ("t = " ^ (string_of_float (get t)) ^ "\r"); flush stdout
-    (* print_dump (get t, get throttle, get engine, get abf, get abf_ref, get mu, get mode) *)

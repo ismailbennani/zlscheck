@@ -114,15 +114,3 @@ node nn (tstep, ref) = pos, nnpos where
     rec pos = plant (tstep, cur_disc)
     and cur, nnpos = narma_l2_controller (tstep, ref, pos)
     and cur_disc = zero_order_hold (tstep, u_ts, cur)
-
-open Scope
-let tstep = make 0.001
-node main () =
-    let rec t = integrate (tstep, make 1., make 0.) in
-
-    let ref = make 2. in
-    let pos, nnpos = nn(tstep, ref) in
-
-    let s1 = scope2(0., 4., ("ref", linear, get ref), ("pos", linear, get pos)) in
-    let s2 = scope (-1., 1., ("nnpos", linear, get nnpos)) in
-    window2("Neural", 40., get t, s1, s2)

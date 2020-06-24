@@ -75,19 +75,3 @@ node sc (tstep, fs) = temp, fcw, q, p where
     and temp, temp_c, fc, fcw, q, p = sc_subsystem (tstep, fs, tcw, nnet_output)
     and nnet_input = p - (step (tstep, make 90., make 2., make 87.))
     and nnet_output = nnet (tstep, nnet_input)
-
-open Scope
-let tstep = make 0.1
-node main () =
-    let rec t = integrate_bwd (tstep, make 1., make 0.) in
-
-    let init fs = make 4. in
-
-    let temp, fcw, q, p = sc (tstep, fs) in
-
-    let s1 = scope (3.99, 4.01, ("Fs", linear, get fs)) in
-    let s2 = scope (78.5, 80., ("T", linear, get temp)) in
-    let s3 = scope (100., 140., ("Fcw", linear, get fcw)) in
-    let s4 = scope (8000., 10000., ("Q", linear, get q)) in
-    let s5 = scope (80., 90., ("P", linear, get p)) in
-    window5("Steam condenser RNN", 40., get t, s1, s2, s3, s4, s5)

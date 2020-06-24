@@ -56,20 +56,3 @@ node chasing_cars (t, throttle, brake) = (c1, c2, c3, c4, c5), rob_trans where
     and rob_i = Stdlib.( + ) (Random.int 4) 2 fby
         present (switch_trans)() -> Stdlib.( + ) (Random.int 4) 2
         init rob_i
-open Scope
-let tstep = make 0.1
-let tmax = make 100.
-node main () =
-    let t = integrate (tstep, make 1., make 0.) in
-
-    let throttle = make 1. in
-    let brake = make 0. in
-
-    let (c1,c2,c3,c4,c5), _ = chasing_cars (t, throttle, brake) in
-
-    let s1 = scope2(0., 1., ("throttle", linear, get throttle),
-                            ("brake", linear, get brake)) in
-    let s2 = scopen(-5000., 50., [("c1", linear, get c1); ("c2", linear, get c2);
-                                  ("c3", linear, get c3); ("c4", linear, get c4);
-                                  ("c5", linear, get c5)]) in
-    window2 ("Chasing cars", get tmax, get t, s1, s2)

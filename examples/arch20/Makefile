@@ -24,13 +24,13 @@ INCLUDES += $(DIRS:%=-I %) \
 \
 myOp.cmx discrete_obs_fad.cmx interp.cmx \
 \
-consts.cmx at_utils.cmx common.cmx common_myop.cmx \
-autotransc.cmx autotransd.cmx autotransd_modes.cmx \
+consts.cmx at_utils.cmx common_myop.cmx \
+autotransd.cmx autotransd_modes.cmx \
 \
 constants.cmx matrix.cmx f16_types.cmx f16_mlutils.cmx f16_utils.cmx \
 lowLevelController.cmx subf16_model.cmx gcasAutopilot.cmx \
 \
-cc_prop.cmx cc_d.cmx cc_c.cmx \
+cc_prop.cmx cc_d.cmx \
 \
 wt_common.cmx wt_params.cmx wt_d.cmx \
 \

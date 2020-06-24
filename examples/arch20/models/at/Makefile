@@ -3,12 +3,12 @@ include ../../../../config
 ZELUCFLAGS += -noreduce -I ../../common -I ../
 INCLUDES += -I $(CHECKLIB) zlscheck.cmxa -I ../ -I ../../common myOp.cmx discrete_obs_fad.cmx
 
-OBJ=autotransc.cmx autotransd_modes.cmx autotransd.cmx
+OBJ=autotransd.cmx autotransd_modes.cmx
 
 DEPS=at_utils.cmx consts.cmx common.cmx common_myop.cmx
 
 all: $(OBJ)
-opt: autotransd.opt autotransc.opt
+opt: autotransd.opt
 
 # ------------------------------------
 
@@ -24,21 +24,6 @@ autotransd.ml: autotransd.zls common_myop.zci
 	$(ZELUC) $(ZELUCFLAGS) $<
 	sed -i "s/Obj.magic ():MyOp.t/create ():MyOp.t/g" autotransd.ml
 autotransd.cmx: common_myop.cmx
-
-# ------------------------------------
-
-# autotransd.opt: ZLEXTRALIBS = $(ZLGTKLIBS)
-autotransc.opt: INCLUDES += $(DEPS:.cmx=.cmx)
-autotransc.opt: $(DEPS:.cmx=.cmx) autotransc_main.ml
-
-autotransc_main.ml: autotransc.zls common.zci
-	$(ZELUC) $(ZELUCFLAGS) -gtk2 -o autotransc_main -s main $<
-	sed -i "s/Obj.magic ():MyOp.t/create ():MyOp.t/g" autotransc.ml
-
-autotransc.ml: autotransc.zls common.zci
-	$(ZELUC) $(ZELUCFLAGS) $<
-	sed -i "s/Obj.magic ():MyOp.t/create ():MyOp.t/g" autotransc.ml
-autotransc.cmx: common.cmx
 
 # ------------------------------------
 
@@ -65,21 +50,15 @@ common_myop.cmx: common_myop.ml consts.cmx at_utils.cmx
 
 # ------------------------------------
 
-export:
-	mkdir $(DISTDIR)/autotrans
-	cp consts.ml consts.zli at_utils.ml at_utils.zli common.zls\
-		 autotrans.zls autotransd.zls Makefile $(DISTDIR)/autotrans/
-
 clean:
-	-@rm -f autotransc_main.ml autotransc.ml
 	-@rm -f autotransd_main.ml autotransd.ml
 	-@rm -f autotransd_modes_main.ml autotransd_modes.ml
 	-@rm -f common.ml common_myop.ml
 	-@rm -f *.o *.cm[oix] *.annot *.obc *.zci
 
 realclean cleanall: clean
-	-@rm -f autotransc.opt
 	-@rm -f autotransd.opt
+	-@rm -f autotransd_modes.opt
 
 .depend: depend
 depend: $(DEPS:.cmx=.ml) $(OBJ:.cmx=.ml)
