@@ -13,7 +13,7 @@ let _ =
     ("nn", (module Defbench.NN.ReplayDiscrete : RunReplay));
   ] in
 
-  let models_str = String.concat " | " (fst (List.split models)) ^ " | all" in
+  let models_str = String.concat " | " (fst (List.split models)) in
   let all_models = snd (List.split models) in
 
   let usg_msg = Printf.sprintf "usage: ./replay_bench.opt [%s] dump_path" models_str in
