@@ -65,8 +65,6 @@ Usage examples:
 
 The falsifying runs are dumped by default in `benchmarks/` as csv files, the dump folder can be changed with option `-d`. There is currently no way to run matlab inside this docker, to validate the results you will need to copy those dumps into your host computer along with folders `matlab/` and `shared/` then run matlab script `validate_all.m` located in subfolders of `benchmarks/` or scripts `validate.m` in folder `benchmarks/[modelname]`.
 
-Note: if you encounter a Gtk initialization error, please run `xhost +` on your host computer.
-
 Note: There are only two benchmarks that have different parameters for instance 1 and instance 2 in my tests, namely AT and NN. For the other benchmarks, there is only one set of parameter used for both instances. Please refer to `run_bench` help message to have an exhaustive list of available benchmarks.
 
 `replay_bench.opt` enables you to plot a particular run from its csv dump. Its first argument is the name of the model to plot (refer to `./replay_bench.opt --help`) and the second is the path to the dump file.
