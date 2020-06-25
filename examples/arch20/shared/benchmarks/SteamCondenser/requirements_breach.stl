@@ -1,1 +1,0 @@
-r := alw_[30,35] (pressure[t] > 87 and pressure[t]<87.5)

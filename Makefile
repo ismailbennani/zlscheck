@@ -35,6 +35,7 @@ clean:
 
 realclean cleanall:
 	-$(MAKE) -C src cleanall
+	-$(MAKE) -C examples cleanall
 	-$(MAKE) -C external/zelus cleanall
 	-$(MAKE) -C external/fadbadml cleanall
 	-rm -rf lib config
