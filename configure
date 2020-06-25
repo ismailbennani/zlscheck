@@ -9,9 +9,9 @@ while : ; do
     "") break;;
 
     --external)
-	external=$2; shift;;
+	ext_libs=$2; shift;;
     --external=*)
-	external=`expr "$1" : '--[^=]*=\(.*\)'`;;
+	ext_libs=`expr "$1" : '--[^=]*=\(.*\)'`;;
   esac
   shift
 done

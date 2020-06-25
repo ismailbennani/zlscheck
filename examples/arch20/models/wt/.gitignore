@@ -1,2 +1,4 @@
 wt.ml
 wt_main.ml
+wt_params.ml
+wt_common.ml

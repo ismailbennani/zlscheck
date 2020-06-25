@@ -7,7 +7,7 @@ ZELUCFLAGS += -I common -noreduce
 
 INCLUDES += -I $(CHECKLIB) zlscheck.cma
 
-DIRS = common $(shell find models -type d -mindepth 0 -maxdepth 1)
+DIRS = common $(shell find models -mindepth 0 -maxdepth 1 -type d)
 
 COMMON_ML = $(shell echo common/*.ml)
 COMMON_MLI = $(shell echo common/*.mli)
@@ -41,14 +41,13 @@ nn_utils.cmx nn_d.cmx \
 \
 common_types.cmx common_utils.cmx online.cmx offline.cmx replay.cmx \
 at_bench.cmx f16_bench.cmx cc_bench.cmx wt_bench.cmx afc_bench.cmx sc_bench.cmx \
-nn_bench.cmx \
-replay_models.cmx
+nn_bench.cmx replay_models.cmx \
+defbench.cmx
 
 TARGET = run_bench.opt replay_bench.opt
 
 all: $(TARGET)
 
-run_bench.opt replay_bench.opt: INCLUDES += defbench.cmx
 run_bench.opt replay_bench.opt: models defbench.cmx
 
 draw_transmission.opt draw_f16.opt draw_steamcondenser.opt: INCLUDES = graphics.cmxa
@@ -58,6 +57,7 @@ common: $(COMMON_ML:.ml=.cmx) $(COMMON_ZLI:.zli=.zci) $(COMMON_ZLS:.zls=.cmx)
 models: common
 	$(MAKE) -C models
 
+common/common_types.cmx: common/myOp.cmx
 common/interp.zci: common/myOp.zci
 common/discrete_obs_fad.ml: common/discrete_obs_fad.zls common/myOp.zci
 	$(ZELUC) $(ZELUCFLAGS) $<

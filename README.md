@@ -23,16 +23,16 @@ Run `make` then go to `arch/arch20` and run `make` again. You will generate exec
 
 ## On a Docker container
 
-A Docker container is available, you can build it yourself by running
-
-```
-make docker_build
-```
-
-or load it from `zlscheck_docker.tar` by running
+A `.tar` Docker container is available under [Packages](https://github.com/ismailbennani/zlscheck/packages) on github, you can either load it by downloading it and saving it as `zlscheck/zlscheck_docker.tar` then run
 
 ```
 make docker_load
+```
+
+or build it yourself from `zlscheck.docker` by running
+
+```
+make docker_build
 ```
 
 Once the image is built or loaded, you can run `bash` inside it by running
