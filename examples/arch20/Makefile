@@ -50,7 +50,7 @@ all: $(TARGET)
 
 run_bench.opt replay_bench.opt: models defbench.cmx
 
-draw_transmission.opt draw_f16.opt draw_steamcondenser.opt: INCLUDES = graphics.cmxa
+draw_at.opt draw_f16.opt draw_steamcondenser.opt: INCLUDES = graphics.cmxa
 
 common: $(COMMON_ML:.ml=.cmx) $(COMMON_ZLI:.zli=.zci) $(COMMON_ZLS:.zls=.cmx)
 
@@ -67,7 +67,7 @@ clean_this:
 	-cd common; rm -f *.cm[iox] *.o *.opt *.zci
 	-rm -f *.cm[iox] *.o *.opt
 	-rm common/discrete_obs_fad.ml
-	-rm draw_transmission.opt
+	-rm draw_at.opt
 
 clean: clean_this
 	$(MAKE) -C models clean

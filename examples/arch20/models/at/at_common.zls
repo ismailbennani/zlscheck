@@ -26,7 +26,11 @@ let p_mph = 60. /. 5280.             (* ft.min-1 to mph ratio *)
 let l_speed_coef = 2. *. pi *. p_wheel_radius
 let p_initial_wheel_speed = initial_speed /. p_mph /. l_speed_coef
 
-let static twait = 0.08 (*  *)
+(* in Simulink, this value is 0.08
+   when I set 0.08 here, sometimes the transition was triggered in Zélus
+   sim and not in Simulink sim. To prevent this behavior, it is slightly bigger *)
+let static twait = 0.08
+(* let static twait = 0.2 *)
 
 (** utils **)
 

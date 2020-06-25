@@ -4,7 +4,7 @@ open Scope
 open Discrete_obs_fad
 
 node at (times, inp) = () where
-    rec n = 0 fby (Stdlib.( + ) n 1)
+    rec n = 0 fby (Stdlib.( + ) n 5)
     and cur_inp = Array.get inp n
     and t = Array.get times n
     and throttle = Array.get cur_inp 0
@@ -14,24 +14,16 @@ node at (times, inp) = () where
     and speed = Array.get cur_inp 4
     and rob = Array.get cur_inp 5
 
-    (* and rpm2, gear2, speed2 = Autotransd.autotrans (make t, (throttle, brake)) *)
-    and inp2 = Array.of_list [throttle; brake]
-    and _, outp, _ = At_bench.autotrans_at1 0.01 inp2
-    and rpm2 = Array.get outp 0
-    and gear2 = Array.get outp 1
-    and speed2 = Array.get outp 2
-
     and up_th = At_common.lookup_interpup(throttle, gear)
     and dn_th = At_common.lookup_interpdn(throttle, gear)
 
     and () =
         let s1 = scope2(0., 350., ("throttle", linear, get throttle),
                                   ("brake", linear, get brake))
-        and s2 = scope3(0., 5000., ("rpm", linear, get rpm),
-                                   ("rpm2", linear, get rpm2),
+        and s2 = scope2(0., 5000., ("rpm", linear, get rpm),
                                    ("3000", linear, 3000.))
-        and s3 = scope2(0., 4., ("gear", linear, get gear), ("gear2", linear, get gear2))
-        and s4 = scope5(0., 130., ("speed", linear, get speed), ("speed2", linear, get speed2),
+        and s3 = scope (0., 4., ("gear", linear, get gear))
+        and s4 = scope4(0., 130., ("speed", linear, get speed),
                         ("up_th", linear, get up_th), ("dn_th", linear, get dn_th),
                         ("35", linear, 35.))
         and s5 = scope2(-4., 4., ("rob", linear, get rob),

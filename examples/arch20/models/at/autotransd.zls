@@ -21,8 +21,6 @@ let gear4 = make 4.
 
 (** utils **)
 
-let string_of_op_t v = string_of_float (get v)
-
 let node integrate_and_saturate(t, dx, x0, xmin, xmax) = x where
   rec timestep = t -> (t - pre t)
   and aux = x0 fby (x + dx * timestep)
