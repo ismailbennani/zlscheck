@@ -3,56 +3,48 @@ include ../../../../config
 ZELUCFLAGS += -noreduce -I ../../common -I ../
 INCLUDES += -I $(CHECKLIB) zlscheck.cmxa -I ../ -I ../../common myOp.cmx discrete_obs_fad.cmx
 
-OBJ=autotransd.cmx autotransd_modes.cmx
+OBJ=autotransd.cmx
 
-DEPS=at_utils.cmx consts.cmx common_myop.cmx
+DEPS= at_consts.cmx at_common.cmx
 
 all: $(OBJ)
 opt: autotransd.opt
 
+run_at_main.ml run_at.ml:
+	$(ZELUC) $(ZELUCFLAGS) -o run_at_main -s main run_at.zls
+	sed -i "s/Obj.magic ():MyOp.t Array.t/[|create(); create()|]/g" run_at.ml
+	sed -i "s/Obj.magic ():MyOp.t/create ():MyOp.t/g" run_at.ml
+run_at.opt: INCLUDES += interp.cmx $(DEPS) autotransd.cmx
+run_at.opt: $(DEPS) autotransd.cmx run_at_main.ml
+
 # ------------------------------------
 
 # autotransd.opt: ZLEXTRALIBS = $(ZLGTKLIBS)
-autotransd.opt: INCLUDES += $(DEPS:.cmx=.cmx)
-autotransd.opt: $(DEPS:.cmx=.cmx) autotransd_main.ml
+autotransd.opt: INCLUDES += $(DEPS)
+autotransd.opt: $(DEPS) autotransd_main.ml
 
-autotransd_main.ml: autotransd.zls common_myop.zci
+autotransd_main.ml: autotransd.zls at_common.zci
 	$(ZELUC) $(ZELUCFLAGS) -gtk2 -o autotransd_main -s main $<
 	sed -i "s/Obj.magic ():MyOp.t/create ():MyOp.t/g" autotransd.ml
 
-autotransd.ml: autotransd.zls common_myop.zci
+autotransd.ml: autotransd.zls at_common.zci
 	$(ZELUC) $(ZELUCFLAGS) $<
 	sed -i "s/Obj.magic ():MyOp.t/create ():MyOp.t/g" autotransd.ml
-autotransd.cmx: common_myop.cmx
+autotransd.cmx: at_common.cmx
 
 # ------------------------------------
 
-# autotransd_modes.opt: ZLEXTRALIBS = $(ZLGTKLIBS)
-autotransd_modes.opt: INCLUDES += $(DEPS:.cmx=.cmx)
-autotransd_modes.opt: $(DEPS:.cmx=.cmx) autotransd_modes_main.ml
-
-autotransd_modes_main.ml: autotransd_modes.zls common_myop.zci
-	$(ZELUC) $(ZELUCFLAGS) -gtk2 -o autotransd_modes_main -s main $<
-	sed -i "s/Obj.magic ():MyOp.t/create ():MyOp.t/g" autotransd_modes.ml
-
-autotransd_modes.ml: autotransd_modes.zls common_myop.zci
-	$(ZELUC) $(ZELUCFLAGS) $<
-	sed -i "s/Obj.magic ():MyOp.t/create ():MyOp.t/g" autotransd_modes.ml
-autotransd_modes.cmx: common_myop.cmx
-
-# ------------------------------------
-
-common_myop.ml: consts.zci at_utils.zci
+at_common.ml: at_consts.zci
 	$(ZELUC) $(ZELUCFLAGS) $(@:.ml=.zls)
 	sed -i "s/Obj.magic ():MyOp.t/create ():MyOp.t/g" $@
-common_myop.cmx: common_myop.ml consts.cmx at_utils.cmx
+at_common.cmx: at_common.ml at_consts.cmx
 
 # ------------------------------------
 
 clean:
 	-@rm -f autotransd_main.ml autotransd.ml
-	-@rm -f autotransd_modes_main.ml autotransd_modes.ml
-	-@rm -f common_myop.ml
+	-@rm -f at_common.ml
+	-@rm -f run_at.ml run_at_main.ml run_at.opt
 	-@rm -f *.o *.cm[oix] *.annot *.obc *.zci
 
 realclean cleanall: clean

@@ -61,12 +61,10 @@ let pcwse_linear times values t =
 
 module Autotrans =
 struct
-
+  let tstep = 0.01
   let h = 5. (* size of constant segment *)
-  let bounds_online = [|0.,100.; 0.,350.|]
-  let bounds_offline =
-    [| 0.,100.; 0.,350.; 0.,100.; 0.,350.; 0.,100.; 0.,350.; 0.,100.; 0.,350.;
-       0.,100.; 0.,350.; 0.,100.; 0.,350.; 0.,100.; 0.,350. |]
+  let bounds_online = [|100.,100.; 0.,0.|]
+  let bounds_offline = Array.init 14 (fun i -> bounds_online.(i mod 2))
 
   let gd_alpha_high = 100000.
   let gd_alpha_low = 100.
@@ -84,7 +82,6 @@ struct
   sig
     module Optim : Optim.S
     val name : string
-    val tstep : float
     val max_t : float
     val instance : int
     val sample_every : int
@@ -98,7 +95,6 @@ struct
     module Optim = Optim
     let name = Printf.sprintf "AT1_inst%d" Instance.index
 
-    let tstep = 0.01
     let max_t = 20.
 
     let instance = Instance.index
@@ -121,7 +117,6 @@ struct
     module Optim = Optim
     let name = Printf.sprintf "AT2_inst%d" Instance.index
 
-    let tstep = 0.01
     let max_t = 10.
 
     let instance = Instance.index
@@ -144,7 +139,6 @@ struct
     module Optim = Optim
     let name = Printf.sprintf "AT51_inst%d" Instance.index
 
-    let tstep = 0.01
     let max_t = 32.5
 
     let instance = Instance.index
@@ -166,7 +160,6 @@ struct
     module Optim = Optim
     let name = Printf.sprintf "AT52_inst%d" Instance.index
 
-    let tstep = 0.01
     let max_t = 32.5
 
     let instance = Instance.index
@@ -188,7 +181,6 @@ struct
     module Optim = Optim
     let name = Printf.sprintf "AT53_inst%d" Instance.index
 
-    let tstep = 0.01
     let max_t = 32.5
 
     let instance = Instance.index
@@ -210,7 +202,6 @@ struct
     module Optim = Optim
     let name = Printf.sprintf "AT54_inst%d" Instance.index
 
-    let tstep = 0.01
     let max_t = 32.5
 
     let instance = Instance.index
@@ -232,7 +223,6 @@ struct
     module Optim = Optim
     let name = Printf.sprintf "AT6a_inst%d" Instance.index
 
-    let tstep = 0.01
     let max_t = 30.
 
     let instance = Instance.index
@@ -255,7 +245,6 @@ struct
     module Optim = Optim
     let name = Printf.sprintf "AT6b_inst%d" Instance.index
 
-    let tstep = 0.01
     let max_t = 30.
 
     let instance = Instance.index
@@ -278,7 +267,6 @@ struct
     module Optim = Optim
     let name = Printf.sprintf "AT6c_inst%d" Instance.index
 
-    let tstep = 0.01
     let max_t = 30.
 
     let instance = Instance.index

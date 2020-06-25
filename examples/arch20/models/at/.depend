@@ -1,44 +1,22 @@
-at_utils.cmo : \
+at_common.cmo : \
+    /home/lahkim/zlscheck/external/zelus/lib/ztypes.cmi \
+    ../../common/myOp.cmo \
+    ../../common/interp.cmo \
+    at_consts.cmo
+at_common.cmx : \
+    /home/lahkim/zlscheck/external/zelus/lib/ztypes.cmi \
+    ../../common/myOp.cmx \
+    ../../common/interp.cmx \
+    at_consts.cmx
+at_consts.cmo : \
     ../../common/myOp.cmo
-at_utils.cmx : \
+at_consts.cmx : \
     ../../common/myOp.cmx
 autotransd.cmo : \
     /home/lahkim/zlscheck/external/zelus/lib/ztypes.cmi \
     ../../common/myOp.cmo \
-    common_myop.cmo
+    at_common.cmo
 autotransd.cmx : \
     /home/lahkim/zlscheck/external/zelus/lib/ztypes.cmi \
     ../../common/myOp.cmx \
-    common_myop.cmx
-autotransd_modes.cmo : \
-    /home/lahkim/zlscheck/external/zelus/lib/ztypes.cmi \
-    ../../common/myOp.cmo \
-    common_myop.cmo
-autotransd_modes.cmx : \
-    /home/lahkim/zlscheck/external/zelus/lib/ztypes.cmi \
-    ../../common/myOp.cmx \
-    common_myop.cmx
-common.cmo : \
-    /home/lahkim/zlscheck/external/zelus/lib/ztypes.cmi \
-    ../../common/myOp.cmo \
-    ../../common/interp.cmo \
-    consts.cmo
-common.cmx : \
-    /home/lahkim/zlscheck/external/zelus/lib/ztypes.cmi \
-    ../../common/myOp.cmx \
-    ../../common/interp.cmx \
-    consts.cmx
-common_myop.cmo : \
-    /home/lahkim/zlscheck/external/zelus/lib/ztypes.cmi \
-    ../../common/myOp.cmo \
-    ../../common/interp.cmo \
-    consts.cmo
-common_myop.cmx : \
-    /home/lahkim/zlscheck/external/zelus/lib/ztypes.cmi \
-    ../../common/myOp.cmx \
-    ../../common/interp.cmx \
-    consts.cmx
-consts.cmo : \
-    ../../common/myOp.cmo
-consts.cmx : \
-    ../../common/myOp.cmx
+    at_common.cmx

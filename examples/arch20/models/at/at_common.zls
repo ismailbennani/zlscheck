@@ -30,51 +30,50 @@ let static twait = 0.08 (*  *)
 
 (** utils **)
 
-let lookup_engine    (l, c) =
-  Interp.interp2 (Consts.line_engine,
-                  Consts.col_engine,
-                  Consts.vals_engine)
+discrete lookup_engine    (l, c) =
+  Interp.interp2 (At_consts.line_engine,
+                  At_consts.col_engine,
+                  At_consts.vals_engine)
                   (l, c)
-let lookup_interpup  (l, c) =
-  Interp.interp2 (Consts.line_interpup,
-                  Consts.col_interpup,
-                  Consts.vals_interpup)
+discrete lookup_interpup  (l, c) =
+  Interp.interp2 (At_consts.line_interpup,
+                  At_consts.col_interpup,
+                  At_consts.vals_interpup)
                   (l, c)
-let lookup_interpdn  (l, c) =
-  Interp.interp2 (Consts.line_interpdn,
-                  Consts.col_interpdn,
-                  Consts.vals_interpdn)
+discrete lookup_interpdn  (l, c) =
+  Interp.interp2 (At_consts.line_interpdn,
+                  At_consts.col_interpdn,
+                  At_consts.vals_interpdn)
                   (l, c)
-let lookup_factork   (l)    =
-  Interp.interp1 (Consts.line_factork,
-                  Consts.vals_factork)
+discrete lookup_factork   (l)    =
+  Interp.interp1 (At_consts.line_factork,
+                  At_consts.vals_factork)
                   l
-let lookup_torkratio (l)    =
-  Interp.interp1 (Consts.line_torkratio,
-                  Consts.vals_torkratio)
+discrete lookup_torkratio (l)    =
+  Interp.interp1 (At_consts.line_torkratio,
+                  At_consts.vals_torkratio)
                   l
-let lookup_gear      (l)    =
-  Interp.interp1 (Consts.line_gear,
-                  Consts.vals_gear)
+discrete lookup_gear      (l)    =
+  Interp.interp1 (At_consts.line_gear,
+                  At_consts.vals_gear)
                   l
 
 (** algorithm **)
 
-let torque_converter(ne, nin) = (ti, tt) where
+discrete torque_converter(ne, nin) = (ti, tt) where
   rec speedratio = nin / ne
   and factorK = lookup_factork speedratio
   and torqueratio = lookup_torkratio speedratio
   and quotient = ne / factorK
   and impeller = quotient * quotient
   and turbine = impeller * torqueratio
-
   and ti = impeller and tt = turbine
 
-let transmissionratio(tin, gear, nout) = (tout, nin) where
+discrete transmissionratio(tin, gear, nout) = (tout, nin) where
   rec gear_lookup = lookup_gear gear
   and tout = tin * gear_lookup
   and nin  = nout * gear_lookup
 
-let transmission(ne, gear, nout) = (ti, tout) where
+discrete transmission(ne, gear, nout) = (ti, tout) where
   rec ti, turbine_torque = torque_converter(ne, nin)
   and tout, nin = transmissionratio(turbine_torque, gear, nout)

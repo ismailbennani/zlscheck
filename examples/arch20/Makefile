@@ -24,8 +24,7 @@ INCLUDES += $(DIRS:%=-I %) \
 \
 myOp.cmx discrete_obs_fad.cmx interp.cmx \
 \
-consts.cmx at_utils.cmx common_myop.cmx \
-autotransd.cmx autotransd_modes.cmx \
+at_consts.cmx at_common.cmx autotransd.cmx \
 \
 constants.cmx matrix.cmx f16_types.cmx f16_mlutils.cmx f16_utils.cmx \
 lowLevelController.cmx subf16_model.cmx gcasAutopilot.cmx \
