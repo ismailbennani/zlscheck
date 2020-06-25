@@ -438,11 +438,13 @@ let _ =
   let results = run_benches inputs [] inputs.benches in
 
   (* write summary.txt *)
-  if not inputs.no_dump && inputs.dump_path <> "" then begin
-    let validate_all_path = (Filename.concat inputs.dump_path "validate_all.m") in
+  if not inputs.no_dump then begin
+    let path = if inputs.dump_path = "" then "benchmarks" else inputs.dump_path in
+    let shared_path = if inputs.dump_path = "" then "../shared" else inputs.shared_path in
+    let validate_all_path = (Filename.concat path "validate_all.m") in
     if not (Sys.file_exists validate_all_path) then begin
       let validate_all_fd = open_out validate_all_path in
-      print_validate_all validate_all_fd inputs.shared_path;
+      print_validate_all validate_all_fd shared_path;
       close_out validate_all_fd;
     end
   end
