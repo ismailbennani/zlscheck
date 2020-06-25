@@ -62,12 +62,11 @@ let pcwse_linear times values t =
 module Autotrans =
 struct
   let tstep = 0.01
-  let h = 5. (* size of constant segment *)
-  let bounds_online = [|100.,100.; 0.,0.|]
+  let bounds_online = [|0.,100.; 0.,350.|]
   let bounds_offline = Array.init 14 (fun i -> bounds_online.(i mod 2))
 
-  let gd_alpha_high = 100000.
-  let gd_alpha_low = 100.
+  let gd_alpha_high = 10000000.
+  let gd_alpha_low = 1000.
 
   module type Instance =
   sig
@@ -105,7 +104,9 @@ struct
     let set_optim_params () =
       Optim_globals.params.meth.gd.alpha <- gd_alpha_high;
       Optim_globals.params.meth.gd.do_restart <- true;
-      Optim_globals.params.bounds <- bounds_offline;
+      Optim_globals.params.bounds <-
+        Array.init (truncate (ceil (max_t /. ((float sample_every) *. tstep))) * 2)
+          (fun i -> bounds_online.(i mod 2));
       Optim_globals.params.verbose <- !verbose;
       Optim_globals.params.vverbose <- !verbose
 
@@ -127,7 +128,9 @@ struct
     let set_optim_params () =
       Optim_globals.params.meth.gd.alpha <- gd_alpha_high;
       Optim_globals.params.meth.gd.do_restart <- true;
-      Optim_globals.params.bounds <- bounds_offline;
+      Optim_globals.params.bounds <-
+      Array.init (truncate (ceil (max_t /. ((float sample_every) *. tstep))) * 2)
+        (fun i -> bounds_online.(i mod 2));
       Optim_globals.params.verbose <- !verbose;
       Optim_globals.params.vverbose <- !verbose
 
@@ -226,14 +229,16 @@ struct
     let max_t = 30.
 
     let instance = Instance.index
-    let sample_every = Instance.sample_every
+    let sample_every = if Instance.index = 1 then 500 else Instance.sample_every
 
     let prop_name_in_matlab = "AT{7}"
 
     let set_optim_params () =
-      Optim_globals.params.meth.gd.alpha <- gd_alpha_low;
+      Optim_globals.params.meth.gd.alpha <- 100.;
       Optim_globals.params.meth.gd.do_restart <- true;
-      Optim_globals.params.bounds <- bounds_offline;
+      Optim_globals.params.bounds <-
+      Array.init (truncate (ceil (max_t /. ((float sample_every) *. tstep))) * 2)
+        (fun i -> bounds_online.(i mod 2));
       Optim_globals.params.verbose <- !verbose;
       Optim_globals.params.vverbose <- !verbose
 
@@ -248,14 +253,16 @@ struct
     let max_t = 30.
 
     let instance = Instance.index
-    let sample_every = Instance.sample_every
+    let sample_every = if Instance.index = 1 then 1000 else Instance.sample_every
 
     let prop_name_in_matlab = "AT{8}"
 
     let set_optim_params () =
-      Optim_globals.params.meth.gd.alpha <- gd_alpha_high;
+      Optim_globals.params.meth.gd.alpha <- gd_alpha_low;
       Optim_globals.params.meth.gd.do_restart <- true;
-      Optim_globals.params.bounds <- bounds_offline;
+      Optim_globals.params.bounds <-
+      Array.init (truncate (ceil (max_t /. ((float sample_every) *. tstep))) * 2)
+        (fun i -> bounds_online.(i mod 2));
       Optim_globals.params.verbose <- !verbose;
       Optim_globals.params.vverbose <- !verbose
 
@@ -270,14 +277,16 @@ struct
     let max_t = 30.
 
     let instance = Instance.index
-    let sample_every = Instance.sample_every
+    let sample_every = if Instance.index = 1 then 1500 else Instance.sample_every
 
     let prop_name_in_matlab = "AT{9}"
 
     let set_optim_params () =
-      Optim_globals.params.meth.gd.alpha <- gd_alpha_high;
+      Optim_globals.params.meth.gd.alpha <- gd_alpha_low;
       Optim_globals.params.meth.gd.do_restart <- true;
-      Optim_globals.params.bounds <- bounds_offline;
+      Optim_globals.params.bounds <-
+      Array.init (truncate (ceil (max_t /. ((float sample_every) *. tstep))) * 2)
+        (fun i -> bounds_online.(i mod 2));
       Optim_globals.params.verbose <- !verbose;
       Optim_globals.params.vverbose <- !verbose
 
@@ -314,7 +323,7 @@ struct
     let sample_every = Params.sample_every
     let set_optim_params = Params.set_optim_params
     let node = Params.node
-    let interp_fn = pcwse_cste2 h
+    let interp_fn = pcwse_cste2 (float sample_every *. tstep)
   end
 
   module Phi1_instance1 = Offline.Make (AutotransBench(ParamsPhi1(Optim.GDClassic)(Instance1)))
