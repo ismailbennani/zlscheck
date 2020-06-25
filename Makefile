@@ -12,7 +12,7 @@ ext: zelus fadbadml
 
 zelus:
 	cd $(ZLDIR); ./configure
-	$(MAKE) -C $(ZELUSDIR)
+	$(MAKE) -C $(ZLDIR)
 
 fadbadml:
 	$(MAKE) -C $(FADBADDIR)
