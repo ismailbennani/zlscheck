@@ -42,9 +42,6 @@ struct
       | Some _ -> Some (make_tmp_dump !pindex)
     in
 
-    let mem = alloc () in
-    reset mem;
-
     let rec aux mem t =
       (* we are currently at time t and we want to compute next step *)
       let cur_inp = inputs t in
@@ -61,6 +58,9 @@ struct
       if t >= Bench.max_t then rob
       else aux mem next_t
     in
+
+    let mem = alloc () in
+    reset mem;
     let final_out = aux mem 0. in
     let rob = MyOp.get final_out in
     let grad = Array.init n_inputs (fun i -> MyOp.d final_out i) in
@@ -78,6 +78,7 @@ struct
         if rob < 0. then
           let Some dump_folder = !dump_folder in
           ignore(Unix.system ("mv " ^ temp_path ^ " " ^ dump_folder));
+        else
           ignore(Unix.system ("rm " ^ temp_path))
     end;
 

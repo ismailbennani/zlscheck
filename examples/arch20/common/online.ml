@@ -117,6 +117,7 @@ struct
         if rob < 0. then
           let Some dump_folder = !dump_folder in
           ignore(Unix.system ("mv " ^ temp_path ^ " " ^ dump_folder));
+        else
           ignore(Unix.system ("rm " ^ temp_path))
     end;
 
