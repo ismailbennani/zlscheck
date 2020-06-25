@@ -1,28 +1,15 @@
 (* vec is an ordered float array
- * returns i such that vec.(i) < v < vec.(i+1) (or i = 0 or i = length vec) *)
+ * returns i such that vec.(i) < v <= vec.(i+1) (or i = 0 or i = length vec) *)
 let ifind v vec =
-  let rec aux start_i end_i =
-    if start_i = end_i then start_i
-    else
-      let i = (start_i + end_i) / 2 in
-      let v_i = vec.(i) in
-      let v_ip1 = vec.(i+1) in
-      if MyOp.(v_i < v && v <= v_ip1) then i
-      else if MyOp.(v_i >= v) then aux start_i (max 0 (i-1))
-      else if MyOp.(v > v_ip1) then
-        aux (min (Array.length vec - 1) (i+1)) end_i
-      else assert false
-  in if v < vec.(0) then 0
-  else if v > vec.(Array.length vec - 1) then Array.length vec
-  else (aux 0 (Array.length vec - 1)) + 1
+  Array.fold_left (fun i vec_i -> if v > vec_i then i + 1 else i) 0 vec
 
 (* linear interpolatiion, x1 <= xi <= x2 *)
 let interp x1 x2 val1 val2 xi =
   let open MyOp in
   if val1 = val2 then val1
   else
-  (x2 - xi) / (x2 - x1) * val1 +
-  (xi - x1) / (x2 - x1) * val2
+    (x2 - xi) / (x2 - x1) * val1 +
+    (xi - x1) / (x2 - x1) * val2
 
 (* linear extrapolation, x1 <= x2 <= xi OR xi <= x1 <= x2 *)
 let extrap x1 x2 val1 val2 xi =
@@ -47,10 +34,10 @@ let interp1 (line, vals) =
       interp line.(li - 1) line.(li) vals.(li - 1) vals.(li) l
   with Invalid_argument s ->
     let li = ifind l line in
-    print_string "Invalid argument (interp1): "; print_string s;
+    print_string "Invalid argument (Lookup1D): "; print_string s;
     print_newline ();
     print_int li; print_string " / "; print_int (Array.length line);
-    print_string ", "; print_string (MyOp.to_string l); print_newline ();
+    print_string ", "; print_float (MyOp.get l); print_newline ();
     exit 1
 
 let interp2 (line, col, vals) =
@@ -121,23 +108,23 @@ let interp2 (line, col, vals) =
     else if li = Array.length line then
       let l0_extrap = extrap (line.(li - 2))
           (line.(li - 1))
-          (vals.(li - 2).(0))
-          (vals.(li - 1).(0)) l in
+          (vals.(li - 2).(ci - 1))
+          (vals.(li - 1).(ci - 1)) l in
       let l1_extrap = extrap (line.(li - 2))
           (line.(li - 1))
-          (vals.(li - 2).(1))
-          (vals.(li - 1).(1)) l in
-      interp col.(0) col.(1) l0_extrap l1_extrap c
+          (vals.(li - 2).(ci))
+          (vals.(li - 1).(ci)) l in
+      interp col.(ci - 1) col.(ci) l0_extrap l1_extrap c
     else if ci = Array.length col then
-      let l0_extrap = interp (line.(li))
-          (line.(li - 1))
-          (vals.(li).(ci - 2))
-          (vals.(li - 1).(ci - 2)) l in
-      let l1_extrap = interp (line.(li))
-          (line.(li - 1))
-          (vals.(li).(ci - 1))
-          (vals.(li - 1).(ci - 1)) l in
-      extrap col.(0) col.(1) l0_extrap l1_extrap c
+      let l0_extrap = interp (line.(li - 1))
+          (line.(li))
+          (vals.(li - 1).(ci - 2))
+          (vals.(li).(ci - 2)) l in
+      let l1_extrap = interp (line.(li - 1))
+          (line.(li))
+          (vals.(li - 1).(ci - 1))
+          (vals.(li).(ci - 1)) l in
+      extrap col.(ci - 2) col.(ci - 1) l0_extrap l1_extrap c
     else
       let l0_interp = interp (line.(li - 1))
           (line.(li))
@@ -153,7 +140,6 @@ let interp2 (line, col, vals) =
     let ci = ifind c col in
     print_string "Invalid argument (Lookup2D): "; print_string s;
     print_newline ();
-    print_string (MyOp.to_string l); print_string ", ";
-    print_string (MyOp.to_string c); print_newline ();
+    print_float (MyOp.get l); print_string ", "; print_float (MyOp.get c); print_newline ();
     print_int li; print_string ", "; print_int ci; print_newline ();
     exit 1
