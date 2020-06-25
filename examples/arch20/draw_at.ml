@@ -221,39 +221,11 @@ let _ =
   h_lines.(3) <- [|35.|];
   v_lines.(3) <- [|4.|];
 
-  dump_path := "at1/hist/dump_autotrans_AT6a_offline_GD_Classic/1";
+  dump_path := "test_at/hist/dump_autotrans_AT6b_inst1_offline_GD_Classic/0_2";
 
   open_graph (":0 " ^ (string_of_int (truncate width)) ^ "x" ^ (string_of_int (truncate height)) ^ "+0-1000");
   auto_synchronize false;
 
-  main "AT6a - offline GD" 1;
-
-  h_lines.(1) <- [||];
-  h_lines.(3) <- [|120.|];
-  v_lines.(3) <- [||];
-
-  dump_path := "at1/hist/dump_autotrans_AT1_offline_GD_Classic/1";
-
-  open_graph (":0 " ^ (string_of_int (truncate width)) ^ "x" ^ (string_of_int (truncate height)) ^ "+0-1000");
-  auto_synchronize false;
-
-  main "AT1 - offline - GD" 1;
-
-  dump_path := "at1/hist/dump_autotrans_AT1_online_UR_GD_Classic/1";
-
-  open_graph (":0 " ^ (string_of_int (truncate width)) ^ "x" ^ (string_of_int (truncate height)) ^ "+0-1000");
-  auto_synchronize false;
-
-  main "AT1 - online - UR - GD" 1;
-
-  h_lines.(3) <- [|50.|];
-  v_lines.(3) <- [|8.|];
-
-  dump_path := "at1/hist/dump_autotrans_AT6b_offline_GD_Classic/1";
-
-  open_graph (":0 " ^ (string_of_int (truncate width)) ^ "x" ^ (string_of_int (truncate height)) ^ "+0-1000");
-  auto_synchronize false;
-
-  main "AT6b - offline GD" 1;
+  main "AT1 - offline GD" 1;
 
   Printf.printf "done\n"
