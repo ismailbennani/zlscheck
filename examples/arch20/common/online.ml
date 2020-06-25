@@ -12,13 +12,14 @@ struct
 
   let name = Bench.name ^ " - online - " ^ Optim.name ^ " - " ^ OnlineOptim.name
   let bench_name = Bench.name
+  let prop_name = Bench.prop_name
   let prop_name_in_matlab = Bench.prop_name_in_matlab
   let model_name_in_matlab = Bench.model_name_in_matlab
   let folder_name_in_shared = Bench.folder_name_in_shared
   let pindex = ref 0
   let dump_path = ref (Some Bench.dump_path)
   let dump_folder = ref (Some "")
-  let matlab_path = ref Bench.matlab_path
+  let shared_path = ref Bench.shared_path
   let save_path = ref ""
   let save_folder = ref ""
 
@@ -115,7 +116,8 @@ struct
         end;
         if rob < 0. then
           let Some dump_folder = !dump_folder in
-          ignore(Unix.system ("mv " ^ temp_path ^ " " ^ dump_folder))
+          ignore(Unix.system ("mv " ^ temp_path ^ " " ^ dump_folder));
+          ignore(Unix.system ("rm " ^ temp_path))
     end;
 
     rob, grad
@@ -149,6 +151,7 @@ struct
       model_name = model_name_in_matlab;
       bench = bench_name;
       desc = name;
+      prop = prop_name;
       optim = Optim.name;
       n_runs = List.length history;
       samples = Array.of_list (fst (List.split history));

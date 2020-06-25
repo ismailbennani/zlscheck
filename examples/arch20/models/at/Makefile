@@ -5,7 +5,7 @@ INCLUDES += -I $(CHECKLIB) zlscheck.cmxa -I ../ -I ../../common myOp.cmx discret
 
 OBJ=autotransd.cmx autotransd_modes.cmx
 
-DEPS=at_utils.cmx consts.cmx common.cmx common_myop.cmx
+DEPS=at_utils.cmx consts.cmx common_myop.cmx
 
 all: $(OBJ)
 opt: autotransd.opt
@@ -42,10 +42,9 @@ autotransd_modes.cmx: common_myop.cmx
 
 # ------------------------------------
 
-common.ml common_myop.ml: consts.zci at_utils.zci
+common_myop.ml: consts.zci at_utils.zci
 	$(ZELUC) $(ZELUCFLAGS) $(@:.ml=.zls)
 	sed -i "s/Obj.magic ():MyOp.t/create ():MyOp.t/g" $@
-common.cmx: common.ml consts.cmx at_utils.cmx
 common_myop.cmx: common_myop.ml consts.cmx at_utils.cmx
 
 # ------------------------------------
@@ -53,7 +52,7 @@ common_myop.cmx: common_myop.ml consts.cmx at_utils.cmx
 clean:
 	-@rm -f autotransd_main.ml autotransd.ml
 	-@rm -f autotransd_modes_main.ml autotransd_modes.ml
-	-@rm -f common.ml common_myop.ml
+	-@rm -f common_myop.ml
 	-@rm -f *.o *.cm[oix] *.annot *.obc *.zci
 
 realclean cleanall: clean

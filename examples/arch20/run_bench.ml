@@ -8,7 +8,7 @@ type run_bench_inputs = {
   dump_path : string;
   no_dump : bool;
   verbose : bool;
-  matlab_path : string;
+  shared_path : string;
   save_history : bool;
   benches : (module Common_types.RunBench) list;
 }
@@ -171,7 +171,7 @@ let get_inputs () =
   let dump_path = ref "" in
   let no_dump = ref false in
   let verbose = ref false in
-  let matlab_path = ref "../matlab" in
+  let shared_path = ref "../matlab" in
   let save_history = ref false in
 
   let opt_args = [
@@ -180,7 +180,7 @@ let get_inputs () =
     "-j", Arg.Set_int n_processes, "max number of processes to spawn";
     "-d", Arg.Set_string dump_path, "dump path (default: benchmarks/modelname)";
     "-no-dump", Arg.Set no_dump, "don't dump results";
-    "-matlab", Arg.Set_string matlab_path, "path to arch20/matlab folder relative to dump path";
+    "-shared", Arg.Set_string shared_path, "path to shared folder relative to dump path";
     "-v", Arg.Set verbose, "verbose";
     "-save-hist", Arg.Set save_history, "save history in addition to falsifying runs";
   ] in
@@ -213,7 +213,7 @@ let get_inputs () =
     dump_path = !dump_path;
     no_dump = !no_dump;
     verbose = !verbose;
-    matlab_path = !matlab_path;
+    shared_path = !shared_path;
     save_history = !save_history;
     benches = !sel_bench;
   }
@@ -247,6 +247,7 @@ let run_bench (module Bench : RunBench) n_repet n_runs =
     model_name = Bench.model_name_in_matlab;
     bench = Bench.bench_name;
     desc = Bench.name;
+    prop = Bench.prop_name;
     optim = Bench.Optim.name;
     n_repet = n_repet;
     n_runs = n_runs;
@@ -366,6 +367,7 @@ let run_bench_parallel (module Bench : RunBench) n_repet n_runs n_processes =
     model_name = Bench.model_name_in_matlab;
     bench = Bench.bench_name;
     desc = Bench.name;
+    prop = Bench.prop_name;
     optim = Bench.Optim.name;
     n_repet = n_repet;
     n_runs = n_runs;
@@ -390,11 +392,11 @@ let rec run_benches inputs results b =
       Bench.dump_path := None
     else if inputs.dump_path <> "" then begin
       Bench.dump_path := Some (Filename.concat inputs.dump_path "fals");
-      Bench.matlab_path := Filename.concat "../../" inputs.matlab_path;
+      Bench.shared_path := Filename.concat "../../" inputs.shared_path;
     end;
 
     Bench.save_path :=
-      if inputs.save_history
+      if inputs.save_history && not inputs.no_dump && inputs.dump_path <> ""
       then Filename.concat inputs.dump_path "hist"
       else "";
 
@@ -406,8 +408,7 @@ let rec run_benches inputs results b =
           inputs.in_n_repet inputs.in_n_runs inputs.in_n_processes
     in
 
-    Printf.printf "%a\n"
-      (print_result Bench.print_optim_params) res;
+    Printf.printf "%a\n" (print_result Bench.print_optim_params) res;
 
     begin match !Bench.dump_path with
       | None -> ()
@@ -421,7 +422,7 @@ let rec run_benches inputs results b =
         close_out info_fd;
 
         let matlab_validate_fd = open_out (Filename.concat dump_folder "validate.m") in
-        print_matlab_validate matlab_validate_fd Bench.bench_name !Bench.matlab_path
+        print_matlab_validate matlab_validate_fd Bench.bench_name !Bench.shared_path
           Bench.model_name_in_matlab Bench.prop_name_in_matlab Bench.folder_name_in_shared;
         close_out matlab_validate_fd;
 
@@ -441,7 +442,7 @@ let _ =
     let validate_all_path = (Filename.concat inputs.dump_path "validate_all.m") in
     if not (Sys.file_exists validate_all_path) then begin
       let validate_all_fd = open_out validate_all_path in
-      print_validate_all validate_all_fd inputs.matlab_path;
+      print_validate_all validate_all_fd inputs.shared_path;
       close_out validate_all_fd;
     end
   end

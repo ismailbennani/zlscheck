@@ -36,21 +36,9 @@ let node engine(t, ti, throttle) = rpm where
   rec te = Common_myop.lookup_engine(throttle, pre rpm)
   and drpm = te - ti
   and timestep = t -> (t - pre t)
-  (* and _ = *)
-    (* (print_endline ("pre Throttle: " ^ (string_of_op_t (pre throttle)));
-     print_endline ("pre RPM     : " ^ (string_of_op_t (pre rpm))); *)
-     (* print_endline ("pre te      : " ^ (string_of_op_t (pre te))); *)
-     (* print_newline ();
-     print_endline ("Throttle    : " ^ (string_of_op_t throttle));
-     print_endline ("RPM         : " ^ (string_of_op_t rpm));
-     print_endline ("dRPM/dt     : " ^ (string_of_op_t drpm));
-     print_endline ("te          : " ^ (string_of_op_t te));
-     print_endline ("ti          : " ^ (string_of_op_t ti));
-     print_endline ("tstep       : " ^ (string_of_op_t timestep));
-     print_newline (); print_newline ()) *)
-  (* and rpm_aux = 0. -> (pre rpm +. Common_myop.engine_feedback_gain *. drpm *. timestep)
-  and rpm = if rpm_aux > 6000. then 6000. else if rpm_aux < 600. then 600. else rpm_aux *)
-  and rpm = integrate_and_saturate (t, scale drpm Common_myop.engine_feedback_gain, make 1000., make 600., make 6000.)
+  and rpm =
+    integrate_and_saturate (t, scale drpm Common_myop.engine_feedback_gain,
+                               make 1000., make 600., make 6000.)
 
 let node gearlogic(shift) = gear where
   rec init gear = gear1

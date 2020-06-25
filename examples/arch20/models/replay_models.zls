@@ -3,8 +3,8 @@ open Scope
 
 open Discrete_obs_fad
 
-node autotransd (times, inp) = () where
-    rec n = 0 fby (Stdlib.( + ) n 1)
+node at (times, inp) = () where
+    rec n = 0 fby (Stdlib.( + ) n 10)
     and cur_inp = Array.get inp n
     and t = Array.get times n
     and throttle = Array.get cur_inp 0

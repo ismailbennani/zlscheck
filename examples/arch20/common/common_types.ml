@@ -7,6 +7,7 @@ type 'a one_repet_result = {
   model_name: string;  (* name of model being benchmarked *)
   bench: string;       (* name of this benchmark *)
   desc: string;        (* description of this benchmark *)
+  prop: string;        (* description of this benchmark *)
   optim: string;       (* name of optim algorithm *)
   n_runs: int;         (* total number of simulation runs *)
   samples: 'a array;   (* all the inputs that have been sampled *)
@@ -24,6 +25,7 @@ type 'a multiple_repet_result = {
   model_name: string;    (* cf one_repet_result.model_name *)
   bench: string;         (* cf one_repet_result.bench *)
   desc: string;          (* cf one_repet_result.desc *)
+  prop: string;          (* cf one_repet_result.desc *)
   optim: string;         (* cf one_repet_result.optim *)
   n_repet: int;          (* total number of repetitions *)
   n_runs: int;           (* max number of runs per repetition *)
@@ -57,6 +59,7 @@ sig
   module Optim : Optim.S with type input := float array and type output := float * float array
 
   val name : string
+  val prop_name : string
   val max_t : float
   val sample_every : int (* used by online optim *)
 
@@ -65,7 +68,7 @@ sig
   val folder_name_in_shared : string
 
   val dump_path : string
-  val matlab_path : string
+  val shared_path : string
 
   val node : (MyOp.t array, float * MyOp.t array * MyOp.t) node
 
@@ -81,13 +84,14 @@ sig
   module Optim : Optim.S with type input := float array and type output := float * float array
   val name : string
   val bench_name : string
+  val prop_name : string
   val prop_name_in_matlab : string
   val model_name_in_matlab : string
   val folder_name_in_shared : string
   val pindex : int ref
   val dump_path : string option ref
   val dump_folder : string option ref
-  val matlab_path : string ref
+  val shared_path : string ref
   val save_path : string ref
   val print_optim_params : out_channel -> unit -> unit
   val run : unit -> float array one_repet_result

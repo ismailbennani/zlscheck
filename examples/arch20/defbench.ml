@@ -301,7 +301,7 @@ struct
     let name = "ReplayDiscrete"
     let max_t = 50.
 
-    let replay_node = Replay_models.autotransd
+    let replay_node = Replay_models.at
     let scan_dump_inp ib =
       Scanf.bscanf ib "%g,%g,%g,%g,%g,%g"
         (fun th br rpm gear speed rob ->
@@ -316,11 +316,12 @@ struct
     module Optim = Params.Optim
 
     let name = "autotrans_" ^ Params.name
+    let prop_name = Params.name
     let prop_name_in_matlab = Params.prop_name_in_matlab
     let model_name_in_matlab = "transmission"
     let folder_name_in_shared = "transmission"
     let dump_path = Printf.sprintf "benchmarks/at_inst%d" Params.instance
-    let matlab_path = "../../matlab"
+    let shared_path = "../../../matlab"
     let max_t = Params.max_t
     let sample_every = Params.sample_every
     let set_optim_params = Params.set_optim_params
@@ -391,11 +392,12 @@ struct
     module Optim = Params.Optim
 
     let name = "f16"
+    let prop_name = "F16"
     let prop_name_in_matlab = "F16{1}"
     let model_name_in_matlab = "F16_GCAS"
     let folder_name_in_shared = "F16_GCAS"
     let dump_path = "benchmarks/f16"
-    let matlab_path = "../../matlab"
+    let shared_path = "../../../matlab"
     let max_t = 15.0
     let sample_every = 10
     let set_optim_params () =
@@ -489,11 +491,12 @@ struct
     module Optim = Params.Optim
 
     let name = "cc" ^ (string_of_int Params.index)
+    let prop_name = "CC" ^ (string_of_int Params.index)
     let prop_name_in_matlab = "CC{" ^ (string_of_int Params.index) ^ "}"
     let model_name_in_matlab = "chasingcars"
     let folder_name_in_shared = "chasing-cars"
     let dump_path = "benchmarks/cc"
-    let matlab_path = "../../matlab"
+    let shared_path = "../../../matlab"
     let max_t = 100.0
     let sample_every = 500
     let set_optim_params () =
@@ -552,11 +555,12 @@ struct
     module Optim = Params.Optim
 
     let name = "wt" ^ (string_of_int Params.index)
+    let prop_name = "WT" ^ (string_of_int Params.index)
     let prop_name_in_matlab = "WT{" ^ (string_of_int Params.index) ^ "}"
     let model_name_in_matlab = "wind_turbine"
     let folder_name_in_shared = "wind-turbine"
     let dump_path = "benchmarks/wt"
-    let matlab_path = "../../matlab"
+    let shared_path = "../../../matlab"
     let max_t = max_t
     let sample_every = 500
     let set_optim_params () =
@@ -643,11 +647,12 @@ struct
     module Optim = Optim
 
     let name = "afc" ^ (string_of_int Params.index)
+    let prop_name = "AFC" ^ (string_of_int Params.index)
     let prop_name_in_matlab = "AFC{" ^ (string_of_int Params.index) ^ "}"
     let model_name_in_matlab = "powertrain"
     let folder_name_in_shared = "powertrain"
     let dump_path = "benchmarks/afc"
-    let matlab_path = "../../matlab"
+    let shared_path = "../../../matlab"
     let max_t = max_t
     let sample_every = 500
     let set_optim_params () =
@@ -726,11 +731,12 @@ struct
     module Optim = Optim
 
     let name = Params.name
+    let prop_name = "SC"
     let prop_name_in_matlab = "SC{1}"
     let model_name_in_matlab = "steamcondenser"
     let folder_name_in_shared = "SteamCondenser"
     let dump_path = "benchmarks/sc"
-    let matlab_path = "../../matlab"
+    let shared_path = "../../../matlab"
     let max_t = 40.0
     let sample_every = 200
     let set_optim_params () =
@@ -802,6 +808,7 @@ struct
   module type Params =
   sig
     val name : string
+    val prop_name : string
     val node : float -> (MyOp.t array, float * MyOp.t array * MyOp.t) Ztypes.node
     val set_optim_params : unit -> unit
     val interp_fn : MyOp.t array -> float -> MyOp.t array
@@ -812,11 +819,12 @@ struct
     module Optim = Optim
 
     let name = Params.name
+    let prop_name = Params.prop_name
     let prop_name_in_matlab = "NN{1}"
     let model_name_in_matlab = "neural"
     let folder_name_in_shared = "neural"
     let dump_path = "benchmarks/nn"
-    let matlab_path = "../../matlab"
+    let shared_path = "../../../matlab"
     let max_t = 40.0
     let sample_every = 200
     let set_optim_params () =
@@ -835,6 +843,7 @@ struct
       let offline_bounds = Array.make n_pieces online_bounds.(0)
 
       let name = "nn_inst1"
+      let prop_name = "NN_inst1"
       let node = Nn_bench.nn_nn1
 
       let set_optim_params () =
@@ -851,6 +860,7 @@ struct
       let offline_bounds = Array.make n_pieces online_bounds.(0)
 
       let name = "nn_inst2"
+      let prop_name = "NN_inst2"
       let node = Nn_bench.nn_nn1
 
       let set_optim_params () =
@@ -867,6 +877,7 @@ struct
       let offline_bounds = Array.make n_pieces online_bounds.(0)
 
       let name = "nn_inst1_0_04"
+      let prop_name = "NN_inst1 (beta=0.04)"
       let node = Nn_bench.nn_nn2
 
       let set_optim_params () =
@@ -883,6 +894,7 @@ struct
       let offline_bounds = Array.make n_pieces online_bounds.(0)
 
       let name = "nn_inst2_0_04"
+      let prop_name = "NN_inst2 (beta=0.04)"
       let node = Nn_bench.nn_nn2
 
       let set_optim_params () =
