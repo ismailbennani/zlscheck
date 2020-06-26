@@ -70,7 +70,7 @@ node autotrans_at1 tstep inp = get next_t, outp, rob where
     and outp = Array.of_list [rpm; gear; speed]
     and rob = at1 (tstep', outp)
 
-node autotrans_at2 tstep inp = get next_t, outp, translate rob 40. where
+node autotrans_at2 tstep inp = get next_t, outp, rob where
     rec throttle = Array.get inp 0
     and brake = Array.get inp 1
     and tstep' = make tstep
