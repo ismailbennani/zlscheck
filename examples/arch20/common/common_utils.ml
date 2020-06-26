@@ -10,13 +10,6 @@ let make_dump_folder path name =
 let make_tmp_dump i = Filename.open_temp_file ("dump_" ^ (string_of_int i) ^ "_") ".csv"
 let close_tmp_dump (path, fd) = close_out fd
 
-let print_result print_sample { optim; n_runs; best_sample; best_rob;
-                                falsified; elapsed_time } =
-  Printf.printf "Result %s (%d runs): %sFALSIFIED after %g seconds\n"
-    optim n_runs (if falsified then "" else "NOT ") elapsed_time;
-  Printf.printf "\tbest_sample: %a with rob %g\n"
-    print_sample best_sample best_rob
-
 let print_matlab_validate fd bench_name shared_path model_name prop_name_in_matlab model_folder =
   Printf.fprintf fd
     "warning('off','all');\n\
@@ -33,8 +26,8 @@ let print_matlab_validate fd bench_name shared_path model_name prop_name_in_matl
     model_name bench_name model_name bench_name
 
 let print_result print_optim_params ff
-    { bench; desc; prop; n_repet; n_runs; mean_n_runs; median_n_runs;
-      n_falsif; total_time } =
+    ({ bench; desc; prop; n_repet; n_runs; mean_n_runs; median_n_runs;
+      n_falsif; total_time }, actual_time) =
   Printf.fprintf ff "name:%s\n" bench;
   Printf.fprintf ff "desc:%s\n" desc;
   Printf.fprintf ff "prop:%s\n" prop;
@@ -43,7 +36,8 @@ let print_result print_optim_params ff
   Printf.fprintf ff "n_falsif:%d\n" n_falsif;
   Printf.fprintf ff "mean:%g\n" mean_n_runs;
   Printf.fprintf ff "median:%g\n" median_n_runs;
-  Printf.fprintf ff "time:%g\n" total_time;
+  Printf.fprintf ff "cumulative_time:%g\n" total_time;
+  Printf.fprintf ff "actual_time:%g\n" actual_time;
   Printf.fprintf ff "\nparams:\n%a" print_optim_params ()
 
 let print_validate_all fd shared_path =

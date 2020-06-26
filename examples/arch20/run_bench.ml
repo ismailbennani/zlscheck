@@ -400,6 +400,7 @@ let rec run_benches inputs results b =
       then Filename.concat inputs.dump_path "hist"
       else "";
 
+    let start_time = Unix.gettimeofday () in
     let res =
       if inputs.in_n_processes = 1 then
         run_bench (module Bench) inputs.in_n_repet inputs.in_n_runs
@@ -407,8 +408,9 @@ let rec run_benches inputs results b =
         run_bench_parallel (module Bench)
           inputs.in_n_repet inputs.in_n_runs inputs.in_n_processes
     in
+    let time = Unix.gettimeofday () -. start_time in
 
-    Printf.printf "%a\n" (print_result Bench.print_optim_params) res;
+    Printf.printf "%a\n" (print_result Bench.print_optim_params) (res, time);
 
     begin match !Bench.dump_path with
       | None -> ()
@@ -418,7 +420,7 @@ let rec run_benches inputs results b =
         let info_path = Filename.concat dump_folder "info" in
         let info_fd = open_out info_path in
         Printf.fprintf info_fd "%a\n"
-          (print_result Bench.print_optim_params) res;
+          (print_result Bench.print_optim_params) (res, time);
         close_out info_fd;
 
         let matlab_validate_fd = open_out (Filename.concat dump_folder "validate.m") in
