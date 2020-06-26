@@ -318,7 +318,7 @@ struct
     let model_name_in_matlab = "transmission"
     let folder_name_in_shared = "transmission"
     let dump_path = Printf.sprintf "benchmarks/at_inst%d" Params.instance
-    let shared_path = "../../../matlab"
+    let shared_path = "../../../shared"
     let max_t = Params.max_t
     let sample_every = Params.sample_every
     let set_optim_params = Params.set_optim_params
@@ -394,7 +394,7 @@ struct
     let model_name_in_matlab = "F16_GCAS"
     let folder_name_in_shared = "F16_GCAS"
     let dump_path = "benchmarks/f16"
-    let shared_path = "../../../matlab"
+    let shared_path = "../../../shared"
     let max_t = 15.0
     let sample_every = 10
     let set_optim_params () =
@@ -493,7 +493,7 @@ struct
     let model_name_in_matlab = "chasingcars"
     let folder_name_in_shared = "chasing-cars"
     let dump_path = "benchmarks/cc"
-    let shared_path = "../../../matlab"
+    let shared_path = "../../../shared"
     let max_t = 100.0
     let sample_every = 500
     let set_optim_params () =
@@ -557,7 +557,7 @@ struct
     let model_name_in_matlab = "wind_turbine"
     let folder_name_in_shared = "wind-turbine"
     let dump_path = "benchmarks/wt"
-    let shared_path = "../../../matlab"
+    let shared_path = "../../../shared"
     let max_t = max_t
     let sample_every = 500
     let set_optim_params () =
@@ -649,7 +649,7 @@ struct
     let model_name_in_matlab = "powertrain"
     let folder_name_in_shared = "powertrain"
     let dump_path = "benchmarks/afc"
-    let shared_path = "../../../matlab"
+    let shared_path = "../../../shared"
     let max_t = max_t
     let sample_every = 500
     let set_optim_params () =
@@ -733,7 +733,7 @@ struct
     let model_name_in_matlab = "steamcondenser"
     let folder_name_in_shared = "SteamCondenser"
     let dump_path = "benchmarks/sc"
-    let shared_path = "../../../matlab"
+    let shared_path = "../../../shared"
     let max_t = 40.0
     let sample_every = 200
     let set_optim_params () =
@@ -821,7 +821,7 @@ struct
     let model_name_in_matlab = "neural"
     let folder_name_in_shared = "neural"
     let dump_path = "benchmarks/nn"
-    let shared_path = "../../../matlab"
+    let shared_path = "../../../shared"
     let max_t = 40.0
     let sample_every = 200
     let set_optim_params () =
