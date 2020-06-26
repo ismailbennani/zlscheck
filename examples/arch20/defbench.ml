@@ -63,7 +63,6 @@ module Autotrans =
 struct
   let tstep = 0.01
   let bounds_online = [|0.,100.; 0.,350.|]
-  let bounds_offline = Array.init 14 (fun i -> bounds_online.(i mod 2))
 
   let gd_alpha_high = 10000000.
   let gd_alpha_low = 1000.
@@ -121,7 +120,7 @@ struct
     let max_t = 10.
 
     let instance = Instance.index
-    let sample_every = Instance.sample_every
+    let sample_every = if Instance.index = 1 then 250 else Instance.sample_every
 
     let prop_name_in_matlab = "AT{2}"
 
