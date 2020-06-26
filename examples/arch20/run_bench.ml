@@ -131,6 +131,8 @@ let get_inputs () =
                       "AT53_inst2_ur"; "AT54_inst2_ur"; "AT6a_inst2_ur"; "AT6b_inst2_ur";
                       "AT6c_inst2_ur" ]
   in
+  let afc = ["AFC27"; "AFC29"; "AFC33"] in
+  let afc_ur = ["AFC27_ur"; "AFC29_ur"; "AFC33_ur"] in
   let cc = ["CC1"; "CC2"; "CC3"; "CC4"; "CC5"] in
   let cc_ur = ["CC1_ur"; "CC2_ur"; "CC3_ur"; "CC4_ur"; "CC5_ur"] in
   let wt = ["WT1"; "WT2"; "WT3"; "WT4"] in
@@ -163,6 +165,10 @@ let get_inputs () =
     ("NN_ur", nn_inst1_ur @ nn_inst2_ur);
     ("all", at_inst1 @ at_inst2 @ cc @ wt @ sc @ nn_inst1 @ nn_inst2);
     ("all_ur", at_inst1_ur @ at_inst2_ur @ cc_ur @ wt_ur @ sc_ur @ nn_inst1_ur @ nn_inst2_ur);
+
+    (* all but WT4 because it takes way too long and gives 0 falsif *)
+    ("arch20_bench", at_inst1 @ at_inst2 @ cc @ ["WT1"; "WT2"; "WT3"] @ sc @
+                nn_inst1 @ nn_inst2)
   ] in
 
   let n_repet = ref 10 in
@@ -224,6 +230,7 @@ let run_bench (module Bench : RunBench) n_repet n_runs =
   let n_falsif = ref 0 in
   let fals_inputs = ref [] in
   let n_runs_l = ref [] in
+  let best_rob = ref infinity in
   let start_time = Unix.gettimeofday () in
 
   for i = 0 to n_repet - 1 do
@@ -234,7 +241,8 @@ let run_bench (module Bench : RunBench) n_repet n_runs =
     if res.falsified then begin
       n_falsif := !n_falsif + 1;
       fals_inputs := res.best_sample :: !fals_inputs;
-      n_runs_l := res.n_runs :: !n_runs_l
+      n_runs_l := res.n_runs :: !n_runs_l;
+      best_rob := if res.best_rob < !best_rob then res.best_rob else !best_rob
     end
   done;
 
@@ -255,6 +263,7 @@ let run_bench (module Bench : RunBench) n_repet n_runs =
     median_n_runs = compute_median n_runs_arr;
     fals_inputs = fals_inp_arr;
     n_falsif = !n_falsif;
+    best_rob = !best_rob;
     total_time = time;
   }
 
@@ -285,6 +294,7 @@ let run_bench_parallel (module Bench : RunBench) n_repet n_runs n_processes =
       Bench.pindex := i + 1;
 
       let n_falsif = ref 0 in
+      let best_rob = ref infinity in
       let n_runs_l = ref [] in
       let start_time = Unix.gettimeofday () in
 
@@ -296,7 +306,8 @@ let run_bench_parallel (module Bench : RunBench) n_repet n_runs n_processes =
 
         if res.falsified then begin
           n_falsif := !n_falsif + 1;
-          n_runs_l := res.n_runs :: !n_runs_l
+          n_runs_l := res.n_runs :: !n_runs_l;
+          best_rob := if res.best_rob < !best_rob then res.best_rob else !best_rob;
         end
       done;
 
@@ -304,8 +315,8 @@ let run_bench_parallel (module Bench : RunBench) n_repet n_runs n_processes =
 
       (* write results *)
       let out_fd = open_out tmp_file in
-      Printf.fprintf out_fd "repet:%d\nn_falsif:%d\n%atime:%g\n"
-        n_repet !n_falsif
+      Printf.fprintf out_fd "repet:%d\nn_falsif:%d\nbest_rob:%g\n%atime:%g\n"
+        n_repet !n_falsif !best_rob
         (fun ff l -> List.iter (fun n -> Printf.fprintf ff "n_runs:%d\n" n) l)
         !n_runs_l time;
       close_out out_fd;
@@ -322,6 +333,7 @@ let run_bench_parallel (module Bench : RunBench) n_repet n_runs n_processes =
 
   let n_runs_l = ref (if res.falsified then [res.n_runs] else []) in
   let total_falsif = ref (if res.falsified then 1 else 0) in
+  let best_rob = ref res.best_rob in
   let total_time = ref time in
 
   (* wait for children termination and read results *)
@@ -332,35 +344,34 @@ let run_bench_parallel (module Bench : RunBench) n_repet n_runs n_processes =
     Printf.printf "Child %d done. Reading results in %s ...\n"
       pid tmp_file;
 
-    let fd = ref (Scanf.Scanning.open_in tmp_file) in
-
-    let n_retry = ref 0 in
-    while Scanf.Scanning.end_of_input !fd && !n_retry < 10 do
-      Scanf.Scanning.close_in !fd;
-      Printf.printf "File %s empty, retry in 1 sec (%d/10)\n" tmp_file !n_retry;
-      Unix.sleep 1;
-      fd := Scanf.Scanning.open_in tmp_file;
-      n_retry := !n_retry + 1;
-    done;
-
-    if (Scanf.Scanning.end_of_input !fd) then
-      Printf.printf "File %s empty, ignoring it.\n" tmp_file
-    else begin
-      let this_n_falsif = ref 0 in
-      Scanf.bscanf !fd "repet:%d\n" (fun n_repet -> ());
-      Scanf.bscanf !fd "n_falsif:%d\n"
-        (fun n_falsif ->
-           this_n_falsif := n_falsif;
-           total_falsif := n_falsif + !total_falsif);
-      for i = 0 to !this_n_falsif - 1 do
-        Scanf.bscanf !fd "n_runs:%d\n"
-          (fun n_runs -> n_runs_l := n_runs :: !n_runs_l);
+    let fd = open_in tmp_file in
+    try
+      while true do
+        let line = input_line fd in
+        let split = String.split_on_char ':' line in
+        begin match split with
+          | [] -> ()
+          | [x] -> Printf.eprintf "Don't know what to do with line %s (ignored).\n" line
+          | [key; v] ->
+            if key = "repet" then ()
+            else if key = "n_falsif" then begin
+              let n_falsif = int_of_string v in
+              total_falsif := n_falsif + !total_falsif;
+            end else if key = "best_rob" then
+              if v = "inf" then ()
+              else
+                let new_best_rob = float_of_string v in
+                best_rob := if new_best_rob < !best_rob then new_best_rob else !best_rob
+            else if key = "n_runs" then
+              let n_runs = int_of_string v in
+              n_runs_l := n_runs :: !n_runs_l
+            else if key = "time" then
+              let time = float_of_string v in
+              total_time := time +. !total_time
+            else Printf.eprintf "Don't know key %s (ignored).\n" key
+        end;
       done;
-      Scanf.bscanf !fd "time:%g"
-        (fun time -> total_time := time +. !total_time);
-    end;
-
-    Scanf.Scanning.close_in !fd;
+    with End_of_file -> close_in fd;
   done;
 
   {
@@ -375,6 +386,7 @@ let run_bench_parallel (module Bench : RunBench) n_repet n_runs n_processes =
     median_n_runs = compute_median (Array.of_list !n_runs_l);
     fals_inputs = [||];
     n_falsif = !total_falsif;
+    best_rob = !best_rob;
     total_time = !total_time;
   }
 

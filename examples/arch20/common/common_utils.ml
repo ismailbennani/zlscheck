@@ -27,13 +27,14 @@ let print_matlab_validate fd bench_name shared_path model_name prop_name_in_matl
 
 let print_result print_optim_params ff
     ({ bench; desc; prop; n_repet; n_runs; mean_n_runs; median_n_runs;
-      n_falsif; total_time }, actual_time) =
+      n_falsif; best_rob; total_time }, actual_time) =
   Printf.fprintf ff "name:%s\n" bench;
   Printf.fprintf ff "desc:%s\n" desc;
   Printf.fprintf ff "prop:%s\n" prop;
   Printf.fprintf ff "n_repet:%d\n" n_repet;
   Printf.fprintf ff "n_runs:%d\n" n_runs;
   Printf.fprintf ff "n_falsif:%d\n" n_falsif;
+  Printf.fprintf ff "best_rob:%g\n" best_rob;
   Printf.fprintf ff "mean:%g\n" mean_n_runs;
   Printf.fprintf ff "median:%g\n" median_n_runs;
   Printf.fprintf ff "cumulative_time:%g\n" total_time;

@@ -32,6 +32,7 @@ type 'a multiple_repet_result = {
   mean_n_runs: float;    (* mean number of runs over successfull repetitions *)
   median_n_runs: float;  (* median number of runs over successfull repetitions *)
   fals_inputs: 'a array; (* all falsifying inputs *)
+  best_rob: float;       (* best robustness (lowest) *)
   n_falsif: int;         (* number of falsifying inputs *)
   total_time: float;     (* total time from beginning of first repetition until end of last one *)
 }
