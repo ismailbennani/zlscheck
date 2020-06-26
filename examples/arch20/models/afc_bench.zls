@@ -4,18 +4,24 @@ open Discrete_obs_fad
 (* always_[11, 50] ((rise or fall) ==> (always_[1,5] (abs(mu) < 0.008))) *)
 node afc1 (tstep, inp, outp) =
     let rec throttle = Array.get inp 0 in
-    let mu = Array.get outp 2 in
+    let mu = Array.get outp 3 in
     let throttle_40 = q_ge (throttle, make 40.) in
     let throttle_8_8 = q_le (throttle, make 8.8) in
     let abs_mu_0_008 = q_le (abs mu, make 0.008) in
-    let rise = q_false -> q_and (throttle_40, pre throttle_8_8) in
-    let fall = q_false -> q_and (throttle_8_8, pre throttle_40) in
+    let rise = make (-10000.) -> q_and (throttle_40, pre throttle_8_8) in
+    let fall = make (-10000.) -> q_and (throttle_8_8, pre throttle_40) in
     let rise_or_fall = q_or (rise, fall) in
-    reset
+    automaton
+    | Init ->
         let rec t = make 0. fby (t + tstep) in
-        always_timed 5. (tstep, implies (rise_or_fall,
-            implies (q_ge (t, make 1.), abs_mu_0_008)))
-    every (isTrue rise_or_fall)
+        do make 10000.
+        until (isTrue rise_or_fall) on (t >= make 11.) then Main(rise_or_fall)
+    | Main(rise_or_fall_init) ->
+        let rec t = make 0. fby (t + tstep) in
+        do implies
+            (rise_or_fall_init,
+             always_timed 5. (tstep, implies (q_gt (t, make 1.), abs_mu_0_008)))
+        until (isTrue rise_or_fall) then Main(rise_or_fall)
 
 (* always_[11, 50] abs(mu) < 0.007 *)
 node afc2 (tstep, inp, outp) =
@@ -24,15 +30,24 @@ node afc2 (tstep, inp, outp) =
     let abs_mu = abs mu in
     always_timed 50. (tstep, implies (q_ge (t, make 11.), q_lt (abs_mu, make 0.007)))
 
-node afc_afc1 tstep inp = get next_t, outp, rob where
+node afc_afc1 tstep engine inp = get next_t, outp, rob where
     rec throttle = Array.get inp 0
-    and init engine = Array.get inp 1
     and tstep' = make tstep
     and next_t = tstep' fby (next_t + tstep')
     and t = make 0. fby next_t
     and abf, abf_ref, mu, mode = Afc_d.afc tstep (throttle, engine)
-    and outp = Array.of_list [abf; abf_ref; mu; mode]
-    and rob = afc1 (tstep', inp, outp)
+    and throttle_40 = q_ge (throttle, make 40.)
+    and throttle_8_8 = q_le (throttle, make 8.8)
+    and rise = make (-10000.) -> q_and (throttle_40, pre throttle_8_8)
+    and fall = make (-10000.) -> q_and (throttle_8_8, pre throttle_40)
+    and rise_or_fall = q_or (rise, fall)
+    and outp = Array.of_list [engine; abf; abf_ref; mu; mode]
+    and rob_spec = afc1 (tstep', inp, outp)
+    and rob_optim =
+        if throttle > make 40. then q_not fall
+        else if throttle < make 8.8 then q_not rise
+        else if make (Random.float 1.) > make 0.5 then q_not fall else q_not rise
+    and rob = if isFalse rob_spec then rob_spec else if isTrue rob_optim then rob_optim else rob_spec
 
 node afc_afc2 tstep inp = get next_t, outp, rob where
     rec throttle = Array.get inp 0

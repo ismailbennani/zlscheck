@@ -622,7 +622,7 @@ struct
   let h = 5.
   let dim = truncate (ceil (max_t /. h))
 
-  let online_bounds_normal_mode = [| 0., 61.1; 900., 1100. |]
+  let online_bounds_normal_mode = [| 0., 61.1 |]
   let offline_bounds_normal_mode =
     [| 900., 1100.; 0., 61.1; 0., 61.1; 0., 61.1; 0., 61.1; 0., 61.1; 0., 61.1;
        0., 61.1; 0., 61.1; 0., 61.1; 0., 61.1 |]
@@ -636,6 +636,7 @@ struct
     val index : int
     val gd_alpha : float
     val bounds : (float * float) array
+    val sample_every : int
     val node : (MyOp.t array, float * MyOp.t array * MyOp.t) Ztypes.node
   end
   module AFCBench (Params: Params) (Optim: Optim.S) =
@@ -650,7 +651,7 @@ struct
     let dump_path = "benchmarks/afc"
     let shared_path = "../../../shared"
     let max_t = max_t
-    let sample_every = 500
+    let sample_every = Params.sample_every
     let set_optim_params () =
       Optim_globals.params.meth.gd.alpha <- Params.gd_alpha;
       Optim_globals.params.meth.gd.do_restart <- true;
@@ -664,15 +665,17 @@ struct
 
   module ParamsPhi27 = struct
     let index = 27
-    let bounds = offline_bounds_normal_mode
-    let gd_alpha = 10.
-    let node = Afc_bench.afc_afc1 5e-5
+    let bounds = online_bounds_normal_mode
+    let gd_alpha = 1000.
+    let sample_every = truncate (5. /. 5e-5)
+    let node = Afc_bench.afc_afc1 5e-5 (MyOp.make (Random.float 200. +. 900.))
   end
 
   module ParamsPhi29 = struct
     let index = 29
     let bounds = offline_bounds_normal_mode
     let gd_alpha = 1e7
+    let sample_every = 0
     let node = Afc_bench.afc_afc2 5e-5
   end
 
@@ -680,6 +683,7 @@ struct
     let index = 33
     let bounds = offline_bounds_power_mode
     let gd_alpha = 1e9
+    let sample_every = 0
     let node = Afc_bench.afc_afc2 5e-5
   end
 
@@ -696,10 +700,10 @@ struct
              Array.map MyOp.make (Array.map float_of_string no_rob))
     end)
 
-  module Phi27 = Offline.Make(AFCBench(ParamsPhi27)(Optim.GDClassic))
+  module Phi27 = Online.Make(AFCBench(ParamsPhi27)(Optim.GDClassic))
   module Phi29 = Offline.Make(AFCBench(ParamsPhi29)(Optim.GDClassic))
   module Phi33 = Offline.Make(AFCBench(ParamsPhi33)(Optim.GDClassic))
-  module Phi27UR = Offline.Make(AFCBench(ParamsPhi27)(Optim.UR_GDAWARE))
+  module Phi27UR = Online.Make(AFCBench(ParamsPhi27)(Optim.UR_GDAWARE))
   module Phi29UR = Offline.Make(AFCBench(ParamsPhi29)(Optim.UR_GDAWARE))
   module Phi33UR = Offline.Make(AFCBench(ParamsPhi33)(Optim.UR_GDAWARE))
 end
