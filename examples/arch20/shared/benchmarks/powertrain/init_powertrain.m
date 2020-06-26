@@ -1,4 +1,4 @@
-simTime        = 50;
+simTime        = 49;
 measureTime    =  1;
 fault_time     = 60;
 spec_num       =  1;

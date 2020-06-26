@@ -1,6 +1,6 @@
 function [tout, yout] = run_powertrain(u, T)
     ts = u(:,1);
-    us = u(:,2:end);
+    us = u(:,2:3);
     
     tin = 0:0.01:T;
     xin = interp1(ts, us, tin, 'previous');

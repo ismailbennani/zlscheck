@@ -1,5 +1,5 @@
 function [tout, u_, yout, r] = compute_rob_powertrain(phi,preds,u)
-    T_end = u(end, 1);
+    T_end = 49;
     t = u(:,1);
     u = u(:,2:3);
     [tout, yout] = run_powertrain([t u], T_end);
