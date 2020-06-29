@@ -151,6 +151,8 @@ let get_inputs () =
     ("AT_inst2_ur", at_inst2_ur);
     ("AT", at_inst1 @ at_inst2);
     ("AT_ur", at_inst1_ur @ at_inst2_ur);
+    ("AFC", afc);
+    ("AFC_ur", afc_ur);
     ("CC", cc);
     ("CC_ur", cc_ur);
     ("WT", wt);

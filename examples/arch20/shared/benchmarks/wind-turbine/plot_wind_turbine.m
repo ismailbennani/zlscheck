@@ -30,7 +30,7 @@ function [out] = plot_wind_turbine(u)
     title('theta_d');
     
     subplot(6,1,6);
-    plot(tout, yout(:,6));
+    plot(tout, yout(:,6), [0 630], [14.2 14.2]);
     title('blade pitch angle');
 end
 

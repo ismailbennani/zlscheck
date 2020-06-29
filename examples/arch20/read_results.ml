@@ -1,6 +1,7 @@
 let print_latex print_infos ff info =
   Printf.fprintf ff
-    "\\documentclass{article}\n\
+    "\\documentclass[landscape]{report}\n\
+     \\usepackage[landscape]{geometry}\n\
      \\begin{document}\n\
       %a\n\
     \\end{document}"
@@ -25,6 +26,7 @@ type info = {
   mutable median : float;
   mutable cumulative_time : float;
   mutable actual_time : float;
+  mutable best_rob : float;
 }
 
 let empty_info () = {
@@ -36,6 +38,7 @@ let empty_info () = {
   n_falsif = 0;
   mean = 0.;
   median = 0.;
+  best_rob = 0.;
   cumulative_time = 0.;
   actual_time = 0.;
 }
@@ -51,9 +54,11 @@ let read_info path =
   let res = empty_info () in
   let fd = open_in path in
   try
-    for i = 1 to 10 do
-        let line = input_line fd in
-      try
+    let cont = ref true in
+    while !cont do
+      let line = input_line fd in
+      if String.trim line = "" then cont := false
+      else try
         let parse_line = String.split_on_char ':' line in
         let field = List.hd parse_line in
         let value = List.hd (List.tl parse_line) in
@@ -68,39 +73,57 @@ let read_info path =
         else if field = "n_falsif" then res.n_falsif <- int_of_string value
         else if field = "mean" then res.mean <- float_of_string value
         else if field = "median" then res.median <- float_of_string value
+        else if field = "best_rob" then res.best_rob <- float_of_string value
         else if field = "cumulative_time" then res.cumulative_time <- float_of_string value
         else if field = "actual_time" then res.actual_time <- float_of_string value
         else Printf.eprintf "Unknown field %s, ignored.\n" field
-      with e -> ()
+      with e -> cont := false
     done;
     close_in fd;
     res
-  with e -> begin
-    Printf.eprintf "File %s is not a valid info file.\n" path;
-    close_in fd;
-    raise e;
+    with e -> begin
+      Printf.eprintf "File %s is not a valid info file.\n" path;
+      close_in fd;
+      raise e;
   end
 
 let print_full_infos ff info_l =
-  let print_full_info { name; desc; prop_name; n_repet; n_runs; n_falsif;
-                        mean; median; cumulative_time; actual_time } =
-    Printf.fprintf ff "%s & %d & %d & %d & %g & %g & %g & %g\n\\\\\\hline\n"
-      prop_name n_repet n_runs n_falsif mean median
-      cumulative_time actual_time
+  let print_time ff t =
+    let secs_i = truncate (mod_float t 60.) in
+    let rest = floor (t /. 60.) in
+    let mins_i = truncate (mod_float rest 60.) in
+    let rest = floor (rest /. 60.) in
+    let hours_i = truncate (mod_float rest 24.) in
+    let rest = floor (rest /. 24.) in
+    let days_i = truncate rest in
+    let days = if days_i = 0 then ""
+      else (string_of_int days_i) ^ " days " in
+    let hours = if days_i = 0 && hours_i = 0 then ""
+      else (string_of_int hours_i) ^ " hours " in
+    let mins = if days_i = 0 && hours_i = 0 && mins_i = 0 then ""
+      else (string_of_int mins_i) ^ " mins " in
+    let secs = (string_of_int secs_i) ^ " secs " in
+    Printf.fprintf ff "%s%s%s%s" days hours mins secs
   in
-  Printf.fprintf ff "\\begin{tabular}{|r|c|c|c|c|c|c|c|c|c|}\n\\hline\n";
-  Printf.fprintf ff "prop & repet & runs & falsif & mean & median & \
+  let print_full_info { name; desc; prop_name; n_repet; n_runs; n_falsif;
+                        mean; median; best_rob; cumulative_time; actual_time } =
+    Printf.fprintf ff "%s & %d & %d & %d & %g & %g & %g & %a & %a\n\\\\\\hline\n"
+      prop_name n_repet n_runs n_falsif mean median best_rob
+      print_time cumulative_time print_time actual_time
+  in
+  Printf.fprintf ff "\\begin{tabular}{|r|c|c|c|c|c|c|c|c|}\n\\hline\n";
+  Printf.fprintf ff "prop & repet & runs & falsif & mean & median & best\_rob & \
                  cumulative\\_time & actual\\_time\n\\\\\\hline\n";
   List.iter print_full_info info_l;
   Printf.fprintf ff "\\end{tabular}"
 
 let print_short_infos ff info_l =
-  let print_short_info { prop_name; n_repet; n_falsif; mean; median } =
-    Printf.fprintf ff "%s & %d/%d & %g & %g\n\\\\\\hline\n"
-      prop_name n_falsif n_repet mean median
+  let print_short_info { prop_name; n_repet; n_falsif; mean; median; best_rob } =
+    Printf.fprintf ff "%s & %d/%d & %g & %g & %g\n\\\\\\hline\n"
+      prop_name n_falsif n_repet mean median best_rob
   in
-  Printf.fprintf ff "\\begin{tabular}{|r|c|c|c|}\n\\hline\n";
-  Printf.fprintf ff "prop & falsif/repet & mean & median\n\\\\\\hline\n";
+  Printf.fprintf ff "\\begin{tabular}{|r|c|c|c|c|}\n\\hline\n";
+  Printf.fprintf ff "prop & falsif/repet & mean & median & best\_rob\n\\\\\\hline\n";
   List.iter print_short_info info_l;
   Printf.fprintf ff "\\end{tabular}"
 
