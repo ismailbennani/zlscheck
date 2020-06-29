@@ -65,7 +65,7 @@ struct
   let bounds_online = [|0.,100.; 0.,350.|]
 
   let gd_alpha_high = 10000000.
-  let gd_alpha_low = 1000.
+  let gd_alpha_low = 100.
 
   module type Instance =
   sig
@@ -212,7 +212,7 @@ struct
     let prop_name_in_matlab = "AT{6}"
 
     let set_optim_params () =
-      Optim_globals.params.meth.gd.alpha <- gd_alpha_high;
+      Optim_globals.params.meth.gd.alpha <- if instance = 1 then 1000. else 100.;
       Optim_globals.params.bounds <- bounds_online;
       Optim_globals.params.verbose <- !verbose;
       Optim_globals.params.vverbose <- !verbose
@@ -257,7 +257,7 @@ struct
     let prop_name_in_matlab = "AT{8}"
 
     let set_optim_params () =
-      Optim_globals.params.meth.gd.alpha <- gd_alpha_low;
+      Optim_globals.params.meth.gd.alpha <- 100.;
       Optim_globals.params.meth.gd.do_restart <- true;
       Optim_globals.params.bounds <-
       Array.init (truncate (ceil (max_t /. ((float sample_every) *. tstep))) * 2)
@@ -723,15 +723,15 @@ struct
     Array.concat [Array.make 12 (3990., 4010.); Array.make 11 (0., 40.)]
 
   module SCBench (Optim : Optim.S) (Params: sig
-      val name : string
+      val instance : int
       val set_optim_params : unit -> unit
       val interp_fn : MyOp.t array -> float -> MyOp.t array
     end) =
   struct
     module Optim = Optim
 
-    let name = Params.name
-    let prop_name = "SC"
+    let name = "sc_inst" ^ (string_of_int Params.instance)
+    let prop_name = "SC_inst" ^ (string_of_int Params.instance)
     let prop_name_in_matlab = "SC{1}"
     let model_name_in_matlab = "steamcondenser"
     let folder_name_in_shared = "SteamCondenser"
@@ -750,11 +750,11 @@ struct
 
   module ParamsInst1 =
     struct
-      let h = 2.
+      let h = 0.2
       let n_pieces = truncate (ceil (max_t /. h))
       let offline_bounds = Array.make n_pieces online_bounds.(0)
 
-      let name = "sc_inst1"
+      let instance = 2
 
       let set_optim_params () =
         Optim_globals.params.meth.gd.alpha <- 5.;
@@ -765,11 +765,11 @@ struct
 
   module ParamsInst2 =
     struct
-      let h = 0.2
+      let h = 2.
       let n_pieces = truncate (ceil (max_t /. h))
       let offline_bounds = Array.make n_pieces online_bounds.(0)
 
-      let name = "sc_inst2"
+      let instance = 2
 
       let set_optim_params () =
         Optim_globals.params.meth.gd.alpha <- 5.;

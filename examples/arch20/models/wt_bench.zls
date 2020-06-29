@@ -36,7 +36,7 @@ node wt4 (tstep, outp) =
             implies (q_ge (t, (make 35.)),
                      bounded_recurrence 5. (tstep, q_le (dif, make 1.6))))
 
-node wt_wt1 tstep inp = get next_t, outp, rob where
+node wt_wt1 tstep inp = get next_t, outp, translate rob 0.1 where
     rec init tstep' = make tstep
     and next_t = tstep' fby (next_t + tstep')
     and t = make 0. fby next_t

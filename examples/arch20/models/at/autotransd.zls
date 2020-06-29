@@ -115,7 +115,7 @@ let node vehicle(t, out_torque, brake_torque) = (speed, trans_rpm) where
   and trans_rpm = scale wheel_speed p_final_drive_ratio
   and speed = mph
 
-let node autotrans(t, (throttle, brake_torque)) = (rpm, gear, speed), rob where
+let node autotrans(t, (throttle, brake_torque)) = (rpm, gear, speed), translate rob 0.5 where
   rec rpm = engine(t, ti, throttle)
   and gear, rob = shiftlogic(t, speed, throttle)
   and ti, out_torque = transmission (rpm, gear, trans_rpm)

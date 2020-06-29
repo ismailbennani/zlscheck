@@ -28,7 +28,7 @@ node afc2 (tstep, inp, outp) =
     let rec t = make 0. fby (t + tstep) in
     let mu = Array.get outp 2 in
     let abs_mu = abs mu in
-    always_timed 50. (tstep, implies (q_ge (t, make 11.), q_lt (abs_mu, make 0.007)))
+    always_timed 50. (tstep, implies (q_ge (t, make 11.02), q_lt (abs_mu, make 0.007)))
 
 node afc_afc1 tstep engine inp = get next_t, outp, rob where
     rec throttle = Array.get inp 0
