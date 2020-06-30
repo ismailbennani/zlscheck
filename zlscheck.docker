@@ -26,7 +26,7 @@ LABEL maintainer="ismail.lahkim.bennani@ens.fr"
 # Install system dependencies
 RUN sudo apt-get update \
  && sudo apt-get upgrade -y \
- && sudo apt-get install -y build-essential sudo m4 libgtk2.0-dev libsundials-dev x11-apps
+ && sudo apt-get install -y build-essential sudo m4 libgtk2.0-dev x11-apps
 
 # Switch to root to give permissions to opam
 USER root
@@ -43,7 +43,7 @@ RUN opam config env >> /home/opam/.profile \
  && bash -c "source /home/opam/.profile" \
  && opam update \
  && opam upgrade \
- && opam install -y graphics ocamlfind menhir sundialsml lablgtk ocamlfind
+ && opam install -y graphics ocamlfind menhir lablgtk ocamlfind
 
 # Create directories
 USER root
@@ -61,12 +61,12 @@ COPY --chown=opam external/zelus /home/zelus
 COPY --chown=opam external/fadbadml /home/fadbadml
 COPY --chown=opam src /home/zlscheck/src
 COPY --chown=opam .gitignore config.in configure Makefile README.md /home/zlscheck/
-COPY --chown=opam examples/arch20/common/ /home/zlscheck/arch/arch20/common
-COPY --chown=opam examples/arch20/matlab/ /home/zlscheck/arch/arch20/matlab
-COPY --chown=opam examples/arch20/models/ /home/zlscheck/arch/arch20/models
-COPY --chown=opam examples/arch20/shared/ /home/zlscheck/arch/arch20/shared
-COPY --chown=opam examples/arch20/.gitignore examples/arch20/defbench.ml \
-                  examples/arch20/Makefile examples/arch20/replay_bench.ml examples/arch20/run_bench.ml \
+COPY --chown=opam arch/arch20/common/ /home/zlscheck/arch/arch20/common
+COPY --chown=opam arch/arch20/matlab/ /home/zlscheck/arch/arch20/matlab
+COPY --chown=opam arch/arch20/models/ /home/zlscheck/arch/arch20/models
+COPY --chown=opam arch/arch20/shared/ /home/zlscheck/arch/arch20/shared
+COPY --chown=opam arch/arch20/.gitignore arch/arch20/defbench.ml \
+                  arch/arch20/Makefile arch/arch20/replay_bench.ml arch/arch20/run_bench.ml \
                   /home/zlscheck/arch/arch20/
 
 USER opam

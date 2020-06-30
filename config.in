@@ -24,7 +24,6 @@ CHECKLIB = @curdir@/lib
 INCLUDES += \
 	unix.cma bigarray.cma \
 	-I $(shell ocamlfind query lablgtk2) lablgtk.cma \
-	-I $(shell ocamlfind query sundialsml) sundials.cma \
 	-I $(ZLLIB) -I $(ZLLIB)/solvers zllibgtk.cma \
 	-I $(FADBADLIB) fadbad.cma
 
