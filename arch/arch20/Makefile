@@ -44,7 +44,7 @@ at_bench.cmx f16_bench.cmx cc_bench.cmx wt_bench.cmx afc_bench.cmx sc_bench.cmx 
 nn_bench.cmx replay_models.cmx \
 defbench.cmx
 
-TARGET = run_bench.opt replay_bench.opt
+TARGET = run_bench.opt replay_bench.opt read_results.opt
 
 all: $(TARGET)
 
