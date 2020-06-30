@@ -3,6 +3,3 @@ common/discrete_obs_fad.ml
 *.slxc
 
 .depend
-test_*/
-bench_*/
-final_benchmarks/
