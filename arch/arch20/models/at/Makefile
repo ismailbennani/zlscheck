@@ -46,6 +46,7 @@ clean:
 	-@rm -f at_common.ml
 	-@rm -f run_at.ml run_at_main.ml run_at.opt
 	-@rm -f *.o *.cm[oix] *.annot *.obc *.zci
+	-@rm -f .depend
 
 realclean cleanall: clean
 	-@rm -f autotransd.opt
