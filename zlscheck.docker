@@ -66,7 +66,9 @@ COPY --chown=opam arch/arch20/matlab/ /home/zlscheck/arch/arch20/matlab
 COPY --chown=opam arch/arch20/models/ /home/zlscheck/arch/arch20/models
 COPY --chown=opam arch/arch20/shared/ /home/zlscheck/arch/arch20/shared
 COPY --chown=opam arch/arch20/.gitignore arch/arch20/defbench.ml \
-                  arch/arch20/Makefile arch/arch20/replay_bench.ml arch/arch20/run_bench.ml \
+                  arch/arch20/Makefile arch/arch20/replay_bench.ml \
+                  arch/arch20/run_bench.ml \
+                  arch/arch20/read_results.ml \
                   /home/zlscheck/arch/arch20/
 
 USER opam
