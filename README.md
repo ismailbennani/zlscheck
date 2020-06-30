@@ -83,3 +83,5 @@ Usage example:
 - `./read_results.opt benchmarks > results.tex`
 - `./read_results.opt --short benchmarks > results.tex`
 - `./read_results.opt --pdf benchmarks > results.pdf`
+
+You can find pre-generated benchmarks results at https://github.com/ismailbennani/zlscheck_arch20_counterexamples.
