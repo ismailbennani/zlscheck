@@ -1,0 +1,10 @@
+bench_type.cmo :
+bench_type.cmx :
+defbench.cmo :
+defbench.cmx :
+run_bench.cmo : \
+    defbench.cmo \
+    bench_type.cmo
+run_bench.cmx : \
+    defbench.cmx \
+    bench_type.cmx
