@@ -52,6 +52,8 @@ zlscheck.cma: cmos
 DIR = core/spec/obs
 OBJ = assert discrete_obs hybrid_obs dual gen
 
+$(DIR)/dual.cmx: core/spec/obs/assert.cmx
+
 zlfalsif.cmxa: $(OBJ:%=$(DIR)/%.zci) $(OBJ:%=$(DIR)/%.cmx)
 	cd $(DIR); ocamlopt -a -o $@ $(OBJ:=.cmx)
 zlfalsif.cma: $(OBJ:%=$(DIR)/%.zci) $(OBJ:%=$(DIR)/%.cmo)
@@ -68,6 +70,6 @@ clean cleanall:
 -include .depend
 
 make_depend:
-	ocamldep $(INCLUDES) $(shell find * -name "*.ml") > .depend
+	ocamldep $(dirs:%=-I %) $(shell find * -name "*.ml") > .depend
 
 .PHONY: .zlsdeps .depend

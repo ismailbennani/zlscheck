@@ -40,8 +40,8 @@ let array_map3 f a b c =
     end
   end
 
-let saturate (low, high) v =
-  if v < low then low else if v > high then high else v
+let clamp (low, high) x = max low (min x high)
+let saturate = clamp
 
 let saturate_array array_bounds array_v =
   let res = Array.copy array_v in

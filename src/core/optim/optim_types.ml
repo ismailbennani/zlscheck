@@ -36,11 +36,21 @@ type gd_params = {
   mutable beta2 : float;
 }
 
+type gpo_params = {
+  mutable a : float;
+  mutable b : float;
+  mutable gd_alpha : float;
+  mutable alpha : float;
+  mutable beta : float;
+  mutable eps : float;
+}
+
 type method_params = {
   ur : ur_params;
   particle : particle_params;
   sa : sa_params;
   gd : gd_params;
+  gpo : gpo_params;
 }
 
 type params = {

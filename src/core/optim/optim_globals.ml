@@ -27,7 +27,15 @@ let params = {
       beta2 = 0.999;
       do_restart = false;
       restart_fn = fun _ -> ();
-    }
+    };
+    gpo = {
+      a = 1.;
+      b = 1.;
+      gd_alpha = 1.;
+      alpha = 1.;
+      beta = 1.;
+      eps = 0.0001;
+    };
   }
 }
 
@@ -50,3 +58,8 @@ let set_params p =
   params.meth.gd.beta1 <- p.meth.gd.beta1;
   params.meth.gd.beta2 <- p.meth.gd.beta2;
   params.meth.gd.do_restart <- p.meth.gd.do_restart;
+  params.meth.gpo.a <- p.meth.gpo.a;
+  params.meth.gpo.b <- p.meth.gpo.b;
+  params.meth.gpo.alpha <- p.meth.gpo.alpha;
+  params.meth.gpo.beta <- p.meth.gpo.beta;
+  params.meth.gpo.eps <- p.meth.gpo.eps;
