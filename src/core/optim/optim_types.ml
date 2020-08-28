@@ -39,7 +39,6 @@ type gd_params = {
 type gpo_params = {
   mutable a : float;
   mutable b : float;
-  mutable gd_alpha : float;
   mutable alpha : float;
   mutable beta : float;
   mutable eps : float;

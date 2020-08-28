@@ -12,7 +12,7 @@ let print_float_arr ff a =
 let is_vverbose () = Optim_globals.params.vverbose
 let is_verbose () = Optim_globals.params.verbose || is_vverbose ()
 
-module Make(MyOp : Diff.OrderedFS with type elt = float) =
+module Make(MyOp : Diff.OrderedFS with type elt = float) (GDMethod : AdaptativeGradient.Method)=
   struct
   let name = "gpo"
 
@@ -24,6 +24,7 @@ module Make(MyOp : Diff.OrderedFS with type elt = float) =
     state : 's;      (* current state of sim *)
     mutable n : int; (* current number of steps since beginning of sim *)
     max_n : int;     (* sim horizon *)
+    mutable gd_acc : GDMethod.acc;
     mutable chunk_n : int;
     mutable cur_prefix : (float array * int) list;
     mutable cur_rob : float;
@@ -32,6 +33,7 @@ module Make(MyOp : Diff.OrderedFS with type elt = float) =
     (* store last input that have been computed, as opposed to input
        that has been selected at last step *)
     mutable last_input : float array;
+    mutable last_rob : float;
   }
 
   type gpo_res = {
@@ -59,10 +61,13 @@ module Make(MyOp : Diff.OrderedFS with type elt = float) =
       else [(input', n'); (input, n)]
     | x :: q -> x :: (append_chunk q (input, n))
 
-  let gd input alpha grad bounds =
-    (* TODO: get some step size alpha to scale grad *)
-    Array.map2 clamp bounds (Array.map2 ( -. ) input
-                               (Array.map (fun x -> alpha *. x) grad))
+  let gd acc input grad bounds k =
+    let alpha = GDMethod.alpha k in
+    let mt = GDMethod.phi acc k grad in
+    let vt = GDMethod.psi acc k grad in
+    let dir = mul_array mt (translate (sqrt_diag_mat vt) epsilon_float) in
+    let next_sample = mac input (-. alpha) dir in
+    GDMethod.proj next_sample
 
   (* acceptance criterion:
      - eq: chunks have same size, prob of accepting one depends on rob
@@ -94,7 +99,9 @@ module Make(MyOp : Diff.OrderedFS with type elt = float) =
       (a *. (exp (alpha *. (n' -. n))) +. b *. (1. -. exp (beta *. (r' -. r))))
       /. (a +. b)
 
-  let converged i i' = sqrdist i i' <= Optim_globals.params.meth.gpo.eps
+  let converged u u' r r' =
+    (r -. r') *. (r -. r') <=
+    Optim_globals.params.meth.gpo.eps *. Optim_globals.params.meth.gpo.eps
 
   (* simulate until transition or horizon *)
   let sim step h state input =
@@ -121,16 +128,15 @@ module Make(MyOp : Diff.OrderedFS with type elt = float) =
     let bounds = Optim_globals.params.bounds in
 
     let optim_step step_params hist =
-      let rec step_aux input n rob grad alpha state k hist =
+      let rec step_aux input n rob grad state k hist =
         let state' = alloc () in
         copy step_params.state state';
 
-        let stepsize = alpha /. (float k) in
-        let new_input = gd input stepsize grad bounds in
+        let new_input = gd step_params.gd_acc input grad bounds k in
 
         if is_vverbose () then
-          Printf.printf "\tNew input: %a, step size: %g\n"
-            print_float_arr new_input stepsize;
+          Printf.printf "[Chunk %2d, iteration %6d] New input: %a\n"
+            step_params.chunk_n k print_float_arr new_input;
 
         (* if same input than last time, add random noise to try and escape
            from the flat area *)
@@ -151,7 +157,8 @@ module Make(MyOp : Diff.OrderedFS with type elt = float) =
         in *)
 
         if sqrdist input new_input = 0. then begin
-          Printf.printf "\tFound same input twice times, moving on.\n";
+          Printf.printf "[Chunk %2d, iteration %6d] Found same input twice times, moving on.\n"
+            step_params.chunk_n k;
           n, input, state, rob, hist, k
         end else
 
@@ -169,8 +176,8 @@ module Make(MyOp : Diff.OrderedFS with type elt = float) =
         step_params.n_sim_steps <- step_params.n_sim_steps + n';
 
         if is_vverbose () then
-          Printf.printf "\t%d steps before transition with rob %g and grad %a\n"
-            n' rob' print_float_arr grad';
+          Printf.printf "[Chunk %2d, iteration %6d] %d steps before transition with rob %g and grad %a\n"
+            step_params.chunk_n k n' rob' print_float_arr grad';
 
         (* if counter example has been found *)
         if rob' < 0. then n', new_input, state', rob', new_hist, k
@@ -208,10 +215,13 @@ module Make(MyOp : Diff.OrderedFS with type elt = float) =
           *)
 
           if step_params.last_input <> [||] &&
-             converged step_params.last_input new_input then
+             converged
+               step_params.last_input new_input
+               step_params.last_rob rob' then
             begin
               if is_verbose () then
-                Printf.printf "\tInputs have converged, moving on.\n";
+                Printf.printf "[Chunk %2d, iteration %6d] Inputs have converged, moving on.\n"
+                  step_params.chunk_n k;
               if keep_new then
                 n', new_input, state', rob', new_hist, k
               else
@@ -219,10 +229,11 @@ module Make(MyOp : Diff.OrderedFS with type elt = float) =
             end
           else begin
             step_params.last_input <- new_input;
+            step_params.last_rob <- rob';
             if keep_new then begin
-              step_aux new_input n' rob' grad' alpha state' (k+1) new_hist
+              step_aux new_input n' rob' grad' state' (k+1) new_hist
             end else
-              step_aux input n rob grad (alpha /. 2.) state (k+1) new_hist
+              step_aux input n rob grad state (k+1) new_hist
           end
       in
 
@@ -230,7 +241,8 @@ module Make(MyOp : Diff.OrderedFS with type elt = float) =
       let input = ur_sample bounds in
 
       if is_verbose () then
-        Printf.printf "\tInitial input: %a\n" print_float_arr input;
+        Printf.printf "[Chunk %2d, iteration %6d] Initial input: %a\n"
+          step_params.chunk_n 0 print_float_arr input;
 
       let state = alloc () in
       copy step_params.state state;
@@ -243,8 +255,8 @@ module Make(MyOp : Diff.OrderedFS with type elt = float) =
       let grad = Array.init (Array.length input) (fun i -> MyOp.d rob_fad i) in
 
       if is_verbose () then
-        Printf.printf "\t%d steps before transition with rob %g and grad %a\n"
-          n rob print_float_arr grad;
+        Printf.printf "[Chunk %2d, iteration %6d] %d steps before transition with rob %g and grad %a\n"
+          step_params.chunk_n 0 n rob print_float_arr grad;
 
       let new_full_input = append_chunk step_params.cur_prefix (input, n) in
       let new_hist = new_full_input :: hist in
@@ -252,7 +264,7 @@ module Make(MyOp : Diff.OrderedFS with type elt = float) =
       step_params.n_sim_steps <- step_params.n_sim_steps + n;
 
       (* optimize chunk *)
-      step_aux input n rob grad Optim_globals.params.meth.gpo.gd_alpha state 1 new_hist
+      step_aux input n rob grad state 1 new_hist
     in
 
     let rec run_aux step_params hist =
@@ -266,10 +278,10 @@ module Make(MyOp : Diff.OrderedFS with type elt = float) =
         }
       else begin
         if is_verbose () then
-          Printf.printf "Computing chunk %d...\n" step_params.chunk_n;
+          Printf.printf "[Chunk %2d] Starting...\n" step_params.chunk_n;
         let n, input, state, rob, hist, k = optim_step step_params hist in
         if is_verbose () then
-          Printf.printf "Chunk %d done after %d optim. steps: input %a for %d sim. steps.\n"
+          Printf.printf "[Chunk %2d] Done after %d optim. steps: input %a for %d sim. steps.\n"
             step_params.chunk_n k print_float_arr input n;
 
         (* update inputs for next optim. step *)
@@ -279,6 +291,7 @@ module Make(MyOp : Diff.OrderedFS with type elt = float) =
         step_params.cur_prefix <- List.hd hist;
         step_params.cur_rob <- rob;
         step_params.last_input <- [||];
+        step_params.gd_acc <- GDMethod.create_acc ();
 
         (* optimize next chunk *)
         run_aux step_params hist
@@ -290,11 +303,13 @@ module Make(MyOp : Diff.OrderedFS with type elt = float) =
       state;
       n = 0;
       max_n;
+      gd_acc = GDMethod.create_acc ();
       chunk_n = 0;
       cur_prefix = [];
       cur_rob = infinity;
       n_sim_steps = 0;
       last_input = [||];
+      last_rob = infinity;
     } []
 
 

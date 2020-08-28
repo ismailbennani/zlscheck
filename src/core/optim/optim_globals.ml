@@ -31,7 +31,6 @@ let params = {
     gpo = {
       a = 1.;
       b = 1.;
-      gd_alpha = 1.;
       alpha = 1.;
       beta = 1.;
       eps = 0.0001;

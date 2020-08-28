@@ -1,4 +1,4 @@
-module Optim = Gpgd.Make(MyOp)
+module Optim = Gpgd.Make(MyOp)(AdaptativeGradient.AMSGRADMethod)
 
 module Make(Bench : Bench_type.Bench) =
 struct

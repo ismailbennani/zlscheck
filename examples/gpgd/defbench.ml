@@ -11,7 +11,7 @@ struct
     let node = At_bench.autotrans_at1 tstep
     let set_optim_params () =
       Optim_globals.params.bounds <- bounds;
-      Optim_globals.params.meth.gpo.gd_alpha <- 100000.
+      Optim_globals.params.meth.gd.alpha <- 100000.
   end
 
   module Phi2 =
@@ -22,7 +22,7 @@ struct
     let node = At_bench.autotrans_at2 tstep
     let set_optim_params () =
       Optim_globals.params.bounds <- bounds;
-      Optim_globals.params.meth.gpo.gd_alpha <- 10000.
+      Optim_globals.params.meth.gd.alpha <- 10000.
   end
 
   module Phi51 =
@@ -33,7 +33,7 @@ struct
     let node = At_bench.autotrans_at51 tstep
     let set_optim_params () =
       Optim_globals.params.bounds <- bounds;
-      Optim_globals.params.meth.gpo.gd_alpha <- 1.
+      Optim_globals.params.meth.gd.alpha <- 1.
   end
 
   module Phi52 =
@@ -44,7 +44,7 @@ struct
     let node = At_bench.autotrans_at52 tstep
     let set_optim_params () =
       Optim_globals.params.bounds <- bounds;
-      Optim_globals.params.meth.gpo.gd_alpha <- 1.
+      Optim_globals.params.meth.gd.alpha <- 1.
   end
 
   module Phi53 =
@@ -55,7 +55,7 @@ struct
     let node = At_bench.autotrans_at53 tstep
     let set_optim_params () =
       Optim_globals.params.bounds <- bounds;
-      Optim_globals.params.meth.gpo.gd_alpha <- 1.
+      Optim_globals.params.meth.gd.alpha <- 1.
   end
 
   module Phi54 =
@@ -66,7 +66,7 @@ struct
     let node = At_bench.autotrans_at54 tstep
     let set_optim_params () =
       Optim_globals.params.bounds <- bounds;
-      Optim_globals.params.meth.gpo.gd_alpha <- 1.
+      Optim_globals.params.meth.gd.alpha <- 1.
   end
 
   module Phi6a =
@@ -77,8 +77,8 @@ struct
     let node = At_bench.autotrans_at6a tstep
     let set_optim_params () =
       Optim_globals.params.bounds <- bounds;
-      Optim_globals.params.meth.gpo.gd_alpha <- 1000.;
-      Optim_globals.params.meth.gpo.eps <- 1e-8
+      Optim_globals.params.meth.gd.alpha <- 100000.;
+      Optim_globals.params.meth.gpo.eps <- 1e-6
   end
 
   module Phi6b =
@@ -89,7 +89,7 @@ struct
     let node = At_bench.autotrans_at6b tstep
     let set_optim_params () =
       Optim_globals.params.bounds <- bounds;
-      Optim_globals.params.meth.gpo.gd_alpha <- 100.
+      Optim_globals.params.meth.gd.alpha <- 100.
     end
 
   module Phi6c =
@@ -100,6 +100,6 @@ struct
     let node = At_bench.autotrans_at6c tstep
     let set_optim_params () =
       Optim_globals.params.bounds <- bounds;
-      Optim_globals.params.meth.gpo.gd_alpha <- 1000.
+      Optim_globals.params.meth.gd.alpha <- 1000.
   end
 end
