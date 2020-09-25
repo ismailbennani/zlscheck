@@ -47,6 +47,18 @@ let pcwse_cste_variable_times_sa control_points =
 let pcwse_linear times values t =
   [| Interp.interp1 (times, values) (FadFloat.make t) |]
 
+let pcwse_cste_afc h control_points =
+    fun t ->
+      (* first coordinate of control_points is the value of the second coordinate of
+         the input, the rest of the array is to be interpolated for first coordinate
+         of input *)
+      let index = truncate (t /. h) in
+      let cp_n = Array.length control_points in
+      if index + 1 >= cp_n then
+        [| control_points.(cp_n - 1); control_points.(0) |]
+      else
+        [| control_points.(1 + index); control_points.(0) |]
+
 module Autotrans =
 struct
   let tstep = 0.01
@@ -153,7 +165,6 @@ struct
     let max_t = Params.max_t
     let sample_every = Params.sample_every
     let node = Params.node
-    let interp_fn = pcwse_cste2 (float sample_every *. tstep)
   end
 
   module Phi1_instance1 = AutotransBench(ParamsPhi1(Instance1))
@@ -197,7 +208,6 @@ struct
     let max_t = 15.0
     let sample_every = 10
     let node = F16.f16 0.01
-    let interp_fn control_points t = control_points
   end
 
   module ReplayDiscrete = Replay.Make (struct
@@ -263,7 +273,6 @@ struct
     let max_t = 100.0
     let sample_every = 500
     let node = Params.node
-    let interp_fn = pcwse_cste2 5.
   end
 
   module Phi1 = CCBench(ParamsPhi1)
@@ -315,7 +324,6 @@ struct
     let max_t = max_t
     let sample_every = 500
     let node = Params.node
-    let interp_fn = pcwse_cste h
   end
 
   module Phi1 = WTBench(ParamsPhi1)
@@ -379,17 +387,6 @@ struct
     let max_t = max_t
     let sample_every = Params.sample_every
     let node = Params.node
-    let interp_fn control_points =
-      fun t ->
-      (* first coordinate of control_points is the value of the second coordinate of
-         the input, the rest of the array is to be interpolated for first coordinate
-         of input *)
-      let index = truncate (t /. h) in
-      let cp_n = Array.length control_points in
-      if index + 1 >= cp_n then
-        [| control_points.(cp_n - 1); control_points.(0) |]
-      else
-        [| control_points.(1 + index); control_points.(0) |]
   end
 
   module Phi27 = AFCBench(ParamsPhi27)
@@ -406,20 +403,17 @@ struct
   struct
     let h = 0.2
     let instance = 1
-    let interp_fn = pcwse_cste h
   end
 
   module ParamsInst2 =
   struct
     let h = 2.
     let instance = 2
-    let interp_fn = pcwse_cste h
   end
 
   module SCBench (Params: sig
       val h : float
       val instance : int
-      val interp_fn : FadFloat.t array -> float -> FadFloat.t array
     end) =
   struct
 
@@ -430,7 +424,6 @@ struct
     let bounds = online_bounds
     let sample_every = truncate (Params.h /. tstep)
     let node = Sc.sc_sc1 tstep
-    let interp_fn = Params.interp_fn
   end
 
   module Phi_inst1 = SCBench(ParamsInst1)
@@ -451,7 +444,6 @@ struct
     val prop_name : string
     val h : float
     val node : float -> (FadFloat.t array, float * FadFloat.t array * FadFloat.t) Ztypes.node
-    val interp_fn : FadFloat.t array -> float -> FadFloat.t array
   end
 
   module ParamsInst1 : Params =
@@ -462,7 +454,6 @@ struct
     let name = "nn_inst1"
     let prop_name = "NN_inst1"
     let node = Nn.nn_nn1
-    let interp_fn = pcwse_cste h
   end
 
   module ParamsInst2 : Params =
@@ -473,7 +464,6 @@ struct
     let name = "nn_inst2"
     let prop_name = "NN_inst2"
     let node = Nn.nn_nn1
-    let interp_fn = pcwse_cste h
   end
 
   module ParamsInst1_2 : Params =
@@ -484,7 +474,6 @@ struct
     let name = "nn_inst1_0_04"
     let prop_name = "NN_inst1 (beta=0.04)"
     let node = Nn.nn_nn2
-    let interp_fn = pcwse_cste h
   end
 
   module ParamsInst2_2 : Params =
@@ -495,7 +484,6 @@ struct
     let name = "nn_inst2_0_04"
     let prop_name = "NN_inst2 (beta=0.04)"
     let node = Nn.nn_nn2
-    let interp_fn = pcwse_cste h
   end
 
   module NNBench (Params: Params) =
@@ -507,7 +495,6 @@ struct
     let tstep = 0.001
     let sample_every = Params.h /. tstep
     let node = Params.node 0.001
-    let interp_fn = Params.interp_fn
   end
 
   module Phi1_inst1 = NNBench(ParamsInst1)
