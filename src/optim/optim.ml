@@ -15,11 +15,12 @@ struct
 
   type input = OptimAlg.input
   type output = OptimAlg.output
+  type optim_params = OptimAlg.optim_params params
   type optim_step_params = OptimAlg.optim_step_params
 
   let string_of_params =
     string_of_params OptimAlg.string_of_params
-      (fun i -> Printf.sprintf "[%s]" (Misc_printers.string_of_float_array "; " i))
+      (fun i -> Printf.sprintf "[%s]" (Printer.string_of_float_array "; " i))
 
   let default_params = default_params OptimAlg.default_params
 

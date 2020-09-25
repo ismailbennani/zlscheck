@@ -34,7 +34,7 @@ struct
     let new_val = get_rob_from_output new_output in
 
     if verbose then begin
-      Printf.printf "New point : %a\n" Misc_printers.print_float_array new_sample;
+      Printf.printf "New point : %a\n" Printer.print_float_array new_sample;
       Printf.printf "New value : %.2e\n" new_val;
     end;
 

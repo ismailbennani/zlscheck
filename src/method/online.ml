@@ -1,12 +1,15 @@
 open Ztypes
+open Deftypes
 open Method_types
 open Method_utils
 
 module Make
-    (Bench : Bench)
-    (OnlineOptim : Optim.S with type input := float array and type output := float * float array)
+    (Bench : Deftypes.Bench)
     (Logger : Logger.S with type input := float * float array * float * float array) =
 struct
+
+  module OnlineOptim = Bench.Optim
+
   (* optim algorithm for initial values *)
   module OfflineOptim = Optim.UR_GDAWARE
 

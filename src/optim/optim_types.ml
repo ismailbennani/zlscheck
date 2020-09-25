@@ -10,18 +10,6 @@ type ('a, 'b) step_params = {
   optim_step : 'a;
 }
 
-type gpo_params = {
-  mutable nb_init_samples : int;
-  mutable a : float;
-  mutable b : float;
-  mutable alpha : float;
-  mutable beta : float;
-  mutable eps : float;
-  mutable gd_miniter : int;
-  mutable gd_maxiter : int;
-  mutable gd_alpha : float;
-}
-
 type 'a params = {
   mutable max_n_runs: int;
   mutable bounds: (float * float) array;

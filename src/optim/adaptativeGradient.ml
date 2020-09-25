@@ -13,9 +13,9 @@ let ( +@ ) = translate
 
 let print_result n_runs max_n_runs cur_sample cur_val cur_grad =
   Printf.printf "Run %i/%i\n" n_runs max_n_runs;
-  Printf.printf "New point : %a\n" Misc_printers.print_float_array cur_sample;
+  Printf.printf "New point : %a\n" Printer.print_float_array cur_sample;
   Printf.printf "New value : %.2e\n" cur_val;
-  Printf.printf "New gradient : %a\n" Misc_printers.print_float_array cur_grad;
+  Printf.printf "New gradient : %a\n" Printer.print_float_array cur_grad;
   print_newline (); flush stdout
 
 type 'a optim_params_ = {
@@ -294,7 +294,7 @@ struct
           let new_val, new_grad = fn next_sample in
           incr_runs ();
           step_params.optim_step.t <- 1;
-          Printf.printf "RESTART at %a\n" Misc_printers.print_float_array new_sample;
+          Printf.printf "RESTART at %a\n" Printer.print_float_array new_sample;
           (new_sample, (new_val, new_grad)),
           (new_sample, (new_val, new_grad)) :: new_history
         end else next_res, new_history

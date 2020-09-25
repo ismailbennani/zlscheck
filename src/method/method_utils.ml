@@ -1,3 +1,4 @@
+open Deftypes
 open Method_types
 
 let print_result print_optim_params ff

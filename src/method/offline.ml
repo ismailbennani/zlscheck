@@ -1,12 +1,15 @@
 open Ztypes
+open Deftypes
 open Method_types
 open Method_utils
 
 module Make
-    (Bench : Bench)
-    (Optim : Optim.S with type input := float array and type output := float * float array)
+    (Bench : Deftypes.Bench)
     (Logger : Logger.S with type input := float * float array * float * float array)=
 struct
+  module Optim = Bench.Optim
+  module Scenario = Bench.Scenario
+
   let name = Bench.name ^ " - offline - " ^ Optim.name
   let bench_name = Bench.name
   let prop_name = Bench.prop_name
@@ -24,7 +27,7 @@ struct
     let cp_fad = Array.map FadFloat.make control_points in
     Array.iteri (fun i n -> FadFloat.diff n i n_inputs) cp_fad;
 
-    let inputs = Bench.interp_fn cp_fad in
+    let inputs = Scenario.interp cp_fad in
 
     let rec aux mem logstate t =
       (* we are currently at time t and we want to compute next step *)

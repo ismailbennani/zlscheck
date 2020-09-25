@@ -116,7 +116,7 @@ struct
 
     if verbose || vverbose then begin
       Printf.printf "New point : %a\n"
-        Misc_printers.print_float_array new_sample;
+        Printer.print_float_array new_sample;
       Printf.printf "New value : %.2e\n" new_val;
     end;
 

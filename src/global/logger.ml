@@ -24,7 +24,7 @@ struct
 
   let init () = open_out Path.path
   let log fd (t, inp, rob, grad) =
-    let open Misc_printers in
+    let open Printer in
     Printf.fprintf fd "%g,%s,%g,%s\n"
       t (string_of_float_array "," inp) rob (string_of_float_array "," grad)
   let finalize fd = close_out fd
