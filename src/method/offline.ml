@@ -27,11 +27,11 @@ struct
     let cp_fad = Array.map FadFloat.make control_points in
     Array.iteri (fun i n -> FadFloat.diff n i n_inputs) cp_fad;
 
-    let inputs = Scenario.interp cp_fad in
+    let interp = Scenario.get_interp cp_fad in
 
     let rec aux mem logstate t =
       (* we are currently at time t and we want to compute next step *)
-      let cur_inp = inputs t in
+      let cur_inp = interp t in
       let next_t, cur_out, rob = step mem cur_inp in
 
       Logger.log logstate

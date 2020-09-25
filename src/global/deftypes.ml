@@ -50,5 +50,5 @@ sig
   val params : Optim.optim_params Optim_types.params
 
   (* a scenario *)
-  module Scenario : Scenario.S with type params := FadFloat.t array and type output := FadFloat.t array
+  module Scenario : Scenario.S with type params := FadFloat.t array and type output := FadFloat.t
 end

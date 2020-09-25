@@ -3,5 +3,8 @@ sig
   type params
   type output
 
-  val interp : params -> float -> output
+  val name : string
+  val dim : int
+  val length : params -> float (* time after which output is constant *)
+  val get_interp : params -> (float -> output array)
 end
