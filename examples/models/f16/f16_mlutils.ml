@@ -1,5 +1,5 @@
 open Matrix
-open MyOp
+open FadFloat
 
 let get = Matrix.get
 
@@ -269,14 +269,14 @@ let c c_a (a, b) (min_k, max_k) (min_m, max_m) add_m force_sgn =
   let k = truncate s in
   let k = Stdlib.max min_k k in
   let k = Stdlib.min max_k k in
-  let da = s - (MyOp.integer k) in
-  let l = Stdlib.(k + (truncate (copysign 1.1 (MyOp.get da)))) in
+  let da = s - (FadFloat.integer k) in
+  let l = Stdlib.(k + (truncate (copysign 1.1 (FadFloat.get da)))) in
   let s = b in
   let m = truncate s in
   let m = Stdlib.max min_m m in
   let m = Stdlib.min max_m m in
-  let db = s - (MyOp.integer m) in
-  let n = Stdlib.(m + (truncate (copysign 1.1 (MyOp.get db)))) in
+  let db = s - (FadFloat.integer m) in
+  let n = Stdlib.(m + (truncate (copysign 1.1 (FadFloat.get db)))) in
   let l = Stdlib.(l + 3) in
   let k = Stdlib.(k + 3) in
   let m = Stdlib.(m + add_m) in
@@ -301,20 +301,20 @@ let cz (alpha, beta, el) =
   let k = Stdlib.max (-1) k in
   let k = Stdlib.min 8 k in
   let da = s - (integer k) in
-  let l = Stdlib.(k + (truncate (copysign 1.1 (MyOp.get da)))) in
+  let l = Stdlib.(k + (truncate (copysign 1.1 (FadFloat.get da)))) in
   let l = Stdlib.(l + 3) in
   let k = Stdlib.(k + 3) in
   let s = cz_a.(Stdlib.(k-1)) + (abs da) * (cz_a.(Stdlib.(l-1)) - cz_a.(Stdlib.(k-1))) in
   s * ((make 1.) - (pow (scale beta (1. /. 57.3))) 2.) - (scale el (0.19 /. 25.))
 
 let cl (alpha, beta) =
-  c cl_a (scale alpha 0.2, scale (abs beta) 0.2) (-1, 8) (1, 5) 1 (MyOp.get beta)
+  c cl_a (scale alpha 0.2, scale (abs beta) 0.2) (-1, 8) (1, 5) 1 (FadFloat.get beta)
 
 let cm (alpha, el) =
   c cm_a (scale alpha 0.2, scale el (1. /. 12.)) (-1, 8) (-1, 1) 3 0.
 
 let cn (alpha, beta) =
-  c cn_a (scale alpha 0.2, scale (abs beta) 0.2) (-1, 8) (1, 5) 1 (MyOp.get beta)
+  c cn_a (scale alpha 0.2, scale (abs beta) 0.2) (-1, 8) (1, 5) 1 (FadFloat.get beta)
 
 let dlda (alpha, beta) =
   c dlda_a (scale alpha 0.2, scale beta 0.1) (-1, 8) (-2, 2) 4 0.

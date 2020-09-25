@@ -6,6 +6,6 @@ val set : 'a t -> int -> int -> 'a -> unit
 
 val set_row_from_list : 'a t -> int -> 'a list -> unit
 
-val lut1d_row : MyOp.t t -> MyOp.t -> int -> MyOp.t -> MyOp.t
-val lut1d_col : MyOp.t t -> int -> MyOp.t -> MyOp.t
-val lut2d : MyOp.t t -> MyOp.t -> MyOp.t -> MyOp.t
+val lut1d_row : FadFloat.t t -> FadFloat.t -> int -> FadFloat.t -> FadFloat.t
+val lut1d_col : FadFloat.t t -> int -> FadFloat.t -> FadFloat.t
+val lut2d : FadFloat.t t -> FadFloat.t -> FadFloat.t -> FadFloat.t

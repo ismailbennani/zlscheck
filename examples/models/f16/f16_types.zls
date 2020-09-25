@@ -1,18 +1,18 @@
 open Constants
-open MyOp
+open FadFloat
 
 type ctrlLimits = {
-    throttleMax : MyOp.t;
-    throttleMin : MyOp.t;
-    elevatorMaxDeg : MyOp.t;
-    elevatorMinDeg : MyOp.t;
-    aileronMaxDeg : MyOp.t;
-    aileronMinDeg : MyOp.t;
-    rudderMaxDeg : MyOp.t;
-    rudderMinDeg : MyOp.t;
-    maxBankDeg : MyOp.t;
-    nzMax : MyOp.t;
-    nzMin : MyOp.t;
+    throttleMax : FadFloat.t;
+    throttleMin : FadFloat.t;
+    elevatorMaxDeg : FadFloat.t;
+    elevatorMinDeg : FadFloat.t;
+    aileronMaxDeg : FadFloat.t;
+    aileronMinDeg : FadFloat.t;
+    rudderMaxDeg : FadFloat.t;
+    rudderMinDeg : FadFloat.t;
+    maxBankDeg : FadFloat.t;
+    nzMax : FadFloat.t;
+    nzMin : FadFloat.t;
 }
 
 let defaultCtrlLimits = {
@@ -45,9 +45,9 @@ let string_of_ctrl_limits ctrl_limits =
     " }"
 
 type f16_state = {
-    vt : MyOp.t; alpha : MyOp.t; beta : MyOp.t; phi : MyOp.t; theta : MyOp.t;
-    psi : MyOp.t; p : MyOp.t; q : MyOp.t; r : MyOp.t; x9 : MyOp.t;
-    x10 : MyOp.t; alt : MyOp.t; power : MyOp.t;
+    vt : FadFloat.t; alpha : FadFloat.t; beta : FadFloat.t; phi : FadFloat.t; theta : FadFloat.t;
+    psi : FadFloat.t; p : FadFloat.t; q : FadFloat.t; r : FadFloat.t; x9 : FadFloat.t;
+    x10 : FadFloat.t; alt : FadFloat.t; power : FadFloat.t;
 }
 
 let string_of_f16_state state =
@@ -86,7 +86,7 @@ let json_of_f16_state state =
 
 type solver_state = {
     f16 : f16_state;
-    nz : MyOp.t; ps : MyOp.t; ny_r : MyOp.t;
+    nz : FadFloat.t; ps : FadFloat.t; ny_r : FadFloat.t;
 }
 
 let string_of_state state =
@@ -105,7 +105,7 @@ let json_of_state state =
     "\"ny_r\":" ^ (string_of_float (get state.ny_r)) ^
     "}"
 
-type input = { thtlc : MyOp.t; el : MyOp.t; ail : MyOp.t; rdr: MyOp.t; }
+type input = { thtlc : FadFloat.t; el : FadFloat.t; ail : FadFloat.t; rdr: FadFloat.t; }
 
 let string_of_input input =
     "{ " ^
@@ -116,7 +116,7 @@ let string_of_input input =
     " }"
 
 type ref_ctrl = {
-    thtlc_ref : MyOp.t; nz_ref : MyOp.t; ps_ref : MyOp.t; ny_r_ref : MyOp.t
+    thtlc_ref : FadFloat.t; nz_ref : FadFloat.t; ps_ref : FadFloat.t; ny_r_ref : FadFloat.t
 }
 
 let string_of_ref_ctrl ref_ctrl =

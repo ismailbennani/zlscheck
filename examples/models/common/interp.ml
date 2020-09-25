@@ -5,7 +5,7 @@ let ifind v vec =
 
 (* linear interpolatiion, x1 <= xi <= x2 *)
 let interp x1 x2 val1 val2 xi =
-  let open MyOp in
+  let open FadFloat in
   if val1 = val2 then val1
   else
     (x2 - xi) / (x2 - x1) * val1 +
@@ -13,7 +13,7 @@ let interp x1 x2 val1 val2 xi =
 
 (* linear extrapolation, x1 <= x2 <= xi OR xi <= x1 <= x2 *)
 let extrap x1 x2 val1 val2 xi =
-  let open MyOp in
+  let open FadFloat in
   let slope = (val2 - val1) / (x2 - x1) in
   let dif = slope * (xi - x1) in
   val1 + dif
@@ -37,7 +37,7 @@ let interp1 (line, vals) =
     print_string "Invalid argument (Lookup1D): "; print_string s;
     print_newline ();
     print_int li; print_string " / "; print_int (Array.length line);
-    print_string ", "; print_float (MyOp.get l); print_newline ();
+    print_string ", "; print_float (FadFloat.get l); print_newline ();
     exit 1
 
 let interp2 (line, col, vals) =
@@ -140,6 +140,6 @@ let interp2 (line, col, vals) =
     let ci = ifind c col in
     print_string "Invalid argument (Lookup2D): "; print_string s;
     print_newline ();
-    print_float (MyOp.get l); print_string ", "; print_float (MyOp.get c); print_newline ();
+    print_float (FadFloat.get l); print_string ", "; print_float (FadFloat.get c); print_newline ();
     print_int li; print_string ", "; print_int ci; print_newline ();
     exit 1

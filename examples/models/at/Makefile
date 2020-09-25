@@ -1,7 +1,7 @@
 include ../../../config
 
-ZELUCFLAGS += -noreduce -I ../common
-INCLUDES += -I $(CHECKLIB) zlscheck.cmxa -I ../common myOp.cmx discrete_obs_fad.cmx
+ZELUCFLAGS += -noreduce -I ../common -I $(CHECKLIB)
+INCLUDES += -I $(CHECKLIB) zlscheck.cmxa -I ../common discrete_obs_fad.cmx
 
 OBJ=autotransd.cmx
 
@@ -12,8 +12,8 @@ opt: autotransd.opt
 
 run_at_main.ml run_at.ml:
 	$(ZELUC) $(ZELUCFLAGS) -o run_at_main -s main run_at.zls
-	sed -i "s/Obj.magic ():MyOp.t Array.t/[|create(); create()|]/g" run_at.ml
-	sed -i "s/Obj.magic ():MyOp.t/create ():MyOp.t/g" run_at.ml
+	sed -i "s/Obj.magic ():FadFloat.t Array.t/[|create(); create()|]/g" run_at.ml
+	sed -i "s/Obj.magic ():FadFloat.t/create ():FadFloat.t/g" run_at.ml
 run_at.opt: INCLUDES += interp.cmx $(DEPS) autotransd.cmx
 run_at.opt: $(DEPS) autotransd.cmx run_at_main.ml
 
@@ -25,18 +25,18 @@ autotransd.opt: $(DEPS) autotransd_main.ml
 
 autotransd_main.ml: autotransd.zls at_common.zci
 	$(ZELUC) $(ZELUCFLAGS) -gtk2 -o autotransd_main -s main $<
-	sed -i "s/Obj.magic ():MyOp.t/create ():MyOp.t/g" autotransd.ml
+	sed -i "s/Obj.magic ():FadFloat.t/create ():FadFloat.t/g" autotransd.ml
 
 autotransd.ml: autotransd.zls at_common.zci
 	$(ZELUC) $(ZELUCFLAGS) $<
-	sed -i "s/Obj.magic ():MyOp.t/create ():MyOp.t/g" autotransd.ml
+	sed -i "s/Obj.magic ():FadFloat.t/create ():FadFloat.t/g" autotransd.ml
 autotransd.cmx: at_common.cmx
 
 # ------------------------------------
 
 at_common.ml: at_consts.zci
 	$(ZELUC) $(ZELUCFLAGS) $(@:.ml=.zls)
-	sed -i "s/Obj.magic ():MyOp.t/create ():MyOp.t/g" $@
+	sed -i "s/Obj.magic ():FadFloat.t/create ():FadFloat.t/g" $@
 at_common.cmx: at_common.ml at_consts.cmx
 
 # ------------------------------------

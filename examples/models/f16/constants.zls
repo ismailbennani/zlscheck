@@ -1,4 +1,4 @@
-open MyOp
+open FadFloat
 
 let pi = make 3.14159265359
 let rtod = make 57.29578    (* rad to deg coefficient *)

@@ -8,13 +8,13 @@ let fcw_setpoint = 107.8880952381 (* kg/s *)
 let p_setpoint = 90. (* kPa *)
 let temp_setpoint = 80. (* degC *)
 
-let line_p_t = Array.map MyOp.make (Array.of_list [50.; 60.; 70.; 80.; 90.; 100.; 110.])
-let vals_p_t = Array.map MyOp.make (Array.of_list [81.3167; 85.9258; 89.9315; 93.4854; 96.6870; 99.6059; 102.2923])
+let line_p_t = Array.map FadFloat.make (Array.of_list [50.; 60.; 70.; 80.; 90.; 100.; 110.])
+let vals_p_t = Array.map FadFloat.make (Array.of_list [81.3167; 85.9258; 89.9315; 93.4854; 96.6870; 99.6059; 102.2923])
 let lookup_p_t p =
     Interp.interp1 (line_p_t, vals_p_t) p
 
-let line_lambda = Array.map MyOp.make (Array.of_list [50.; 60.; 70.; 80.; 90.; 100.; 110.])
-let vals_lambda = Array.map MyOp.make (Array.of_list [2305.42; 2293.64; 2283.30; 2274.05; 2265.65; 2257.92; 2250.76])
+let line_lambda = Array.map FadFloat.make (Array.of_list [50.; 60.; 70.; 80.; 90.; 100.; 110.])
+let vals_lambda = Array.map FadFloat.make (Array.of_list [2305.42; 2293.64; 2283.30; 2274.05; 2265.65; 2257.92; 2250.76])
 let lookup_lambda p =
     Interp.interp1 (line_lambda, vals_lambda) p
 
@@ -70,7 +70,7 @@ let b2_1 = -0.33227866684137108
 
 let mapminmax (xmin,xmax,ymin,ymax,x) = y where
     rec y =
-        MyOp.translate
-            (MyOp.scale (MyOp.translate x (-.xmin))
+        FadFloat.translate
+            (FadFloat.scale (FadFloat.translate x (-.xmin))
                         (1. /. (xmax -. xmin) *. (ymax -. ymin)))
             ymin

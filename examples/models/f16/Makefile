@@ -1,7 +1,7 @@
 include ../../../config
 
-ZELUCFLAGS += -noreduce -I ../common
-INCLUDES += -I $(CHECKLIB) zlscheck.cmxa -I ../common myOp.cmx discrete_obs_fad.cmx
+ZELUCFLAGS += -noreduce -I ../common -I $(CHECKLIB)
+INCLUDES += -I $(CHECKLIB) zlscheck.cmxa -I ../common discrete_obs_fad.cmx
 
 all: controlledf16.cmx
 opt: run_controlledf16.opt

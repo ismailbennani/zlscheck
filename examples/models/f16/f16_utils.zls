@@ -1,7 +1,7 @@
 open Constants
 open Matrix
 open F16_mlutils
-open MyOp
+open FadFloat
 
 let node integrate (x0, dx, h) = y where
     rec y = x0 fby (y + h * dx)

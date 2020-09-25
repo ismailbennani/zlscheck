@@ -1,4 +1,4 @@
-open MyOp
+open FadFloat
 
 type 'a t =
   {

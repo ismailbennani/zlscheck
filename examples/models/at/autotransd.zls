@@ -8,7 +8,7 @@
   and the discrete versions of this model.
 *)
 
-open MyOp
+open FadFloat
 open At_common
 
 (** consts **)

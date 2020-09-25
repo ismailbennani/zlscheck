@@ -58,15 +58,15 @@ end
 module Delay =
 struct
   type 'a t = {
-    max_delay: MyOp.t;
-    buffer_t : MyOp.t BoundedQueue.t;
+    max_delay: FadFloat.t;
+    buffer_t : FadFloat.t BoundedQueue.t;
     buffer_v : 'a BoundedQueue.t;
     default  : 'a
   }
 
   let make buffer_size max_delay default = {
     max_delay;
-    buffer_t = BoundedQueue.make buffer_size (MyOp.make 0.);
+    buffer_t = BoundedQueue.make buffer_size (FadFloat.make 0.);
     buffer_v = BoundedQueue.make buffer_size default;
     default;
   }
@@ -85,16 +85,16 @@ struct
         let i = (start_i + end_i) / 2 in
         let v_i = BoundedQueue.get queue i in
         let v_ip1 = BoundedQueue.get queue (i+1) in
-        if MyOp.(v_i < v && v < v_ip1) then i
-        else if MyOp.(v_i > v) then aux start_i (max 0 (i-1))
-        else if MyOp.(v > v_ip1) then
+        if FadFloat.(v_i < v && v < v_ip1) then i
+        else if FadFloat.(v_i > v) then aux start_i (max 0 (i-1))
+        else if FadFloat.(v > v_ip1) then
           aux (min (BoundedQueue.length queue - 1) (i+1)) end_i
         else assert false
     in aux 0 (BoundedQueue.length queue - 1)
 
   (* linear interpolatiion, x1 <= xi <= x2 *)
   let interp x1 x2 val1 val2 xi =
-    let open MyOp in
+    let open FadFloat in
     if val1 = val2 then val1
     else
     (x2 - xi) / (x2 - x1) * val1 +
@@ -102,7 +102,7 @@ struct
 
   (* linear extrapolation, x1 <= x2 <= xi OR xi <= x1 <= x2 *)
   let extrap x1 x2 val1 val2 xi =
-    let open MyOp in
+    let open FadFloat in
     let slope = (val2 - val1) / (x2 - x1) in
     let dif = slope * (xi - x1) in
     val1 + dif
@@ -131,21 +131,21 @@ struct
       print_string "Invalid argument (Delay.interp1): "; print_string s;
       print_newline ();
       print_int li; print_string " / "; print_int (BoundedQueue.length line);
-      print_string ", "; print_string (MyOp.to_string t); print_newline ();
+      print_string ", "; print_string (FadFloat.to_string t); print_newline ();
       exit 1
 
   let get this (t, v, delay) =
-    let delay = if MyOp.get delay < 0. then begin
-      Printf.eprintf "WARNING: Delay.get got delay = %g, it has been clipped to 0\n" (MyOp.get delay);
-      MyOp.make 0.
+    let delay = if FadFloat.get delay < 0. then begin
+      Printf.eprintf "WARNING: Delay.get got delay = %g, it has been clipped to 0\n" (FadFloat.get delay);
+      FadFloat.make 0.
     end else
-        MyOp.min delay this.max_delay
+        FadFloat.min delay this.max_delay
     in
 
 
-    if MyOp.get delay = 0. then v
+    if FadFloat.get delay = 0. then v
     else
-      let t' = MyOp.(t - delay) in
+      let t' = FadFloat.(t - delay) in
       let first_t = BoundedQueue.peek this.buffer_t in
       (* Printf.printf "get (%g, %g, %g), first_t = %g, t' = %g, t' < first_t: %b\n" t v delay first_t t' (t' < first_t); *)
       if t' < first_t then this.default

@@ -4,7 +4,7 @@
    adapted from Simulink
 *)
 
-open MyOp
+open FadFloat
 open Wt_common
 open Wt_params
 

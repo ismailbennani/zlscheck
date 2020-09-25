@@ -1,5 +1,5 @@
 type 'a delay_t
 
-val make_delay : int -> MyOp.t -> 'a -AD-> 'a delay_t
-val record_delay : 'a delay_t -> (MyOp.t * 'a) -AD-> unit
-val get_delay : 'a delay_t -> (MyOp.t * 'a * MyOp.t) -A-> 'a
+val make_delay : int -> FadFloat.t -> 'a -AD-> 'a delay_t
+val record_delay : 'a delay_t -> (FadFloat.t * 'a) -AD-> unit
+val get_delay : 'a delay_t -> (FadFloat.t * 'a * FadFloat.t) -A-> 'a

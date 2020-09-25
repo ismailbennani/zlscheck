@@ -1,6 +1,6 @@
 open Constants
 open F16_types
-open MyOp
+open FadFloat
 
 type state = Start | Roll | Pull | Done
 let string_of_state state =

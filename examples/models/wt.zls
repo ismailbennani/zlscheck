@@ -1,4 +1,4 @@
-open MyOp
+open FadFloat
 open Discrete_obs_fad
 
 (* always_[30, 630] BladePitchAngle_Deg <= 14.2 *)

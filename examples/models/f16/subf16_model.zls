@@ -2,7 +2,7 @@ open Constants
 open F16_mlutils
 open F16_utils
 open F16_types
-open MyOp
+open FadFloat
 
 let node derivatives(state, inp) = res, ny, nz where
     (* State variables in state

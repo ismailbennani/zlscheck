@@ -1,7 +1,7 @@
 include ../../../config
 
-ZELUCFLAGS += -noreduce -I ../common
-INCLUDES += -I $(CHECKLIB) zlscheck.cmxa -I ../common myOp.cmx
+ZELUCFLAGS += -noreduce -I ../common -I $(CHECKLIB)
+INCLUDES += -I $(CHECKLIB) zlscheck.cmxa -I ../common
 
 DEPS=sc_utils.cmx
 

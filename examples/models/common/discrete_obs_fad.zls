@@ -1,10 +1,10 @@
 (* Library of synchronous observers with quantitative semantics.
-   It uses FADBADml arithmetic operators in MyOp *)
+   It uses FADBADml arithmetic operators in FadFloat *)
 
-open MyOp
+open FadFloat
 
-let q_true = MyOp.infinity
-let q_false = MyOp.neg_infinity
+let q_true = FadFloat.infinity
+let q_false = FadFloat.neg_infinity
 
 node no_signal () = present (false) -> ()
 node now () = present (true fby false) -> ()
@@ -43,7 +43,7 @@ let q_eqi (i1, i2) = (make 0.5) - (abs (i1 - i2))
 
 let implies (a, b) = q_or(q_not a, b)
 
-node q_up p = p -> q_and (q_lt (pre p, MyOp.zero ()), q_gt (p, MyOp.zero ()))
+node q_up p = p -> q_and (q_lt (pre p, FadFloat.zero ()), q_gt (p, FadFloat.zero ()))
 node b_up p = p -> (not (pre p) && p)
 
 let static min_cpt = -1.
@@ -98,7 +98,7 @@ node neverBfromAtoC (a, b, c) = alwaysBfromAtoC(a, q_not b, c)
 
 node horizon delay tstep =
     let cpt = counter delay (tstep, now (), no_signal ()) in
-    q_lt (cpt, MyOp.zero ())
+    q_lt (cpt, FadFloat.zero ())
 
 node once_timed delay (tstep, p) =
     let cpt = counter delay (tstep, now (), no_signal ()) in
@@ -143,22 +143,22 @@ node neverBfromA (a, b) = neverBfromlastA (a, b)
 node onceBfromlastA_timed delay (tstep, a, b) =
     let cpt = counter delay (tstep, q_isfalse a, q_istrue a) in
     q_or (never a,
-      onceBfromlastAtoC (a, b, q_lt (cpt, MyOp.zero ())))
+      onceBfromlastAtoC (a, b, q_lt (cpt, FadFloat.zero ())))
 node onceBfromfirstA_timed delay (tstep, a, b) =
     let cpt = counter delay (tstep, q_istrue (once a), no_signal ()) in
     q_or (never a,
-      onceBfromfirstAtoC (a, b, q_lt (cpt, MyOp.zero ())))
+      onceBfromfirstAtoC (a, b, q_lt (cpt, FadFloat.zero ())))
 node onceBfromA_timed delay (tstep, a, b) =
     onceBfromlastA_timed delay (tstep, a, b)
 
 node alwaysBfromlastA_timed delay (tstep, a, b) =
     let cpt = counter delay (tstep, q_isfalse a, q_istrue a) in
     q_or (never a,
-      implies (q_gt (cpt, MyOp.zero ()), q_not (sincelast (q_not b, a))))
+      implies (q_gt (cpt, FadFloat.zero ()), q_not (sincelast (q_not b, a))))
 node alwaysBfromfirstA_timed delay (tstep, a, b) =
     let cpt = counter delay (tstep, q_istrue (once a), no_signal ()) in
     q_or (never a,
-      implies (q_gt (cpt, MyOp.zero ()), q_not (sincefirst (q_not b, a))))
+      implies (q_gt (cpt, FadFloat.zero ()), q_not (sincefirst (q_not b, a))))
 node alwaysBfromA_timed delay (tstep, a, b) =
     alwaysBfromlastA_timed delay (tstep, a, b)
 

@@ -1,6 +1,6 @@
 (** constants, initial state **)
 
-open MyOp
+open FadFloat
 
 type shift = UP | DOWN
 

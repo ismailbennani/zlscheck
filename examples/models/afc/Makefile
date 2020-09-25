@@ -1,7 +1,7 @@
 include ../../../config
 
-ZELUCFLAGS += -noreduce -I ../common
-INCLUDES += -I $(CHECKLIB) zlscheck.cmxa -I ../ -I ../common myOp.cmx
+ZELUCFLAGS += -noreduce -I ../common -I $(CHECKLIB)
+INCLUDES += -I $(CHECKLIB) zlscheck.cmxa -I ../ -I ../common
 
 OBJ=afc_d.cmx
 
@@ -9,8 +9,8 @@ DEPS=afc_delay.cmx afc_utils.cmx
 
 %_main.ml: %.zls
 	$(ZELUC) $(ZELUCFLAGS) -s main -o $(@:.ml=) $<
-	sed -i "s/Obj.magic ():MyOp.t/create ():MyOp.t/g" $(@:_main.ml=.ml)
-	sed -i "s/Obj.magic ():MyOp.t/create ():MyOp.t/g" $@
+	sed -i "s/Obj.magic ():FadFloat.t/create ():FadFloat.t/g" $(@:_main.ml=.ml)
+	sed -i "s/Obj.magic ():FadFloat.t/create ():FadFloat.t/g" $@
 
 # dependencies
 

@@ -1,12 +1,12 @@
 val interp1 :
-    MyOp.t Array.t (* x *)
-  * MyOp.t Array.t (* y *)
+    FadFloat.t Array.t (* x *)
+  * FadFloat.t Array.t (* y *)
   -A->
-    (MyOp.t -A-> MyOp.t) (* lookup function (linear interpolation and extrapolation) *)
+    (FadFloat.t -A-> FadFloat.t) (* lookup function (linear interpolation and extrapolation) *)
 
 val interp2 :
-    MyOp.t Array.t       (* x *)
-  * MyOp.t Array.t       (* y *)
-  * MyOp.t Array.t Array.t (* z *)
+    FadFloat.t Array.t       (* x *)
+  * FadFloat.t Array.t       (* y *)
+  * FadFloat.t Array.t Array.t (* z *)
   -A->
-    (MyOp.t * MyOp.t -A-> MyOp.t) (* lookup function (linear interpolation and extrapolation)*)
+    (FadFloat.t * FadFloat.t -A-> FadFloat.t) (* lookup function (linear interpolation and extrapolation)*)

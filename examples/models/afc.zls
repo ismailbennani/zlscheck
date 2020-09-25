@@ -1,4 +1,4 @@
-open MyOp
+open FadFloat
 open Discrete_obs_fad
 
 (* always_[11, 50] ((rise or fall) ==> (always_[1,5] (abs(mu) < 0.008))) *)
@@ -30,8 +30,9 @@ node afc2 (tstep, inp, outp) =
     let abs_mu = abs mu in
     always_timed 50. (tstep, implies (q_ge (t, make 11.02), q_lt (abs_mu, make 0.007)))
 
-node afc_afc1 tstep engine inp = get next_t, outp, rob where
+node afc_afc1 tstep inp = get next_t, outp, rob where
     rec throttle = Array.get inp 0
+    and init engine = Array.get inp 1
     and tstep' = make tstep
     and next_t = tstep' fby (next_t + tstep')
     and t = make 0. fby next_t

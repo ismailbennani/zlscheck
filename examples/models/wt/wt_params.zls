@@ -1,24 +1,24 @@
-open MyOp
+open FadFloat
 open Wt_common
 
 (* all these parameters are taken from
    benchmarks/wind-turbine/SimplifiedTurbine_ParameterFile.m *)
 
 type vscontrol = {
-    rgn3MP  : MyOp.t; (* Minimum pitch angle at which the torque is computed as if we are in region 3 regardless of the generator speed, rad. -- chosen to be 1.0 degree above PC_MinPit *)
-    ctInSp  : MyOp.t; (* Transitional generator speed (HSS side) between regions 1 and 1 1/2, rad/s. *)
-    maxRat  : MyOp.t; (* Maximum torque rate (in absolute value) in torque controller, N-m/s. *)
-    maxTq   : MyOp.t; (* Maximum generator torque in Region 3 (HSS side), N-m. -- chosen to be 10% above VS_RtTq = 43.09355kNm *)
-    rgn2K   : MyOp.t; (* Generator torque constant in Region 2 (HSS side), N-m/(rad/s)^2. *)
-    rgn2Sp  : MyOp.t; (* Transitional generator speed (HSS side) between regions 1 1/2 and 2, rad/s. *)
-    rtGnSp  : MyOp.t; (* Rated generator speed (HSS side), rad/s. -- chosen to be 99% of PC_RefSpd *)
-    rtPwr   : MyOp.t; (* Rated generator generator power in Region 3, Watts. -- chosen to be 5MW divided by the electrical generator efficiency of 94.4% *)
-    slPc    : MyOp.t; (* Rated generator slip percentage in Region 2 1/2, %. *)
-    sySp    : MyOp.t;
-    slope15 : MyOp.t;
-    slope25 : MyOp.t;
-    trGnSp  : MyOp.t;
-    vs_filterConstant : MyOp.t;
+    rgn3MP  : FadFloat.t; (* Minimum pitch angle at which the torque is computed as if we are in region 3 regardless of the generator speed, rad. -- chosen to be 1.0 degree above PC_MinPit *)
+    ctInSp  : FadFloat.t; (* Transitional generator speed (HSS side) between regions 1 and 1 1/2, rad/s. *)
+    maxRat  : FadFloat.t; (* Maximum torque rate (in absolute value) in torque controller, N-m/s. *)
+    maxTq   : FadFloat.t; (* Maximum generator torque in Region 3 (HSS side), N-m. -- chosen to be 10% above VS_RtTq = 43.09355kNm *)
+    rgn2K   : FadFloat.t; (* Generator torque constant in Region 2 (HSS side), N-m/(rad/s)^2. *)
+    rgn2Sp  : FadFloat.t; (* Transitional generator speed (HSS side) between regions 1 1/2 and 2, rad/s. *)
+    rtGnSp  : FadFloat.t; (* Rated generator speed (HSS side), rad/s. -- chosen to be 99% of PC_RefSpd *)
+    rtPwr   : FadFloat.t; (* Rated generator generator power in Region 3, Watts. -- chosen to be 5MW divided by the electrical generator efficiency of 94.4% *)
+    slPc    : FadFloat.t; (* Rated generator slip percentage in Region 2 1/2, %. *)
+    sySp    : FadFloat.t;
+    slope15 : FadFloat.t;
+    slope25 : FadFloat.t;
+    trGnSp  : FadFloat.t;
+    vs_filterConstant : FadFloat.t;
 }
 
 let string_of_vscontrol (prefix, vsctrl) =
@@ -40,11 +40,11 @@ let string_of_vscontrol (prefix, vsctrl) =
     prefix ^ "}"
 
 type cpc = {
-    gS_factor : MyOp.t;
-    kI : MyOp.t;
-    kP : MyOp.t;
-    tI : MyOp.t;
-    antiWindUp : MyOp.t;
+    gS_factor : FadFloat.t;
+    kI : FadFloat.t;
+    kP : FadFloat.t;
+    tI : FadFloat.t;
+    antiWindUp : FadFloat.t;
 }
 
 let string_of_cpc (prefix, cpc) =
@@ -57,16 +57,16 @@ let string_of_cpc (prefix, cpc) =
     prefix ^ "}"
 
 type pitch = {
-    omega     : MyOp.t; (* rad/s undamped natural frequency of the blade pitch actuator *)
-    xi        : MyOp.t; (* -     damping factor of the blade pitch actuator *)
-    delay     : MyOp.t; (* s     pitch delay (matlab risetime of second order lag) *)
-    rateLimit : MyOp.t; (* [rad/s] *)
-    max       : MyOp.t; (* [rad] *)
-    min       : MyOp.t; (* [rad] *)
-    theta0    : MyOp.t;
-    thetaDot0 : MyOp.t;
+    omega     : FadFloat.t; (* rad/s undamped natural frequency of the blade pitch actuator *)
+    xi        : FadFloat.t; (* -     damping factor of the blade pitch actuator *)
+    delay     : FadFloat.t; (* s     pitch delay (matlab risetime of second order lag) *)
+    rateLimit : FadFloat.t; (* [rad/s] *)
+    max       : FadFloat.t; (* [rad] *)
+    min       : FadFloat.t; (* [rad] *)
+    theta0    : FadFloat.t;
+    thetaDot0 : FadFloat.t;
     actuatorType : int;
-    pitch_filterConstant : MyOp.t;
+    pitch_filterConstant : FadFloat.t;
     cpc : cpc;
 }
 
@@ -87,41 +87,41 @@ let string_of_pitch (prefix, pitch) =
 
 type params = {
     (* global constants *)
-    rho          : MyOp.t; (* kg/m^3 air density *)
-    rotor        : MyOp.t; (* m      rotor *)
-    lambda_opt   : MyOp.t; (* -      tip speed ratio *)
-    omega_rated  : MyOp.t; (* rpm *)
-    wind_rated   : MyOp.t;
-    eta          : MyOp.t;
+    rho          : FadFloat.t; (* kg/m^3 air density *)
+    rotor        : FadFloat.t; (* m      rotor *)
+    lambda_opt   : FadFloat.t; (* -      tip speed ratio *)
+    omega_rated  : FadFloat.t; (* rpm *)
+    wind_rated   : FadFloat.t;
+    eta          : FadFloat.t;
 
     (* fore-aft tower dynamics *)
-    h_H : MyOp.t; (* m  Hub height *)
-    m_T : MyOp.t; (* kg Mass Tower + Monopile (Support Shallow) *)
-    m_N : MyOp.t; (* kg Mass Nacelle *)
-    m_H : MyOp.t; (* kg Mass Hub *)
-    m_B : MyOp.t; (* kg Mass Blade *)
-    f_0 : MyOp.t; (* Hz naturall frequency 1st Tower FA *)
-    d_s : MyOp.t; (* - *)
-    mTe : MyOp.t; (* kg     tower equivalent modal mass ([Gasch] p.294) *)
-    cTe : MyOp.t; (* kg/s   tower structual damping (sigma=C_T/(2M_T)=D*w_0, w_0=f_0*2*pi, [Gasch] p.294) *)
-    kTe : MyOp.t; (* kg/s^2 tower bending stiffness (w_0=sqrt(K_T/M_T),[Gasch] p.294) *)
+    h_H : FadFloat.t; (* m  Hub height *)
+    m_T : FadFloat.t; (* kg Mass Tower + Monopile (Support Shallow) *)
+    m_N : FadFloat.t; (* kg Mass Nacelle *)
+    m_H : FadFloat.t; (* kg Mass Hub *)
+    m_B : FadFloat.t; (* kg Mass Blade *)
+    f_0 : FadFloat.t; (* Hz naturall frequency 1st Tower FA *)
+    d_s : FadFloat.t; (* - *)
+    mTe : FadFloat.t; (* kg     tower equivalent modal mass ([Gasch] p.294) *)
+    cTe : FadFloat.t; (* kg/s   tower structual damping (sigma=C_T/(2M_T)=D*w_0, w_0=f_0*2*pi, [Gasch] p.294) *)
+    kTe : FadFloat.t; (* kg/s^2 tower bending stiffness (w_0=sqrt(K_T/M_T),[Gasch] p.294) *)
 
     (* drive train dynamics *)
-    j_H     : MyOp.t; (* kgm^2 Hub Inertia About Shaft Axis *)
-    j_B     : MyOp.t; (* kgm^2 Second Mass Moment of Inertia (w.r.t. Root) *)
-    j_G     : MyOp.t; (* kgm^2 Generator Inertia About High-Speed Shaft *)
-    gBRatio : MyOp.t; (* -     Gearbox ratio *)
-    inertia : MyOp.t; (* kgm^2 sum of the moments of inertia about the rotation axis of the rotor hub and blades *)
-    omega_g_rated : MyOp.t;
+    j_H     : FadFloat.t; (* kgm^2 Hub Inertia About Shaft Axis *)
+    j_B     : FadFloat.t; (* kgm^2 Second Mass Moment of Inertia (w.r.t. Root) *)
+    j_G     : FadFloat.t; (* kgm^2 Generator Inertia About High-Speed Shaft *)
+    gBRatio : FadFloat.t; (* -     Gearbox ratio *)
+    inertia : FadFloat.t; (* kgm^2 sum of the moments of inertia about the rotation axis of the rotor hub and blades *)
+    omega_g_rated : FadFloat.t;
 
     (* initial conds for integrators *)
-    xt_dot0  : MyOp.t;
-    xT0      : MyOp.t;
-    omega0   : MyOp.t;
-    omega_g0 : MyOp.t;
+    xt_dot0  : FadFloat.t;
+    xT0      : FadFloat.t;
+    omega0   : FadFloat.t;
+    omega_g0 : FadFloat.t;
 
     (* VS Control (Paramters taken from DISCON.f90) *)
-    genEff    : MyOp.t;
+    genEff    : FadFloat.t;
     vscontrol : vscontrol;
 
     (* Collective Blade Pitch Controller *)

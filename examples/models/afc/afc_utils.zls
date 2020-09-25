@@ -1,4 +1,4 @@
-open MyOp
+open FadFloat
 
 let pi = 3.1416
 let rad2rpm = 30. /. pi

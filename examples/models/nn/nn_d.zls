@@ -1,5 +1,5 @@
 open Nn_utils
-open MyOp
+open FadFloat
 
 node integrate (tstep, dy, y0) = y where
     rec y = y0 fby (tstep * dy + y)

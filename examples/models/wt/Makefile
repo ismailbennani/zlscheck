@@ -1,7 +1,7 @@
 include ../../../config
 
-ZELUCFLAGS += -noreduce -I ../common
-INCLUDES += -I $(CHECKLIB) zlscheck.cmxa -I ../common myOp.cmx
+ZELUCFLAGS += -noreduce -I ../common -I $(CHECKLIB)
+INCLUDES += -I $(CHECKLIB) zlscheck.cmxa -I ../common
 
 OBJ=wt_d.cmx
 
@@ -9,16 +9,16 @@ DEPS=wt_common.cmx wt_params.cmx
 #
 # wt_params.ml: wt_params.zls
 # 	$(ZELUC) $(ZELUCFLAGS) $<
-# 	sed -i "s/Obj.magic ():MyOp.t/MyOp.create ():MyOp.t/g" $@
+# 	sed -i "s/Obj.magic ():FadFloat.t/FadFloat.create ():FadFloat.t/g" $@
 #
 # wt_common.ml: wt_common.zls
 # 	$(ZELUC) $(ZELUCFLAGS) $<
-# 	sed -i "s/Obj.magic ():MyOp.t/MyOp.create ():MyOp.t/g" $@
+# 	sed -i "s/Obj.magic ():FadFloat.t/FadFloat.create ():FadFloat.t/g" $@
 
 %_main.ml: %.zls
 	$(ZELUC) $(ZELUCFLAGS) -s main -gtk2 -o $(@:.ml=) $<
-	sed -i "s/Obj.magic ():MyOp.t/MyOp.create ():MyOp.t/g" $(@:_main.ml=.ml)
-	sed -i "s/Obj.magic ():MyOp.t/MyOp.create ():MyOp.t/g" $@
+	sed -i "s/Obj.magic ():FadFloat.t/FadFloat.create ():FadFloat.t/g" $(@:_main.ml=.ml)
+	sed -i "s/Obj.magic ():FadFloat.t/FadFloat.create ():FadFloat.t/g" $@
 
 # dependencies
 
@@ -29,7 +29,7 @@ wt_d.opt: wt_d_main.ml $(DEPS)
 wt_d.cmx: $(DEPS)
 wt_d.ml: $(DEPS:.cmx=.zci)
 	$(ZELUC) $(ZELUCFLAGS) $(@:.ml=.zls)
-	sed -i "s/Obj.magic ():MyOp.t/MyOp.create ():MyOp.t/g" $@
+	sed -i "s/Obj.magic ():FadFloat.t/FadFloat.create ():FadFloat.t/g" $@
 
 wt_params.cmx: wt_common.cmx
 
