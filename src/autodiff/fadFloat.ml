@@ -48,4 +48,15 @@ let ldexp v i = make (ldexp v i)
     Array.iteri (fun i _ -> res.m_diff.(i) <- ref (if Stdlib.(f >= 0.) then 1. else -1.))
       res.m_diff;
   end;
-  res *)
+   res *)
+
+let copysign a b =
+  if a * b >= make 0. then a
+  else - a
+
+let abs a = max a (-a)
+
+let pow t f = t ** (make f)
+
+let mod_t t1 t2 =
+  t1 - (make (Stdlib.floor ((get t1) /. (get t2)))) * t2
