@@ -1,15 +1,27 @@
 open Optim_types
 open Optim_utils
 
+let default_params optim_params = {
+  max_n_runs = 500;
+  bounds = [||];
+  init_sample = None;
+  vverbose = false;
+  verbose = false;
+  optim = optim_params
+}
+
 module Make(OptimAlg : OptimAlg with type input = float array) =
 struct
-  let string_of_params =
-    string_of_params OptimAlg.string_of_params
-      Misc_printers.string_of_float_array
 
   type input = OptimAlg.input
   type output = OptimAlg.output
   type optim_step_params = OptimAlg.optim_step_params
+
+  let string_of_params =
+    string_of_params OptimAlg.string_of_params
+      (fun i -> Printf.sprintf "[%s]" (Misc_printers.string_of_float_array "; " i))
+
+  let default_params = default_params OptimAlg.default_params
 
   let name = OptimAlg.name
 
@@ -101,12 +113,3 @@ module GDClassic = Make(AdaptativeGradient.Classic)
 module GDADAGRAD = Make(AdaptativeGradient.ADAGRAD)
 module GDADAM = Make(AdaptativeGradient.ADAM)
 module GDAMSGRAD = Make(AdaptativeGradient.AMSGRAD)
-
-let default_params optim_params = {
-  max_n_runs = 500;
-  bounds = [||];
-  init_sample = None;
-  vverbose = false;
-  verbose = false;
-  optim = optim_params
-}

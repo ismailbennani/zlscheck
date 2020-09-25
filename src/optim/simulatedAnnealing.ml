@@ -101,7 +101,7 @@ struct
     let last_sample, last_output = step_params.last_result in
     let last_val = get_rob_from_output last_output in
 
-    if verbose then
+    if verbose || vverbose then
       Printf.printf "Run %i/%i\n" (step_params.n_runs+1) max_n_runs;
 
     (* pick new sample *)
@@ -114,7 +114,7 @@ struct
 
     let new_val = get_rob_from_output new_output in
 
-    if verbose then begin
+    if verbose || vverbose then begin
       Printf.printf "New point : %a\n"
         Misc_printers.print_float_array new_sample;
       Printf.printf "New value : %.2e\n" new_val;
@@ -127,7 +127,7 @@ struct
       else false, last_sample, last_output
     in
 
-    if verbose then
+    if verbose || vverbose then
       Printf.printf "New point accepted : %s\n"
         (if accepted then "true" else "false");
 
@@ -138,13 +138,13 @@ struct
       else step_params.optim_step.n_accepts
     in
 
-    if verbose then
+    if verbose || vverbose then
       Printf.printf "Number of accepted points so far : %i\n" n_accepts;
 
     let betaX, displace =
       if step_params.n_runs mod 50 = 0 then
         let acRatio = (float n_accepts) /. (float (step_params.n_runs)) in
-        if verbose then
+        if verbose || vverbose then
           Printf.printf "Acceptance ratio : %i%%\n" (truncate (acRatio *. 100.));
         if acRatio > acRatioMax then
           (step_params.optim_step.betaX *. betaXAdap,
@@ -160,11 +160,11 @@ struct
     step_params.optim_step.displace <-
       saturate (minDisp, maxDisp) displace;
     step_params.optim_step.n_accepts <- n_accepts;
-    if params.vverbose then
+    if vverbose then
       Printf.printf "Params:\n\tdisplace: %f\n\tbetaX: %f\n"
         step_params.optim_step.displace step_params.optim_step.betaX;
 
-    if params.verbose then begin
+    if verbose || vverbose then begin
       print_newline (); flush stdout
     end;
 

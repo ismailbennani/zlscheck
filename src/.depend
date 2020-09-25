@@ -8,18 +8,28 @@ method/method_types.cmo : \
     autodiff/fadFloat.cmo
 method/method_types.cmx : \
     autodiff/fadFloat.cmx
-method/method_utils.cmo :
-method/method_utils.cmx :
+method/method_utils.cmo : \
+    method/method_types.cmo \
+    autodiff/fadFloat.cmo
+method/method_utils.cmx : \
+    method/method_types.cmx \
+    autodiff/fadFloat.cmx
 method/online.cmo : \
-    optim/optim_globals.cmo \
     optim/optim.cmo \
     method/method_utils.cmo \
-    method/method_types.cmo
+    method/method_types.cmo \
+    misc/logger.cmo \
+    autodiff/fadFloat.cmo
 method/online.cmx : \
-    optim/optim_globals.cmx \
     optim/optim.cmx \
     method/method_utils.cmx \
-    method/method_types.cmx
+    method/method_types.cmx \
+    misc/logger.cmx \
+    autodiff/fadFloat.cmx
+misc/logger.cmo : \
+    misc_printers.cmo
+misc/logger.cmx : \
+    misc_printers.cmx
 misc_printers.cmo :
 misc_printers.cmx :
 optim/adaptativeGradient.cmo : \
@@ -32,25 +42,9 @@ optim/adaptativeGradient.cmx : \
     optim/optim_utils.cmx \
     optim/optim_types.cmx \
     misc_printers.cmx
-optim/gpgd.cmo : \
-    zlscheck_utils.cmo \
-    optim/optim_utils.cmo \
-    optim/optim_types.cmo \
-    optim/optim_globals.cmo \
-    autodiff/diff.cmo \
-    optim/adaptativeGradient.cmo
-optim/gpgd.cmx : \
-    zlscheck_utils.cmx \
-    optim/optim_utils.cmx \
-    optim/optim_types.cmx \
-    optim/optim_globals.cmx \
-    autodiff/diff.cmx \
-    optim/adaptativeGradient.cmx
 optim/optim.cmo : \
     zlscheck_utils.cmo \
-    optim/uniformRandom_gdaware.cmo \
     optim/uniformRandom.cmo \
-    optim/simulatedAnnealing_gdaware.cmo \
     optim/simulatedAnnealing.cmo \
     optim/optim_utils.cmo \
     optim/optim_types.cmo \
@@ -58,18 +52,12 @@ optim/optim.cmo : \
     optim/adaptativeGradient.cmo
 optim/optim.cmx : \
     zlscheck_utils.cmx \
-    optim/uniformRandom_gdaware.cmx \
     optim/uniformRandom.cmx \
-    optim/simulatedAnnealing_gdaware.cmx \
     optim/simulatedAnnealing.cmx \
     optim/optim_utils.cmx \
     optim/optim_types.cmx \
     misc_printers.cmx \
     optim/adaptativeGradient.cmx
-optim/optim_globals.cmo : \
-    optim/optim_types.cmo
-optim/optim_globals.cmx : \
-    optim/optim_types.cmx
 optim/optim_types.cmo :
 optim/optim_types.cmx :
 optim/optim_utils.cmo : \
@@ -86,39 +74,15 @@ optim/simulatedAnnealing.cmx : \
     optim/optim_utils.cmx \
     optim/optim_types.cmx \
     misc_printers.cmx
-optim/simulatedAnnealing_gdaware.cmo : \
-    zlscheck_utils.cmo \
-    optim/optim_utils.cmo \
-    optim/optim_types.cmo \
-    misc_printers.cmo
-optim/simulatedAnnealing_gdaware.cmx : \
-    zlscheck_utils.cmx \
-    optim/optim_utils.cmx \
-    optim/optim_types.cmx \
-    misc_printers.cmx
 optim/uniformRandom.cmo : \
     zlscheck_utils.cmo \
     optim/optim_utils.cmo \
     optim/optim_types.cmo \
-    optim/optim_globals.cmo \
     misc_printers.cmo
 optim/uniformRandom.cmx : \
     zlscheck_utils.cmx \
     optim/optim_utils.cmx \
     optim/optim_types.cmx \
-    optim/optim_globals.cmx \
-    misc_printers.cmx
-optim/uniformRandom_gdaware.cmo : \
-    zlscheck_utils.cmo \
-    optim/optim_utils.cmo \
-    optim/optim_types.cmo \
-    optim/optim_globals.cmo \
-    misc_printers.cmo
-optim/uniformRandom_gdaware.cmx : \
-    zlscheck_utils.cmx \
-    optim/optim_utils.cmx \
-    optim/optim_types.cmx \
-    optim/optim_globals.cmx \
     misc_printers.cmx
 zlscheck_utils.cmo :
 zlscheck_utils.cmx :
