@@ -37,24 +37,30 @@ node at6 tstep (t, s) (outp) =
 
 (* AT6(t,s): (□_[0.0, 30.0] (RPM < 3000.0) ==> □_[0.0, t] (speed < s)) *)
 node at6a (tstep, outp) =
-    let rpm = Array.get outp 0 in
-    let speed = Array.get outp 2 in
-    let rpm_max = make (3000.) in
-    let speed_max = make (35.) in
+    let rpm_norm = 5000. in
+    let speed_norm = 120. in
+    let rpm = Array.get outp 0 / (make rpm_norm) in
+    let speed = Array.get outp 2 / (make speed_norm) in
+    let rpm_max = make (3000. /. rpm_norm) in
+    let speed_max = make (35. /. speed_norm) in
     q_or (once_timed 30. (tstep, q_gt (rpm, rpm_max)),
           always_timed 3.99 (tstep, q_lt (speed, speed_max)))
 node at6b (tstep, outp) =
-    let rpm = Array.get outp 0 / (make 5000.) in
-    let speed = Array.get outp 2 / (make 120.) in
-    let rpm_max = make (3000. /. 5000.) in
-    let speed_max = make (50. /. 120.) in
+    let rpm_norm = 5000. in
+    let speed_norm = 120. in
+    let rpm = Array.get outp 0 / (make rpm_norm) in
+    let speed = Array.get outp 2 / (make speed_norm) in
+    let rpm_max = make (3000. /. rpm_norm) in
+    let speed_max = make (50. /. speed_norm) in
     q_or (once_timed 30. (tstep, q_gt (rpm, rpm_max)),
           always_timed 7.99 (tstep, q_lt (speed, speed_max)))
 node at6c (tstep, outp) =
-    let rpm = Array.get outp 0 / (make 5000.) in
-    let speed = Array.get outp 2 / (make 120.) in
-    let rpm_max = make (3000. /. 5000.) in
-    let speed_max = make (65. /. 120.) in
+    let rpm_norm = 5000. in
+    let speed_norm = 120. in
+    let rpm = Array.get outp 0 / (make rpm_norm) in
+    let speed = Array.get outp 2 / (make speed_norm) in
+    let rpm_max = make (3000. /. rpm_norm) in
+    let speed_max = make (65. /. speed_norm) in
     q_or (once_timed 30. (tstep, q_gt (rpm, rpm_max)),
           always_timed 19.99 (tstep, q_lt (speed, speed_max)))
 

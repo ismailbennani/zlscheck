@@ -28,9 +28,9 @@ let node state_logic (tstep, alpha, phi, theta, p) =
                 then do emit trans = Pull in Pull
         else (t > man_start) then do emit trans = Roll in Roll
     | Roll ->
-        let radsFromWingsLevel = F16_utils.round (phi / pi) in
+        let radsFromWingsLevel = F16_utils.round (phi / twopi) in
         let wings_are_level =
-            abs (phi - pi * radsFromWingsLevel) < eps_phi
+            abs (phi - twopi * radsFromWingsLevel) < eps_phi
         and rate_is_small = abs p < eps_p
         in
         do state = Roll
@@ -76,10 +76,10 @@ let discrete get_u_ref (state, ctrlLimits, x_equil, x) = u_ref where rec
     | Roll ->
         local radsFromWingsLevel, k_prop, k_der
         do
-            radsFromWingsLevel = F16_utils.round (x.phi / pi)
+            radsFromWingsLevel = F16_utils.round (x.phi / twopi)
             and k_prop = make 4.
             and k_der = scale k_prop 0.3
-            and ps = - (x.phi - pi * radsFromWingsLevel) * k_prop - x.p * k_der
+            and ps = - (x.phi - twopi * radsFromWingsLevel) * k_prop - x.p * k_der
             and nz = make 0.
         done
     | Pull ->
@@ -93,8 +93,8 @@ let discrete get_u_ref (state, ctrlLimits, x_equil, x) = u_ref where rec
         do
             k_prop = make 1.
             and k_der = scale k_prop 0.3
-            and radsFromWingsLevel = F16_utils.round (x.phi / pi)
-            and ps = - (x.phi - pi * radsFromWingsLevel) * k_prop - x.p * k_der
+            and radsFromWingsLevel = F16_utils.round (x.phi / twopi)
+            and ps = - (x.phi - twopi * radsFromWingsLevel) * k_prop - x.p * k_der
             and k_prop2 = make 2.
             and k_der2 = scale k_prop2 0.3
             and radsFromNoseLevel = F16_utils.round ((x.theta - x.alpha) / pi)
