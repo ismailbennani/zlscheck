@@ -14,6 +14,18 @@ method/method_utils.cmo : \
 method/method_utils.cmx : \
     method/method_types.cmx \
     autodiff/fadFloat.cmx
+method/offline.cmo : \
+    optim/optim.cmo \
+    method/method_utils.cmo \
+    method/method_types.cmo \
+    misc/logger.cmo \
+    autodiff/fadFloat.cmo
+method/offline.cmx : \
+    optim/optim.cmx \
+    method/method_utils.cmx \
+    method/method_types.cmx \
+    misc/logger.cmx \
+    autodiff/fadFloat.cmx
 method/online.cmo : \
     optim/optim.cmo \
     method/method_utils.cmo \
