@@ -5,6 +5,7 @@ sig
 
   val name : string
   val dim : int
+  val make : params -> params
   val length : params -> float (* time after which output is constant *)
   val get_interp : params -> (float -> output array)
 end
@@ -15,25 +16,25 @@ struct
   type output = Config.t
   let name = "Constant"
   let dim = Config.dim
+  let make t = t
   let length _ = 0
   let get_interp t = fun _ -> t
 end
 
 module PiecewiseConstant(Config : sig type t val dim: int end) =
 struct
-  type params = {
-    ctrl_points: Config.t array;
-    step_length: float;
-  }
+  type params = Config.t array * float
   type output = Config.t
 
   let name = "PiecewiseConstant"
   let dim = Config.dim
 
-  let length { step_length; ctrl_points } =
+  let make (ctrl_points, step_length) = (ctrl_points, step_length)
+
+  let length (ctrl_points, step_length) =
     step_length *. (float ((Array.length ctrl_points) / dim))
 
-  let get_interp { step_length; ctrl_points } =
+  let get_interp (ctrl_points, step_length) =
     fun t ->
       let index = truncate (t /. step_length) in
       let cp_n = Array.length ctrl_points in
@@ -47,19 +48,18 @@ module Concat
     (Scenario1: S)
     (Scenario2: S with type output := Scenario1.output) =
 struct
-  type params = {
-    params1: Scenario1.params;
-    params2: Scenario2.params;
-  }
+  type params = Scenario1.params * Scenario2.params
   type output = Scenario1.output
 
   let name = Scenario1.name ^ "+" ^ Scenario2.name
   let dim = min Scenario1.dim Scenario2.dim
 
-  let length { params1; params2 } =
+  let make (params1, params2) = (params1, params2)
+
+  let length (params1, params2) =
     (Scenario1.length params1) +. (Scenario2.length params2)
 
-  let get_interp { params1; params2 } =
+  let get_interp (params1, params2) =
     let interp1 = Scenario1.get_interp params1 in
     let interp2 = Scenario2.get_interp params2 in
     let length1 = Scenario1.length params1 in
@@ -74,19 +74,18 @@ module Cross
     (Scenario1: S)
     (Scenario2: S with type output := Scenario1.output) =
 struct
-  type params = {
-    params1: Scenario1.params;
-    params2: Scenario2.params;
-  }
+  type params = Scenario1.params * Scenario2.params
   type output = Scenario1.output
 
   let name = Scenario1.name ^ "." ^ Scenario2.name
   let dim = Scenario1.dim + Scenario2.dim
 
-  let length { params1; params2 } =
+  let make (params1, params2) = (params1, params2)
+
+  let length (params1, params2) =
     max (Scenario1.length params1) (Scenario2.length params2)
 
-  let get_interp { params1; params2 } =
+  let get_interp (params1, params2) =
     let interp1 = Scenario1.get_interp params1 in
     let interp2 = Scenario2.get_interp params2 in
     fun t -> Array.append (interp1 t) (interp2 t)
@@ -103,3 +102,13 @@ module PCFadFloat3 = PC(struct type t = FadFloat.t let dim = 3 end)
 module PCFadFloat4 = PC(struct type t = FadFloat.t let dim = 4 end)
 module PCFadFloat5 = PC(struct type t = FadFloat.t let dim = 5 end)
 module PCFadFloat6 = PC(struct type t = FadFloat.t let dim = 6 end)
+
+(* usage_exple
+
+   module Scenario = Cross(CsteFadFloat)(PCFadFloat)
+   let scenario1 = CsteFadFloat.make [| FadFloat.make 5. |] in
+   let scenario2 = PCFadFloat.make ([| FadFloat.make 5.; FadFloat.make 6. |], 5.) in
+   let scenario = Scenario.make (scenario1, scenario2) in
+   let interp = Scenario.get_interp scenario  in
+   interp 3.
+*)
