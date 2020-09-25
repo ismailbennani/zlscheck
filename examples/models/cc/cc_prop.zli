@@ -1,0 +1,4 @@
+type state
+
+val create : unit -AD-> state
+val cc5_sliding_window : state -> MyOp.t * MyOp.t * MyOp.t * MyOp.t * MyOp.t -AD-> MyOp.t

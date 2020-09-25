@@ -1,0 +1,46 @@
+open MyOp
+open Discrete_obs_fad
+
+(* □_[30 35] (87<= pressure <=87.5) *)
+node nn1 (tstep, alpha, beta, inp, outp) =
+    let rec t = make 0. fby (t + tstep) in
+    let ref = Array.get inp 0 in
+    let pos = Array.get outp 0 in
+    let in_bounds = q_lt (abs (pos - ref), alpha + (beta * (abs ref))) in
+
+    automaton
+    | Init ->
+        do make 1.
+        until (t >= make 1.) on (isTrue in_bounds) then In_Bounds
+        else (t >= make 1.) on (isFalse in_bounds) then Out_Bounds(t)
+    | In_Bounds ->
+        do in_bounds
+        until (isFalse in_bounds) then Out_Bounds(t)
+    | Out_Bounds(t0) ->
+        do in_bounds
+        until (isTrue in_bounds) then Hold(t0, t)
+        else (t > translate t0 2.) then Fals
+    | Hold(t0, t1) ->
+        do in_bounds
+        until (isFalse in_bounds) on (t < translate t1 1.) then Out_Bounds(t0)
+        else (t >= translate t1 1.) on (t <= translate t0 2.) then In_Bounds
+        else (t >= translate t1 1.) on (t > translate t0 2.) then Fals
+    | Fals -> do make (-1.) done
+
+node nn_nn1 tstep inp = get next_t, outp, rob where
+    rec init tstep' = make tstep
+    and next_t = tstep' fby (next_t + tstep')
+    and t = make 0. fby next_t
+    and ref = Array.get inp 0
+    and pos, nnpos = Nn_d.nn (tstep', ref)
+    and outp = Array.of_list [pos; nnpos]
+    and rob = nn1 (tstep', make 0.005, make 0.03, inp, outp)
+
+node nn_nn2 tstep inp = get next_t, outp, rob where
+    rec init tstep' = make tstep
+    and next_t = tstep' fby (next_t + tstep')
+    and t = make 0. fby next_t
+    and ref = Array.get inp 0
+    and pos, nnpos = Nn_d.nn (tstep', ref)
+    and outp = Array.of_list [pos; nnpos]
+    and rob = nn1 (tstep', make 0.005, make 0.04, inp, outp)

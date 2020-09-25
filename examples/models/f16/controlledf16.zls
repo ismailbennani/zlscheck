@@ -1,0 +1,83 @@
+open Constants
+open F16_types
+open MyOp
+
+(* change autopilot by opening another one *)
+open GcasAutopilot
+
+let node derivatives (tstep, state, ctrlLimits) =
+    let autopilot_state, _ =
+        state_logic
+            (tstep, state.f16.alpha, state.f16.phi, state.f16.theta, state.f16.p)
+    in
+    let u_ref =
+        get_u_ref
+            (autopilot_state, ctrlLimits, LowLevelController.x_equil, state.f16)
+    in
+    let x_ctrl, u_deg =
+        LowLevelController.get_u_deg (ctrlLimits, u_ref.thtlc_ref, state)
+    in
+
+    let xd_model, ny, nz = Subf16_model.derivatives(state.f16, u_deg) in
+    let ps = x_ctrl.f16.p * (cos x_ctrl.f16.alpha) +
+             x_ctrl.f16.r * (sin x_ctrl.f16.alpha)
+    in
+    let ny_r = ny + x_ctrl.f16.r in
+
+    let nzd, psd, ny_rd =
+        LowLevelController.get_integrator_derivatives
+            (u_ref, nz, ps, ny_r)
+    in
+    let u_rad = {
+        thtlc = u_deg.thtlc;
+        el = u_deg.el * dtor; ail = u_deg.ail * dtor; rdr = u_deg.rdr * dtor;
+    } in
+
+    u_rad,
+    u_ref,
+    {
+        f16 = xd_model;
+        nz = nzd;
+        ps = psd;
+        ny_r = ny_rd;
+    }
+
+let node model (tstep, initial_cond, ctrlLimits) = u, u_ref, x, xd where
+    rec f16_state = {
+        vt = vt; alpha = alpha; beta = beta; phi = phi; theta = theta;
+        psi = psi; p = p; q = q; r = r; x9 = x9;
+        x10 = x10; alt = alt; power = power;
+    }
+    and x = { f16 = f16_state; nz = nz; ps = ps; ny_r = ny_r; }
+    and u, u_ref, xd = derivatives (tstep, x, ctrlLimits)
+
+    and vt = F16_utils.integrate(initial_cond.f16.vt, xd.f16.vt, tstep)
+    and alpha = F16_utils.integrate(initial_cond.f16.alpha, xd.f16.alpha, tstep)
+    and beta = F16_utils.integrate(initial_cond.f16.beta, xd.f16.beta, tstep)
+    and phi = F16_utils.integrate(initial_cond.f16.phi, xd.f16.phi, tstep)
+    and theta = F16_utils.integrate(initial_cond.f16.theta, xd.f16.theta, tstep)
+    and psi = F16_utils.integrate(initial_cond.f16.psi, xd.f16.psi, tstep)
+    and p = F16_utils.integrate(initial_cond.f16.p, xd.f16.p, tstep)
+    and q = F16_utils.integrate(initial_cond.f16.q, xd.f16.q, tstep)
+    and r = F16_utils.integrate(initial_cond.f16.r, xd.f16.r, tstep)
+    and x9 = F16_utils.integrate(initial_cond.f16.x9, xd.f16.x9, tstep)
+    and x10 = F16_utils.integrate(initial_cond.f16.x10, xd.f16.x10, tstep)
+    and alt = F16_utils.integrate(initial_cond.f16.alt, xd.f16.alt, tstep)
+    and power = F16_utils.integrate(initial_cond.f16.power, xd.f16.power, tstep)
+    and nz = F16_utils.integrate(initial_cond.nz, xd.nz, tstep)
+    and ps = F16_utils.integrate(initial_cond.ps, xd.ps, tstep)
+    and ny_r = F16_utils.integrate(initial_cond.ny_r, xd.ny_r, tstep)
+
+let node go (tstep, phi, theta, psi) = u, x where
+    rec initial_cond = {
+        f16 = {
+            vt = make 540.;
+            alpha = scale dtor 2.1215; beta = make 0.;
+            phi = phi; theta = theta; psi = psi;
+            p = make 0.; q = make 0.; r = make 0.;
+            x9 = make 0.; x10 = make 0.;
+            alt = make 4040.; power = make 9.;
+        };
+        nz = make 0.; ps = make 0.; ny_r = make 0.;
+    }
+    and u, u_ref, x, xd = model (tstep, initial_cond, defaultCtrlLimits)

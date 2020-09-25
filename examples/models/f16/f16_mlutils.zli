@@ -1,0 +1,17 @@
+val exit : int -AD-> 'a
+val adc : MyOp.t * MyOp.t -> MyOp.t * MyOp.t
+val tgear : MyOp.t -> MyOp.t
+val thrust : MyOp.t * MyOp.t * MyOp.t -> MyOp.t
+val dampp : MyOp.t -> MyOp.t * MyOp.t * MyOp.t * MyOp.t * MyOp.t * MyOp.t * MyOp.t * MyOp.t * MyOp.t
+val rtau : MyOp.t -> MyOp.t
+
+val cx : MyOp.t * MyOp.t -> MyOp.t
+val cy : MyOp.t * MyOp.t * MyOp.t -> MyOp.t
+val cz : MyOp.t * MyOp.t * MyOp.t -> MyOp.t
+val cl : MyOp.t * MyOp.t -> MyOp.t
+val cm : MyOp.t * MyOp.t -> MyOp.t
+val cn : MyOp.t * MyOp.t -> MyOp.t
+val dlda : MyOp.t * MyOp.t -> MyOp.t
+val dldr : MyOp.t * MyOp.t -> MyOp.t
+val dnda : MyOp.t * MyOp.t -> MyOp.t
+val dndr : MyOp.t * MyOp.t -> MyOp.t
