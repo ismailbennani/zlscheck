@@ -2,49 +2,60 @@ open Zlscheck_utils
 open Optim_types
 open Optim_utils
 
-let name = "UR"
+module Make(Output :
+            sig
+              type t
+              val get_rob : t -> float
+            end) =
+struct
+  let name = "UR"
+  let string_of_params _ = "()"
 
-type alg_params = ur_params
+  type input = float array
+  type output = Output.t
+  type optim_params = unit
+  type optim_step_params = unit
 
-let string_of_params _ = "()"
+  let default_params = ()
+  let mk_step_params _ = ()
 
-type input = float array
-type output = float
-type optim_step_params = unit
+  let get_rob_from_output = Output.get_rob
 
-let get_params () = ()
-let mk_step_params () = ()
+  let step params step_params incr_runs fn =
+    let bounds = params.bounds in
+    let max_n_runs = params.max_n_runs in
+    let verbose = params.verbose || params.vverbose in
 
-let ur_step step_params incr_runs fn =
-  let params = Optim_globals.params in
-  let bounds = params.bounds in
-  let max_n_runs = params.max_n_runs in
-  let verbose = params.verbose || params.vverbose in
+    if verbose then
+      Printf.printf "Run %i/%i\n" (step_params.n_runs+1) max_n_runs;
 
-  let old_sample, old_val = step_params.last_result in
+    let new_sample = ur_sample bounds in
+    let new_output = fn new_sample in
+    let new_val = get_rob_from_output new_output in
 
-  if verbose then
-    Printf.printf "Run %i/%i\n" (step_params.n_runs+1) max_n_runs;
+    if verbose then begin
+      Printf.printf "New point : %a\n" Misc_printers.print_float_array new_sample;
+      Printf.printf "New value : %.2e\n" new_val;
+    end;
 
-  let new_sample = ur_sample bounds in
-  let new_val = fn new_sample in
+    incr_runs ();
 
-  if verbose then begin
-    Printf.printf "New point : %a\n" Misc_printers.print_float_array new_sample;
-    Printf.printf "New value : %.2e\n" new_val;
-  end;
+    if params.verbose then begin
+      print_newline (); flush stdout
+    end;
 
-  incr_runs ();
+    step_params.history <- (new_sample, new_output) :: step_params.history;
+    step_params.last_result <- (new_sample, new_output)
+end
 
-  if params.verbose then begin
-    print_newline (); flush stdout
-  end;
+module UR = Make(
+  struct
+    type t = float
+    let get_rob rob = rob
+  end)
 
-  step_params.history <- (new_sample, new_val) :: step_params.history;
-  step_params.last_result <- (new_sample, new_val)
-
-let get_rob_from_output rob = rob
-
-let step = ur_step
-
-(* let run = run_optim ur_step mk_step_params float_array_dist get_rob_from_output *)
+module GDAWARE = Make(
+  struct
+    type t = float * float array
+    let get_rob (rob, _) = rob
+  end)

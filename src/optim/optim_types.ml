@@ -10,32 +10,6 @@ type ('a, 'b) step_params = {
   optim_step : 'a;
 }
 
-type ur_params = unit
-
-type particle_params = {
-  mutable n : int;
-}
-
-type sa_params = {
-  mutable dispAdap : float;
-  mutable betaXAdap : float;
-  mutable minDisp : float;
-  mutable maxDisp : float;
-  mutable acRatioMin : float;
-  mutable acRatioMax : float;
-
-  mutable dispStart : float;
-  mutable betaXStart : float;
-}
-
-type gd_params = {
-  mutable do_restart : bool;
-  mutable restart_fn : unit -> unit;
-  mutable alpha : float;
-  mutable beta1 : float;
-  mutable beta2 : float;
-}
-
 type gpo_params = {
   mutable nb_init_samples : int;
   mutable a : float;
@@ -45,37 +19,33 @@ type gpo_params = {
   mutable eps : float;
   mutable gd_miniter : int;
   mutable gd_maxiter : int;
+  mutable gd_alpha : float;
 }
 
-type method_params = {
-  ur : ur_params;
-  particle : particle_params;
-  sa : sa_params;
-  gd : gd_params;
-  gpo : gpo_params;
-}
-
-type params = {
+type 'a params = {
   mutable max_n_runs: int;
   mutable bounds: (float * float) array;
   mutable init_sample: float array option;
   mutable verbose: bool;
   mutable vverbose: bool;
-  meth: method_params;
+  optim: 'a;
 }
 
 module type OptimAlg =
 sig
-  val string_of_params : method_params -> string
   type input
   type output
+  type optim_params
   type optim_step_params
   val name : string
 
-  val mk_step_params : unit -> optim_step_params
+  val string_of_params : optim_params -> string
+  val default_params : optim_params
+  val mk_step_params : optim_params params -> optim_step_params
 
-  (* history, best_result_yet = step step_params history old_result *)
+  (* history, best_result_yet = step params step_params history old_result *)
   val step :
+    optim_params params ->
     (optim_step_params, input * output) step_params ->
     (* function to increment number of runs *)
     (unit -> unit) ->
@@ -90,13 +60,22 @@ sig
   val name : string
   type input
   type output
+  type optim_params
   type optim_step_params
 
-  val mk_step_params : (input * output) -> (optim_step_params, input * output) step_params
+  val mk_step_params :
+    (input * output) -> (optim_step_params, input * output) step_params
 
-  val string_of_params : params -> string
-  val step : (input -> output) -> (optim_step_params, input * output) step_params -> bool
-  val run : (input -> output) -> (input * output) list * (input * output)
+  val string_of_params : optim_params params -> string
+  val step :
+    (input -> output) ->
+    optim_params params ->
+    (optim_step_params, input * output) step_params ->
+    bool
+  val run :
+    (input -> output) ->
+    optim_params params ->
+    (input * output) list * (input * output)
   val falsify : (input -> output) -> (input * output) list * (input * output)
   val minimize : (input -> output) -> (input * output) list * (input * output)
 

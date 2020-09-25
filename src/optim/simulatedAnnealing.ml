@@ -2,148 +2,185 @@ open Zlscheck_utils
 open Optim_types
 open Optim_utils
 
-let name = "SA"
+module Make(Output :
+            sig
+              type t
+              val get_rob : t -> float
+            end) =
+struct
+  let name = "SA"
 
-let string_of_params p =
-  Printf.sprintf "{ \"dispAdap\": %g, \"betaXAdap\": %g, \"minDisp\": %g,\
-                  \"maxDisp\": %g, \"acRatioMin\": %g, \"acRatioMax\": %g,\
-                  \"dispStart\": %g, \"betaXStart\": %g }"
-    p.sa.dispAdap p.sa.betaXAdap p.sa.minDisp p.sa.maxDisp p.sa.acRatioMin p.sa.acRatioMax
-    p.sa.dispStart p.sa.betaXStart
+  type input = float array
+  type output = Output.t
+  type optim_params = {
+    dispAdap : float;
+    betaXAdap : float;
+    minDisp : float;
+    maxDisp : float;
+    acRatioMin : float;
+    acRatioMax : float;
 
-type input = float array
-type output = float
+    dispStart : float;
+    betaXStart : float;
+  }
 
-let get_params_as_string () = string_of_params (Optim_globals.params.meth)
+  let string_of_params p =
+      Printf.sprintf "{ \"dispAdap\": %g, \"betaXAdap\": %g, \"minDisp\": %g,\
+                      \"maxDisp\": %g, \"acRatioMin\": %g, \"acRatioMax\": %g,\
+                      \"dispStart\": %g, \"betaXStart\": %g }"
+        p.dispAdap p.betaXAdap p.minDisp p.maxDisp p.acRatioMin p.acRatioMax
+        p.dispStart p.betaXStart
 
-type optim_step_params = {
-  (* acceptance parameter *)
-  mutable betaX : float;
-  (* radius of search *)
-  mutable displace : float;
-  (* number of accepted samples *)
-  mutable n_accepts : int;
-}
+  let default_params = {
+    dispAdap = 10.;
+    betaXAdap = 50.;
+    minDisp = 0.01;
+    maxDisp = 0.99;
+    acRatioMin = 0.45;
+    acRatioMax = 0.55;
+    dispStart = 0.75;
+    betaXStart = -15.;
+  };
 
-let mk_step_params () = {
-  betaX = Optim_globals.params.meth.sa.betaXStart;
-  displace = Optim_globals.params.meth.sa.dispStart;
-  n_accepts = 0;
-}
+  type optim_step_params = {
+    (* acceptance parameter *)
+    mutable betaX : float;
+    (* radius of search *)
+    mutable displace : float;
+    (* number of accepted samples *)
+    mutable n_accepts : int;
+  }
 
-let neighbour (radius : float) (center : float array)
-    (bounds : (float * float) array) =
-  assert (in_bounds center bounds);
+  let mk_step_params params = {
+    betaX = params.optim.betaXStart;
+    displace = params.optim.dispStart;
+    n_accepts = 0;
+  }
 
-  let direction = Array.map (fun _ -> gaussian(0.,1.)) center in
-  let lambda_min, lambda_max = get_bounds center direction bounds radius in
+  let neighbour (radius : float) (center : float array)
+      (bounds : (float * float) array) =
+    assert (in_bounds center bounds);
 
-  let lambda = bounded_gaussian (lambda_min, lambda_max)
-      (0., min radius (max lambda_min lambda_max)) in
+    let direction = Array.map (fun _ -> gaussian(0.,1.)) center in
+    let lambda_min, lambda_max = get_bounds center direction bounds radius in
 
-  let new_input =
-    Array.map2 (fun f1 f2 -> f1 +. lambda *. f2) center direction in
+    let lambda = bounded_gaussian (lambda_min, lambda_max)
+        (0., min radius (max lambda_min lambda_max)) in
 
-  assert (in_bounds new_input bounds);
-  new_input
+    let new_input =
+      Array.map2 (fun f1 f2 -> f1 +. lambda *. f2) center direction in
 
-let get_new_sample last_sample input_ranges displace =
-  neighbour displace last_sample input_ranges
+    assert (in_bounds new_input bounds);
+    new_input
 
-let mcAccept betaX new_val cur_val =
-  (* new value is better than the old one *)
-  if new_val < cur_val then
-    true
-  else
-    let acceptance_prob = exp ((new_val -. cur_val) *. betaX) in
-    (acceptance_prob >= Random.float 1.)
+  let get_new_sample last_sample input_ranges displace =
+    neighbour displace last_sample input_ranges
 
-let sa_step step_params incr_runs fn =
-  let params = Optim_globals.params in
-  let bounds = params.bounds in
-  let max_n_runs = params.max_n_runs in
-  let dispAdap = 1. +. params.meth.sa.dispAdap /. 100. in
-  let betaXAdap = 1. +. params.meth.sa.betaXAdap /. 100. in
-  let acRatioMin = params.meth.sa.acRatioMin in
-  let acRatioMax = params.meth.sa.acRatioMax in
-  let minDisp = params.meth.sa.minDisp in
-  let maxDisp = params.meth.sa.maxDisp in
-  let verbose = params.verbose in
-  let vverbose = params.vverbose in
+  let mcAccept betaX new_val cur_val =
+    (* new value is better than the old one *)
+    if new_val < cur_val then
+      true
+    else
+      let acceptance_prob = exp ((new_val -. cur_val) *. betaX) in
+      (acceptance_prob >= Random.float 1.)
 
-  let last_sample, last_val = step_params.last_result in
+  let get_rob_from_output = Output.get_rob
 
-  if verbose then
-    Printf.printf "Run %i/%i\n" (step_params.n_runs+1) max_n_runs;
+  let step params step_params incr_runs fn =
+    let bounds = params.bounds in
+    let max_n_runs = params.max_n_runs in
+    let dispAdap = 1. +. params.optim.dispAdap /. 100. in
+    let betaXAdap = 1. +. params.optim.betaXAdap /. 100. in
+    let acRatioMin = params.optim.acRatioMin in
+    let acRatioMax = params.optim.acRatioMax in
+    let minDisp = params.optim.minDisp in
+    let maxDisp = params.optim.maxDisp in
+    let verbose = params.verbose in
+    let vverbose = params.vverbose in
 
-  (* pick new sample *)
-  let new_sample = get_new_sample last_sample
-      bounds
-      step_params.optim_step.displace
-  in
-  let new_val = fn new_sample in
-  incr_runs ();
+    let last_sample, last_output = step_params.last_result in
+    let last_val = get_rob_from_output last_output in
 
-  if verbose then begin
-    Printf.printf "New point : %a\n"
-      Misc_printers.print_float_array new_sample;
-    Printf.printf "New value : %.2e\n" new_val;
-  end;
+    if verbose then
+      Printf.printf "Run %i/%i\n" (step_params.n_runs+1) max_n_runs;
 
-  (* choose next sample *)
-  let accepted, next_sample, next_val =
-    if mcAccept step_params.optim_step.betaX new_val last_val
-    then true, new_sample, new_val
-    else false, last_sample, last_val
-  in
+    (* pick new sample *)
+    let new_sample = get_new_sample last_sample
+        bounds
+        step_params.optim_step.displace
+    in
+    let new_output = fn new_sample in
+    incr_runs ();
 
-  if verbose then
-    Printf.printf "New point accepted : %s\n"
-      (if accepted then "true" else "false");
+    let new_val = get_rob_from_output new_output in
 
-  (* update acceptance parameters *)
+    if verbose then begin
+      Printf.printf "New point : %a\n"
+        Misc_printers.print_float_array new_sample;
+      Printf.printf "New value : %.2e\n" new_val;
+    end;
 
-  let n_accepts =
-    if accepted then step_params.optim_step.n_accepts + 1
-    else step_params.optim_step.n_accepts
-  in
+    (* choose next sample *)
+    let accepted, next_sample, next_output =
+      if mcAccept step_params.optim_step.betaX new_val last_val
+      then true, new_sample, new_output
+      else false, last_sample, last_output
+    in
 
-  if verbose then
-    Printf.printf "Number of accepted points so far : %i\n" n_accepts;
+    if verbose then
+      Printf.printf "New point accepted : %s\n"
+        (if accepted then "true" else "false");
 
-  let betaX, displace =
-    if step_params.n_runs mod 50 = 0 then
-      let acRatio = (float n_accepts) /. (float (step_params.n_runs)) in
-      if verbose then
-        Printf.printf "Acceptance ratio : %i%%\n" (truncate (acRatio *. 100.));
-      if acRatio > acRatioMax then
-        (step_params.optim_step.betaX *. betaXAdap,
-         step_params.optim_step.displace *. dispAdap)
-      else if acRatio < acRatioMin then
-        (step_params.optim_step.betaX /. betaXAdap,
-         step_params.optim_step.displace /. dispAdap)
+    (* update acceptance parameters *)
+
+    let n_accepts =
+      if accepted then step_params.optim_step.n_accepts + 1
+      else step_params.optim_step.n_accepts
+    in
+
+    if verbose then
+      Printf.printf "Number of accepted points so far : %i\n" n_accepts;
+
+    let betaX, displace =
+      if step_params.n_runs mod 50 = 0 then
+        let acRatio = (float n_accepts) /. (float (step_params.n_runs)) in
+        if verbose then
+          Printf.printf "Acceptance ratio : %i%%\n" (truncate (acRatio *. 100.));
+        if acRatio > acRatioMax then
+          (step_params.optim_step.betaX *. betaXAdap,
+           step_params.optim_step.displace *. dispAdap)
+        else if acRatio < acRatioMin then
+          (step_params.optim_step.betaX /. betaXAdap,
+           step_params.optim_step.displace /. dispAdap)
+        else (step_params.optim_step.betaX, step_params.optim_step.displace)
       else (step_params.optim_step.betaX, step_params.optim_step.displace)
-    else (step_params.optim_step.betaX, step_params.optim_step.displace)
-  in
+    in
 
-  step_params.optim_step.betaX <- betaX;
-  step_params.optim_step.displace <-
-    saturate (minDisp, maxDisp) displace;
-  step_params.optim_step.n_accepts <- n_accepts;
-  if params.vverbose then
-    Printf.printf "Params:\n\tdisplace: %f\n\tbetaX: %f\n"
-      step_params.optim_step.displace step_params.optim_step.betaX;
+    step_params.optim_step.betaX <- betaX;
+    step_params.optim_step.displace <-
+      saturate (minDisp, maxDisp) displace;
+    step_params.optim_step.n_accepts <- n_accepts;
+    if params.vverbose then
+      Printf.printf "Params:\n\tdisplace: %f\n\tbetaX: %f\n"
+        step_params.optim_step.displace step_params.optim_step.betaX;
 
-  if params.verbose then begin
-    print_newline (); flush stdout
-  end;
+    if params.verbose then begin
+      print_newline (); flush stdout
+    end;
 
-  (* history and inputs for the next step *)
-  step_params.history <- (new_sample, new_val) :: step_params.history;
-  step_params.last_result <- (next_sample, next_val)
+    (* history and inputs for the next step *)
+    step_params.history <- (new_sample, new_output) :: step_params.history;
+    step_params.last_result <- (next_sample, next_output)
+end
 
-let get_rob_from_output rob = rob
+module SA = Make(
+  struct
+    type t = float
+    let get_rob rob = rob
+  end)
 
-let step = sa_step
-
-(* let run = run_optim sa_step mk_step_params float_array_dist get_rob_from_output *)
+module GDAWARE = Make(
+  struct
+    type t = float * float array
+    let get_rob (rob, _) = rob
+  end)
