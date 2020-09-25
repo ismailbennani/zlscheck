@@ -1,3 +1,5 @@
+(* FAD operators *)
+
 include Fadbad.OrderedF(Fadbad.OrderedFloat)
 
 let infinity = make infinity

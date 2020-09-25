@@ -44,11 +44,9 @@ clean_ext:
 	-$(MAKE) -C $(ZLDIR) cleanall
 	-$(MAKE) -C $(FADBADDIR) cleanall
 
-realclean cleanall:
+realclean cleanall: clean_ext
 	-$(MAKE) -C src cleanall
 	-$(MAKE) -C arch cleanall
-	-$(MAKE) -C external/zelus cleanall
-	-$(MAKE) -C external/fadbadml cleanall
 	-rm -rf lib
 
 .PHONY: src lib

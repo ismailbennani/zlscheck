@@ -1,5 +1,3 @@
-open Misc_printers
-
 let two_pi = 2.0 *. 3.14159265358979323846
 
 let eq_float a b epsilon =
