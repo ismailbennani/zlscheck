@@ -113,8 +113,6 @@ optim/uniformRandom.cmx : \
     optim/optim_utils.cmx \
     optim/optim_types.cmx
 scenario/scenario.cmo : \
-    scenario/scenario_types.cmo
+    autodiff/fadFloat.cmo
 scenario/scenario.cmx : \
-    scenario/scenario_types.cmx
-scenario/scenario_types.cmo :
-scenario/scenario_types.cmx :
+    autodiff/fadFloat.cmx
