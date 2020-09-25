@@ -2,7 +2,7 @@ include ../../config
 
 MODEL_FOLDERS = $(shell find models -type d)
 
-INCLUDES += -I $(CHECKLIB) zlscheck.cmxa \
+INCLUDES += graphics.cmxa -I $(CHECKLIB) zlscheck.cmxa \
 $(MODEL_FOLDERS:%=-I %) \
 \
 myOp.cmx discrete_obs_fad.cmx interp.cmx \

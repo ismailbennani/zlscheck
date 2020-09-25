@@ -37,11 +37,14 @@ type gd_params = {
 }
 
 type gpo_params = {
+  mutable nb_init_samples : int;
   mutable a : float;
   mutable b : float;
   mutable alpha : float;
   mutable beta : float;
   mutable eps : float;
+  mutable gd_miniter : int;
+  mutable gd_maxiter : int;
 }
 
 type method_params = {

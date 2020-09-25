@@ -14,13 +14,14 @@ let saturate (low, high, v) = min (max v low) high
 node transport_delay (t, delay, y0) = y where
     rec y = y0
 
-node rate_limiter (t, rising, falling, y0, x) = y where
+node rate_limiter (t, rising, falling, y0, x) = y, transition where
     rec tstep = t -> (t - pre t)
     and rate = (x - (pre y)) / tstep
-    and y = x ->
-        (if rate > rising then tstep * rising + (pre y)
-         else if rate < falling then tstep * falling + (pre y)
-         else x)
+    and y, branch = (x, 3) ->
+        (if rate > rising then (tstep * rising + (pre y), 1)
+         else if rate < falling then (tstep * falling + (pre y), 2)
+         else (x, 3))
+    and transition = false -> (MyOp.integer branch <> (MyOp.integer (pre branch)))
 
 node collective_pitch_with_anti_windup (t, e, gs, params) = theta_d where
     rec tstep = t -> (t - pre t)
@@ -47,24 +48,25 @@ node filter_drehzahl (t, u, params) = y where
     and dy = (u - y) / params.vscontrol.vs_filterConstant
     and y = integrate (tstep, dy, params.omega_g0)
 
-discrete torque_controller (omega_g, theta_d, params) = mg_d where
-    mg_d =
+node torque_controller (omega_g, theta_d, params) = mg_d, transition where
+    rec mg_d, branch =
         if omega_g >= params.vscontrol.rtGnSp ||
            theta_d >= params.vscontrol.rgn3MP then
             (* We are in region 3 - power is constant *)
-            params.vscontrol.rtPwr / omega_g
+            (params.vscontrol.rtPwr / omega_g, 1)
         else if omega_g <= params.vscontrol.ctInSp then
             (* We are in region 1 - torque is zero *)
-            make 0.
+            (make 0., 2)
         else if omega_g < params.vscontrol.rgn2Sp then
             (* We are in region 1 1/2 - linear ramp in torque from zero to optimal *)
-            params.vscontrol.slope15 * (omega_g - params.vscontrol.ctInSp)
+            (params.vscontrol.slope15 * (omega_g - params.vscontrol.ctInSp), 3)
         else if omega_g < params.vscontrol.trGnSp then
             (* We are in region 2 - optimal torque is proportional to the square of the generator speed *)
-            params.vscontrol.rgn2K * omega_g * omega_g
+            (params.vscontrol.rgn2K * omega_g * omega_g, 4)
         else
             (* We are in region 2 1/2 - simple induction generator transition region *)
-            params.vscontrol.slope25 * (omega_g - params.vscontrol.sySp)
+            (params.vscontrol.slope25 * (omega_g - params.vscontrol.sySp), 5)
+    and transition = false -> (MyOp.integer branch <> (MyOp.integer (pre branch)))
 
 node scnd_order_lag_pitch (t, theta_d, params) = theta where
     rec tstep = t -> (t - pre t)
@@ -149,18 +151,18 @@ node wt (t, v0) = rad2deg theta,
                   rad2deg theta_d,
                   rad2deg blade_pitch_angle,
                   mg_d,
-                  rob_optim
+                  torque_transition || rate_trans1 || rate_trans2
     where
     rec init v0_0 = v0
     and params = get_default v0_0
     and blade_pitch_angle, omega = wind_turbine (t, v0, theta_d, torque, params)
-    and mg_d = torque_controller (omega_g, theta_d, params)
+    and mg_d, torque_transition = torque_controller (omega_g, theta_d, params)
     and torque = saturate (neg_infinity, params.vscontrol.maxTq, torque_aux)
-    and torque_aux =
+    and torque_aux, rate_trans1 =
         rate_limiter (t,
                       params.vscontrol.maxRat, -params.vscontrol.maxRat,
                       make 0., mg_d)
-    and theta_d =
+    and theta_d, rate_trans2 =
         rate_limiter (t,
                       params.pitch.rateLimit, -params.pitch.rateLimit,
                       params.pitch.thetaDot0, theta_d_aux)
@@ -168,5 +170,3 @@ node wt (t, v0) = rad2deg theta,
         coll_pitch_controller (t, omega_g, blade_pitch_angle, params.omega_g_rated, params)
     and theta = filter_pitch (t, blade_pitch_angle, params)
     and omega_g = filter_drehzahl (t, omega / params.gBRatio, params)
-
-    and rob_optim = make 0. (* ignored *)

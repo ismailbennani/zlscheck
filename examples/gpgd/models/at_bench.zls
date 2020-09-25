@@ -26,41 +26,71 @@ node at53 (tstep, outp) = at5 3. (tstep, outp)
 node at54 (tstep, outp) = at5 4. (tstep, outp)
 
 (* AT6(t,s): (□_[0.0, 30.0] (RPM < 3000.0) ==> □_[0.0, t] (speed < s)) *)
-
-node at6 tstep (t, s) (outp) =
+(* node at6 tstep (t, s) (outp) =
     let rpm = Array.get outp 0 in
     let speed = Array.get outp 2 in
     let rpm_max = make 3000. in
     let speed_max = make s in
     q_or (once_timed 30. (tstep, q_gt (rpm, rpm_max)),
-          always_timed t (tstep, q_lt (speed, speed_max)))
+          always_timed t (tstep, q_lt (speed, speed_max))) *)
 
 (* AT6(t,s): (□_[0.0, 30.0] (RPM < 3000.0) ==> □_[0.0, t] (speed < s)) *)
-node at6a (tstep, outp) =
-    let rpm = Array.get outp 0 / (make 1000.) in
-    let speed = Array.get outp 2 / (make 100.) in
-    let rpm_max = make (3000. /. 1000.) in
-    let speed_max = make (35. /. 100.) in
+(* node at6a (tstep, outp) =
+    let rpm = Array.get outp 0 in
+    let speed = Array.get outp 2 in
+    let rpm_max = make 3000. in
+    let speed_max = make 35. in
     let rec t = (make 0.) fby (t + tstep) in
     let trans = false -> (t >= (make 4.)) && (pre t < (make 4.)) in
     q_or (once_timed 30. (tstep, q_gt (rpm, rpm_max)),
-          always_timed 4. (tstep, q_lt (speed, speed_max))),
-    trans
+          always_timed 4. (tstep, q_lt (speed, speed_max))), *)
+
+(* AT6(t,s): (□_[0.0, 30.0] (RPM < 3000.0) ==> □_[0.0, t] (speed < s)) *)
+node at6a (tstep, outp) =
+    let scale_rpm = 1. in
+    let scale_speed = 1. in
+
+    let rpm = (Array.get outp 0) / (make scale_rpm) in
+    let speed = (Array.get outp 2) / (make scale_speed) in
+    let rpm_max = make (3000. /. scale_rpm) in
+    let speed_max = make (35. /. scale_speed) in
+    let rec t = (make 0.) fby (t + tstep) in
+
+    let speed_lt = q_lt (speed, speed_max) in
+    let rec assert_speed = speed_lt ->
+        (if t <= make 4. then min speed_lt (pre assert_speed)
+         else pre assert_speed)
+    in
+
+    let rpm_gt = q_gt (rpm, rpm_max) in
+    let assert_rpm = once rpm_gt in
+
+    q_or (assert_speed, assert_rpm),
+    (false -> ((t >= make 4.) && (pre t < make 4.)))
+
+
 node at6b (tstep, outp) =
-    let rpm = Array.get outp 0 / (make 1000.) in
-    let speed = Array.get outp 2 / (make 100.) in
-    let rpm_max = make (3000. /. 1000.) in
-    let speed_max = make (50. /. 100.) in
+    let scale_rpm = 1. in
+    let scale_speed = 1. in
+
+    let rpm = Array.get outp 0 / (make scale_rpm) in
+    let speed = Array.get outp 2 / (make scale_speed) in
+    let rpm_max = make (3000. /. scale_rpm) in
+    let speed_max = make (50. /. scale_speed) in
     let rec t = (make 0.) fby (t + tstep) in
     let trans = false -> (t >= (make 8.)) && (pre t < (make 8.)) in
     q_or (once_timed 30. (tstep, q_gt (rpm, rpm_max)),
           always_timed 8. (tstep, q_lt (speed, speed_max))),
     trans
+
 node at6c (tstep, outp) =
-    let rpm = Array.get outp 0 / (make 5000.) in
-    let speed = Array.get outp 2 / (make 120.) in
-    let rpm_max = make (3000. /. 5000.) in
-    let speed_max = make (65. /. 120.) in
+    let scale_rpm = 1. in
+    let scale_speed = 1. in
+
+    let rpm = Array.get outp 0 / (make scale_rpm) in
+    let speed = Array.get outp 2 / (make scale_speed) in
+    let rpm_max = make (3000. /. scale_rpm) in
+    let speed_max = make (65. /. scale_speed) in
     let rec t = (make 0.) fby (t + tstep) in
     let trans = false -> (t >= (make 20.)) && (pre t < (make 20.)) in
     q_or (once_timed 30. (tstep, q_gt (rpm, rpm_max)),
