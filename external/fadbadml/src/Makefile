@@ -9,10 +9,10 @@ byte: fadbad.cma
 opt : fadbad.cmxa
 
 fadbad.cma: $(CMO) fadbad.cmo
-	$(OCAMLC) -a -o $@ $(OCAMLFLAGS) $(SORTED_CMO) fadbad.ml
+	$(OCAMLC) -a -opaque -o $@ $(OCAMLFLAGS) $(SORTED_CMO) fadbad.ml
 
 fadbad.cmxa: $(CMO) fadbad.cmo
-	$(OCAMLOPT) -a -o $@ $(OCAMLFLAGS) $(SORTED_CMO) fadbad.ml
+	$(OCAMLOPT) -a -opaque -o $@ $(OCAMLFLAGS) $(SORTED_CMO) fadbad.ml
 
 clean:
 	rm -rf *.cm[ox] *.o .depend
