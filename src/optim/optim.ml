@@ -1,9 +1,8 @@
 open Optim_types
 open Optim_utils
 
-let default_params optim_params = {
-  max_n_runs = 500;
-  bounds = [||];
+let default_params optim_params max_n_runs bounds = {
+  max_n_runs; bounds;
   init_sample = None;
   vverbose = false;
   verbose = false;
@@ -15,14 +14,19 @@ struct
 
   type input = OptimAlg.input
   type output = OptimAlg.output
-  type optim_params = OptimAlg.optim_params params
+  type optim_params = OptimAlg.optim_params
   type optim_step_params = OptimAlg.optim_step_params
 
   let string_of_params =
     string_of_params OptimAlg.string_of_params
       (fun i -> Printf.sprintf "[%s]" (Printer.string_of_float_array "; " i))
 
-  let default_params = default_params OptimAlg.default_params
+  let print_optim_params ff optim_params =
+    Printf.fprintf ff "%s" (OptimAlg.string_of_params optim_params)
+
+  let mk_params max_n_runs bounds =
+    default_params OptimAlg.default_params max_n_runs bounds
+  let optim_params_of_array = OptimAlg.params_of_array
 
   let name = OptimAlg.name
 
@@ -43,7 +47,7 @@ struct
   let step (fn : input -> output) params step_params =
     let incr_runs () = step_params.n_runs <- step_params.n_runs + 1 in
 
-    if not step_params.online then begin
+    if not step_params.online && params.verbose then begin
       Printf.printf "[%s] Run %d/%d (Best rob so far: %g)\n"
         name step_params.n_runs params.max_n_runs
         (get_rob_from_output (snd step_params.best_result));
@@ -54,7 +58,7 @@ struct
         step_params.n_runs >= params.max_n_runs) ||
        (step_params.mode = Falsify &&
         get_rob_from_output (snd step_params.best_result) < 0.) then
-        true
+      true
     else
       let (old_best_inp, old_best_out) = step_params.best_result in
       OptimAlg.step params step_params incr_runs fn;
@@ -73,7 +77,8 @@ struct
         else
           step_params.best_result <- (new_inp, new_out)
       end;
-      false
+      let stop = Zlscheck_utils.eq_float_array old_best_inp new_inp in
+      stop
 
   let run fn params =
     let first_sample =
@@ -81,7 +86,10 @@ struct
       | None -> Zlscheck_utils.ur_sample params.bounds
       | Some sample ->
         if not (Zlscheck_utils.in_bounds sample params.bounds) then begin
-          Printf.eprintf "Given initial sample is not in bounds\n";
+          Printf.eprintf "Initial sample [%a] is not in bounds [%a].\n"
+            Printer.print_float_array sample
+            (Printer.print_array (fun ff (a,b) -> Printf.fprintf ff "(%g, %g)" a b))
+            params.bounds;
           assert false
         end; sample
     in

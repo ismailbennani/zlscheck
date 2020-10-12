@@ -4,13 +4,9 @@ autodiff/fadFloat.cmo :
 autodiff/fadFloat.cmx :
 global/deftypes.cmo : \
     scenario/scenario.cmo \
-    optim/optim_types.cmo \
-    optim/optim.cmo \
     autodiff/fadFloat.cmo
 global/deftypes.cmx : \
     scenario/scenario.cmx \
-    optim/optim_types.cmx \
-    optim/optim.cmx \
     autodiff/fadFloat.cmx
 global/logger.cmo : \
     global/printer.cmo
@@ -20,8 +16,30 @@ global/printer.cmo :
 global/printer.cmx :
 global/zlscheck_utils.cmo :
 global/zlscheck_utils.cmx :
-hyperparams/smac_wrapper.cmo :
-hyperparams/smac_wrapper.cmx :
+hyperparams/smac_wrapper.cmo : \
+    optim/simulatedAnnealing.cmo \
+    scenario/scenario.cmo \
+    global/printer.cmo \
+    optim/optim_types.cmo \
+    optim/optim.cmo \
+    method/online.cmo \
+    method/offline.cmo \
+    method/method_types.cmo \
+    global/logger.cmo \
+    global/deftypes.cmo \
+    optim/adaptativeGradient.cmo
+hyperparams/smac_wrapper.cmx : \
+    optim/simulatedAnnealing.cmx \
+    scenario/scenario.cmx \
+    global/printer.cmx \
+    optim/optim_types.cmx \
+    optim/optim.cmx \
+    method/online.cmx \
+    method/offline.cmx \
+    method/method_types.cmx \
+    global/logger.cmx \
+    global/deftypes.cmx \
+    optim/adaptativeGradient.cmx
 method/method_types.cmo : \
     global/deftypes.cmo
 method/method_types.cmx : \
@@ -35,18 +53,25 @@ method/method_utils.cmx : \
     autodiff/fadFloat.cmx \
     global/deftypes.cmx
 method/offline.cmo : \
+    scenario/scenario.cmo \
+    optim/optim_types.cmo \
+    optim/optim.cmo \
     method/method_utils.cmo \
     method/method_types.cmo \
     global/logger.cmo \
     autodiff/fadFloat.cmo \
     global/deftypes.cmo
 method/offline.cmx : \
+    scenario/scenario.cmx \
+    optim/optim_types.cmx \
+    optim/optim.cmx \
     method/method_utils.cmx \
     method/method_types.cmx \
     global/logger.cmx \
     autodiff/fadFloat.cmx \
     global/deftypes.cmx
 method/online.cmo : \
+    optim/optim_types.cmo \
     optim/optim.cmo \
     method/method_utils.cmo \
     method/method_types.cmo \
@@ -54,6 +79,7 @@ method/online.cmo : \
     autodiff/fadFloat.cmo \
     global/deftypes.cmo
 method/online.cmx : \
+    optim/optim_types.cmx \
     optim/optim.cmx \
     method/method_utils.cmx \
     method/method_types.cmx \
@@ -112,7 +138,5 @@ optim/uniformRandom.cmx : \
     global/printer.cmx \
     optim/optim_utils.cmx \
     optim/optim_types.cmx
-scenario/scenario.cmo : \
-    autodiff/fadFloat.cmo
-scenario/scenario.cmx : \
-    autodiff/fadFloat.cmx
+scenario/scenario.cmo :
+scenario/scenario.cmx :

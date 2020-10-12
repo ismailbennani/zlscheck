@@ -1,12 +1,15 @@
 open Ztypes
 
-(* type of Online.Make(..) and Offline.Make(..), cf
-   cf zlscheck/examples/arch20/common/offline.ml and online.ml *)
+module type OptimS = Optim.S with type input = float array
+                              and type output = float * float array
+
 module type RunBench =
 sig
-  val name : string
-  val bench_name : string
-  val prop_name : string
-  val print_optim_params : out_channel -> unit -> unit
-  val run : unit -> float array Deftypes.one_repet_result
+  include Deftypes.SUT
+  module Optim : OptimS
+  module Logger : Logger.S
+  val optim_params_of_array : float array -> Optim.optim_params
+  val string_of_params : Optim.optim_params Optim_types.params -> string
+  val print_optim_params : out_channel -> Optim.optim_params Optim_types.params -> unit
+  val run : Logger.params -> Optim.optim_params Optim_types.params -> float array Deftypes.one_repet_result
 end

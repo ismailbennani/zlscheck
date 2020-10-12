@@ -1,9 +1,10 @@
 module type S =
 sig
   type t
+  type params
   type input
 
-  val init : unit -> t
+  val init : params -> t
   val log : t -> input -> unit
   val finalize : t -> unit
 end
@@ -11,21 +12,24 @@ end
 module None(Ty: sig type t end) =
 struct
   type t = unit
+  type params = unit
   type input = Ty.t
+
   let init () = ()
   let log () _ = ()
   let finalize () = ()
 end
 
-module LogToFile(Path: sig val path : string end) =
+module LogToFile =
 struct
   type t = out_channel
-  type input = float * float array * float * float array
+  type params = string
+  type input = float * float array * float array * float
 
-  let init () = open_out Path.path
-  let log fd (t, inp, rob, grad) =
+  let init path = open_out path
+  let log fd (t, inp, out, rob) =
     let open Printer in
-    Printf.fprintf fd "%g,%s,%g,%s\n"
-      t (string_of_float_array "," inp) rob (string_of_float_array "," grad)
+    Printf.fprintf fd "%g,%s,%s,%g\n"
+      t (string_of_float_array "," inp) (string_of_float_array "," out) rob
   let finalize fd = close_out fd
 end

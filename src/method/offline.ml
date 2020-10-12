@@ -1,18 +1,25 @@
 open Ztypes
 open Deftypes
+open Optim_types
 open Method_types
 open Method_utils
 
 module Make
-    (Bench : Deftypes.Bench)
-    (Logger : Logger.S with type input := float * float array * float * float array)=
+    (SUT : Deftypes.SUT)
+    (Optim : Optim.S with type input = float array
+                      and type output = float * float array)
+    (Logger : Logger.S with type input = float * float array * float array * float) =
 struct
-  module Optim = Bench.Optim
-  module Scenario = Bench.Scenario
+  include SUT
+  module Optim = Optim
+  let optim_params_of_array = Optim.optim_params_of_array
+  let string_of_params = Optim.string_of_params
 
-  let name = Bench.name ^ " - offline - " ^ Optim.name
-  let bench_name = Bench.name
-  let prop_name = Bench.prop_name
+  module Logger = Logger
+
+  let name = SUT.name ^ " - offline - " ^ Optim.name
+  let bench_name = SUT.name
+
   let repetition_n = ref 0
   let sim_n = ref 0
 
@@ -20,31 +27,35 @@ struct
     Printf.fprintf ff "Optim:\n%s\n"
       (Optim.string_of_params params)
 
-  let wrap (Node { alloc; step; reset }) (control_points: float array) : float * float array =
+  let wrap lparams (Node { alloc; step; reset }) (control_points: float array) : float * float array =
     sim_n := !sim_n + 1;
 
     let n_inputs = Array.length control_points in
     let cp_fad = Array.map FadFloat.make control_points in
     Array.iteri (fun i n -> FadFloat.diff n i n_inputs) cp_fad;
 
-    let interp = Scenario.get_interp cp_fad in
+    let scenario = SUT.scenario in
+
+    (* only piecewise constant supported for now *)
+    let interp = Scenario.get_interp scenario cp_fad in
 
     let rec aux mem logstate t =
       (* we are currently at time t and we want to compute next step *)
       let cur_inp = interp t in
       let next_t, cur_out, rob = step mem cur_inp in
 
-      Logger.log logstate
-        (t, Array.map FadFloat.get cur_inp,
-         FadFloat.get rob, Array.map FadFloat.get cur_out);
+      Logger.log logstate (t,
+                           Array.map FadFloat.get cur_inp,
+                           Array.map FadFloat.get cur_out,
+                           FadFloat.get rob);
 
-      if t >= Bench.max_t then rob
+      if t >= SUT.max_t then rob
       else aux mem logstate next_t
     in
 
     let mem = alloc () in
     reset mem;
-    let logstate = Logger.init () in
+    let logstate = Logger.init lparams in
 
     let final_out = aux mem logstate 0. in
 
@@ -54,11 +65,27 @@ struct
     let grad = Array.init n_inputs (fun i -> FadFloat.d final_out i) in
     rob, grad
 
-  let run optim_params =
+  let run (lparams : Logger.params) params =
     repetition_n := !repetition_n + 1;
 
+    (* params.bounds are the bounds of each value of the inputs *)
+    (* we need to compute  the bounds of the vector that will be given to *)
+    (* the interpolation function *)
+    (* only piecewise constant inputs supported for now, the number of *)
+    (* consecutive equal inputs is given by SUT.sample_every *)
+    let input_bounds = params.bounds in
+    let n_pieces =
+      truncate (ceil
+                  ((float (Scenario.n_ctrl_points SUT.scenario)) /.
+                   (float (Scenario.dim SUT.scenario))))
+    in
+    let new_bounds = Array.init (n_pieces * (Array.length input_bounds))
+        (fun i -> input_bounds.(i / n_pieces))
+    in
+    let params = { params with bounds = new_bounds } in
+
     let start_time = Unix.gettimeofday () in
-    let history, (sample, (rob, grad)) = Optim.falsify (wrap Bench.node) optim_params in
+    let history, (sample, (rob, grad)) = Optim.falsify (wrap lparams SUT.node) params in
     let time = Unix.gettimeofday () -. start_time in
     {
       bench = bench_name;

@@ -40,7 +40,18 @@ struct
     acRatioMax = 0.55;
     dispStart = 0.75;
     betaXStart = -15.;
-  };
+  }
+
+  let params_of_array a = {
+    dispAdap = a.(0);
+    betaXAdap = a.(1);
+    minDisp = a.(2);
+    maxDisp = a.(3);
+    acRatioMin = a.(4);
+    acRatioMax = a.(5);
+    dispStart = a.(6);
+    betaXStart = a.(7);
+  }
 
   type optim_step_params = {
     (* acceptance parameter *)

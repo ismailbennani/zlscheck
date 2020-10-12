@@ -83,13 +83,6 @@ let get_bounds center direction bounds radius =
          if min < max then (min,max) else (max,min))
         center direction bounds)
   in
-  (* print_string "bounds : [";
-     Array.iter (fun (min,max) ->
-      print_string "(";
-      print_float min; print_string ", "; print_float max;
-      print_string ")") min_max;
-     print_string "]"; print_newline (); *)
-
   Array.fold_left (fun (old_min,old_max) (new_min,new_max) ->
       max old_min new_min, min old_max new_max)
     (neg_infinity,infinity) min_max

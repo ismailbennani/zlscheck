@@ -14,6 +14,7 @@ let classify v = classify_float !!v
 let of_string s = make (float_of_string s)
 
 let print v = print_string (to_string v)
+let fprintf ff v = Printf.fprintf ff "%s" (to_string v)
 let prerr v = prerr_string (to_string v)
 let read () = make (read_float ())
 

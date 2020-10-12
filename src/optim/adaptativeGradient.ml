@@ -19,8 +19,8 @@ let print_result n_runs max_n_runs cur_sample cur_val cur_grad =
   print_newline (); flush stdout
 
 type 'a optim_params_ = {
-  do_restart: bool;
-  restart_fn: unit -> unit;
+  mutable do_restart: bool;
+  mutable restart_fn: unit -> unit;
   meth: 'a;
 }
 
@@ -28,6 +28,7 @@ module type Method =
 sig
   type meth_params
   val default_params : meth_params
+  val params_of_array : float array -> meth_params
 
   val name : string
 
@@ -61,6 +62,7 @@ struct
   let default_params = {
     alpha = 0.5;
   }
+  let params_of_array a = { alpha = a.(0) }
 
   type acc = { mutable psi_res : float array }
   let create_acc () = { psi_res = [||]; }
@@ -95,6 +97,7 @@ struct
   let default_params = {
     alpha = 0.5;
   }
+  let params_of_array a = { alpha = a.(0) }
 
   type acc = { mutable last_psi : float array; }
   let create_acc () = { last_psi = [||] }
@@ -136,6 +139,11 @@ struct
     alpha = 0.5;
     beta1 = 0.9;
     beta2 = 0.999;
+  }
+  let params_of_array a = {
+    alpha = a.(0);
+    beta1 = a.(1);
+    beta2 = a.(2);
   }
 
   type acc = {
@@ -182,6 +190,11 @@ struct
     alpha = 0.5;
     beta1 = 0.9;
     beta2 = 0.999;
+  }
+  let params_of_array a = {
+    alpha = a.(0);
+    beta1 = a.(1);
+    beta2 = a.(2);
   }
 
   type acc = {
@@ -239,6 +252,8 @@ struct
     restart_fn = (fun () -> ());
     meth = Method.default_params;
   }
+  let params_of_array a = { default_params with
+                            meth = Method.params_of_array a }
   let mk_step_params _ = { t = 1; method_acc = Method.create_acc () }
 
   let name = "GD_" ^ Method.name

@@ -18,6 +18,7 @@ struct
 
   let default_params = ()
   let mk_step_params _ = ()
+  let params_of_array _ = ()
 
   let get_rob_from_output = Output.get_rob
 

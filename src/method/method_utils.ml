@@ -1,22 +1,6 @@
 open Deftypes
 open Method_types
 
-let print_result print_optim_params ff
-    ({ bench; desc; prop; n_repet; n_runs; mean_n_runs; median_n_runs;
-       n_falsif; best_rob; total_time }, actual_time) =
-  Printf.fprintf ff "name:%s\n" bench;
-  Printf.fprintf ff "desc:%s\n" desc;
-  Printf.fprintf ff "prop:%s\n" prop;
-  Printf.fprintf ff "n_repet:%d\n" n_repet;
-  Printf.fprintf ff "n_runs:%d\n" n_runs;
-  Printf.fprintf ff "n_falsif:%d\n" n_falsif;
-  Printf.fprintf ff "best_rob:%g\n" best_rob;
-  Printf.fprintf ff "mean:%g\n" mean_n_runs;
-  Printf.fprintf ff "median:%g\n" median_n_runs;
-  Printf.fprintf ff "cumulative_time:%g\n" total_time;
-  Printf.fprintf ff "actual_time:%g\n" actual_time;
-  Printf.fprintf ff "\nparams:\n%a" print_optim_params ()
-
 let mk_bench_list_str benches macro_benches =
   let max_macro_length =
     List.fold_left max 0 (List.map (fun (m,_) -> String.length m) macro_benches)

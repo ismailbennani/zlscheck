@@ -1,27 +1,36 @@
 open Ztypes
 open Deftypes
+open Optim_types
 open Method_types
 open Method_utils
 
-module Make
-    (Bench : Deftypes.Bench)
-    (Logger : Logger.S with type input := float * float array * float * float array) =
-struct
+module UR = Optim.UR_GDAWARE
 
-  module OnlineOptim = Bench.Optim
+module Make
+    (SUT : Deftypes.SUT)
+    (Optim : Optim.S with type input = float array
+                      and type output = float * float array)
+    (Logger : Logger.S with type input = float * float array * float array * float) =
+struct
+  include SUT
+
+  module Optim = Optim
+  let optim_params_of_array = Optim.optim_params_of_array
+  let string_of_params = Optim.string_of_params
+
+  module Logger = Logger
 
   (* optim algorithm for initial values *)
-  module OfflineOptim = Optim.UR_GDAWARE
+  module OfflineOptim = UR
 
-  let name = Bench.name ^ " - online - " ^ OnlineOptim.name
-  let bench_name = Bench.name
-  let prop_name = Bench.prop_name
+  let name = SUT.name ^ " - online - " ^ Optim.name
+  let bench_name = SUT.name
   let repetition_n = ref 0
   let sim_n = ref 0
 
   let print_optim_params ff params =
     Printf.fprintf ff "Online Optim:\n%s\n"
-      (OnlineOptim.string_of_params params)
+      (Optim.string_of_params params)
 
   type 'a wrapped_mem = {
     mutable time : float;
@@ -35,7 +44,7 @@ struct
                 my_reset : 's wrapped_mem -> unit }
         -> ('a, 'b) my_node
 
-  let wrap (Node { alloc; step; reset }) =
+  let wrap lparams (Node { alloc; step; reset }) =
     let new_alloc () = {
       time = 0.;
       mem = alloc ();
@@ -45,7 +54,7 @@ struct
     let new_reset wmem =
       wmem.time <- 0.;
       reset wmem.mem;
-      wmem.logstate <- Logger.init ();
+      wmem.logstate <- Logger.init lparams;
     in
     let new_step wmem inp =
       let n_inputs = Array.length inp in
@@ -54,13 +63,22 @@ struct
       Array.iteri (fun i n -> FadFloat.diff n i n_inputs) inp_fad;
 
       (* model step *)
+      for i = 1 to SUT.sample_every - 1 do
+        let next_t, cur_out, rob = step wmem.mem inp_fad in
+
+        Logger.log wmem.logstate (wmem.time, inp,
+                                  Array.map FadFloat.get cur_out,
+                                  FadFloat.get rob);
+      done;
       let next_t, cur_out, rob = step wmem.mem inp_fad in
+      
+      Logger.log wmem.logstate (wmem.time, inp,
+                                Array.map FadFloat.get cur_out,
+                                FadFloat.get rob);
 
       (* get rob and grad *)
       let r = FadFloat.get rob in
       let g = Array.init n_inputs (fun i -> FadFloat.d rob i) in
-
-      Logger.log wmem.logstate (wmem.time, inp, r, g);
 
       wmem.time <- next_t;
       r, g
@@ -75,7 +93,7 @@ struct
 
     let initial_output = my_step mem initial_input in
     let step_params =
-      OnlineOptim.mk_step_params params (initial_input, initial_output) in
+      Optim.mk_step_params params (initial_input, initial_output) in
     step_params.online <- true;
     step_params.mode <- Minimize;
 
@@ -84,17 +102,12 @@ struct
     let last_rob = ref (0., [||]) in
     while not !stop do
       (* model step *)
-      let rob, grad =
-        if !n mod Bench.sample_every = 0 then begin
-          ignore (OnlineOptim.step (my_step mem) params step_params);
-          (snd step_params.last_result)
-        end else
-          my_step mem (fst step_params.last_result);
-      in
+      ignore (Optim.step (my_step mem) params step_params);
+      let rob, grad = (snd step_params.last_result) in
 
       last_rob := rob, grad;
       n := !n + 1;
-      stop := mem.time > Bench.max_t;
+      stop := mem.time > SUT.max_t;
     done;
 
     Logger.finalize mem.logstate;
@@ -103,23 +116,23 @@ struct
 
     rob, grad
 
-  let run optim_params =
+  let run (lparams : Logger.params) params =
     repetition_n := !repetition_n + 1;
     sim_n := 0;
 
-    let ur_params = Optim.UR.default_params in
+    let ur_params = UR.mk_params params.max_n_runs params.bounds in
 
     let start_time = Unix.gettimeofday () in
 
     let history, (sample, (rob, grad)) =
-      OfflineOptim.falsify (run_once optim_params (wrap Bench.node)) ur_params in
+      OfflineOptim.falsify (run_once params (wrap lparams SUT.node)) ur_params in
 
     let time = Unix.gettimeofday () -. start_time in
     {
       bench = bench_name;
       desc = name;
       prop = prop_name;
-      optim = OnlineOptim.name;
+      optim = Optim.name;
       n_runs = List.length history;
       samples = Array.of_list (fst (List.split history));
       robs = Array.of_list (fst (List.split (snd (List.split history))));
