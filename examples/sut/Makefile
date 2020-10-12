@@ -7,7 +7,7 @@ INCLUDES += -I $(CHECKLIB) zlscheck.cmxa -I common
 
 BENCH = at f16 cc wt afc sc nn
 
-all: models $(BENCH:=.cmx)
+all: models $(BENCH:=.cmx) defsut.cmx
 
 $(BENCH:=.cmx): ZELUCFLAGS += -noreduce
 $(BENCH:=.cmx): INCLUDES += $(MODELS:%=-I %)
@@ -25,7 +25,7 @@ common:
 
 clean_this:
 	-rm -f $(BENCH:=.ml) $(BENCH:=.zci) $(BENCH:=.cm[iox]) $(BENCH:=.o)
-	-rm -f replay_models.ml replay_models.zci replay_models.cm[iox] replay_models.o
+	-rm -f defsut.cm[iox] defsut.o
 
 cleanall realclean clean: clean_this
 	for model in $(MODELS) ; do $(MAKE) -C $$model $@ ; done

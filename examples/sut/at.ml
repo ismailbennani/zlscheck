@@ -1,41 +1,41 @@
 (* The Zélus compiler, version 2.1
-  (vendredi 25 septembre 2020, 16:45:09 (UTC+0200)) *)
+  (vendredi 25 septembre 2020, 18:02:26 (UTC+0200)) *)
 open Ztypes
-type state__9119 =
+type state__9136 =
 At_UpShifting_855 | At_DownShifting_854 | At_SteadyState_853 
-type state__9118 =
+type state__9135 =
 At_Fourth_852 | At_Third_851 | At_Second_850 | At_First_849 
-type state__9117 =
+type state__9134 =
 At_UpShifting_782 | At_DownShifting_781 | At_SteadyState_780 
-type state__9116 =
+type state__9133 =
 At_Fourth_779 | At_Third_778 | At_Second_777 | At_First_776 
-type state__9115 =
+type state__9132 =
 At_UpShifting_709 | At_DownShifting_708 | At_SteadyState_707 
-type state__9114 =
+type state__9131 =
 At_Fourth_706 | At_Third_705 | At_Second_704 | At_First_703 
-type state__9113 =
+type state__9130 =
 At_UpShifting_636 | At_DownShifting_635 | At_SteadyState_634 
-type state__9112 =
+type state__9129 =
 At_Fourth_633 | At_Third_632 | At_Second_631 | At_First_630 
-type state__9111 =
+type state__9128 =
 At_UpShifting_561 | At_DownShifting_560 | At_SteadyState_559 
-type state__9110 =
+type state__9127 =
 At_Fourth_558 | At_Third_557 | At_Second_556 | At_First_555 
-type state__9109 =
+type state__9126 =
 At_UpShifting_486 | At_DownShifting_485 | At_SteadyState_484 
-type state__9108 =
+type state__9125 =
 At_Fourth_483 | At_Third_482 | At_Second_481 | At_First_480 
-type state__9107 =
+type state__9124 =
 At_UpShifting_411 | At_DownShifting_410 | At_SteadyState_409 
-type state__9106 =
+type state__9123 =
 At_Fourth_408 | At_Third_407 | At_Second_406 | At_First_405 
-type state__9105 =
+type state__9122 =
 At_UpShifting_336 | At_DownShifting_335 | At_SteadyState_334 
-type state__9104 =
+type state__9121 =
 At_Fourth_333 | At_Third_332 | At_Second_331 | At_First_330 
-type state__9103 =
+type state__9120 =
 At_UpShifting_263 | At_DownShifting_262 | At_SteadyState_261 
-type state__9102 =
+type state__9119 =
 At_Fourth_260 | At_Third_259 | At_Second_258 | At_First_257 
 open FadFloat
 open Discrete_obs_fad
@@ -338,9 +338,9 @@ let autotrans_at1 (tstep_1225:float) =
       m_1297 = (create ():FadFloat.t) ;
       m_1295 = (create ():FadFloat.t) ;
       r_1290 = (false:bool) ;
-      s_1289 = (At_UpShifting_263:state__9103) ;
+      s_1289 = (At_UpShifting_263:state__9120) ;
       r_1288 = (false:bool) ;
-      s_1287 = (At_Fourth_260:state__9102) ;
+      s_1287 = (At_Fourth_260:state__9119) ;
       t0_1270 = (create ():FadFloat.t) ;
       t0_1269 = (create ():FadFloat.t) ;
       i_1320 = (false:bool) ; go_up_1319 = (false:bool);
@@ -568,9 +568,9 @@ let autotrans_at2 (tstep_1322:float) =
       m_1394 = (create ():FadFloat.t) ;
       m_1392 = (create ():FadFloat.t) ;
       r_1387 = (false:bool) ;
-      s_1386 = (At_UpShifting_336:state__9105) ;
+      s_1386 = (At_UpShifting_336:state__9122) ;
       r_1385 = (false:bool) ;
-      s_1384 = (At_Fourth_333:state__9104) ;
+      s_1384 = (At_Fourth_333:state__9121) ;
       t0_1367 = (create ():FadFloat.t) ;
       t0_1366 = (create ():FadFloat.t) ;
       i_1417 = (false:bool) ; go_up_1416 = (false:bool);
@@ -801,9 +801,9 @@ let autotrans_at51 (tstep_1419:float) =
       m_1493 = (create ():FadFloat.t) ;
       m_1491 = (create ():FadFloat.t) ;
       r_1486 = (false:bool) ;
-      s_1485 = (At_UpShifting_411:state__9107) ;
+      s_1485 = (At_UpShifting_411:state__9124) ;
       r_1484 = (false:bool) ;
-      s_1483 = (At_Fourth_408:state__9106) ;
+      s_1483 = (At_Fourth_408:state__9123) ;
       t0_1466 = (create ():FadFloat.t) ;
       t0_1465 = (create ():FadFloat.t) ;
       rob_1462 = (create ():FadFloat.t) ;
@@ -928,6 +928,7 @@ let autotrans_at51 (tstep_1419:float) =
                  if Discrete_obs_fad.isTrue rob_optim_1425
                  then rob_optim_1425
                  else rob_spec_1426 in
+           let _ = print_endline "autotrans_at51" in
            let (trans_rpm_1480:FadFloat.t) =
                FadFloat.scale x_1513  At_common.p_final_drive_ratio in
            let ((ti_1440:FadFloat.t) , (out_torque_1436:FadFloat.t)) =
@@ -1048,9 +1049,9 @@ let autotrans_at52 (tstep_1518:float) =
       m_1592 = (create ():FadFloat.t) ;
       m_1590 = (create ():FadFloat.t) ;
       r_1585 = (false:bool) ;
-      s_1584 = (At_UpShifting_486:state__9109) ;
+      s_1584 = (At_UpShifting_486:state__9126) ;
       r_1583 = (false:bool) ;
-      s_1582 = (At_Fourth_483:state__9108) ;
+      s_1582 = (At_Fourth_483:state__9125) ;
       t0_1565 = (create ():FadFloat.t) ;
       t0_1564 = (create ():FadFloat.t) ;
       rob_1561 = (create ():FadFloat.t) ;
@@ -1296,9 +1297,9 @@ let autotrans_at53 (tstep_1617:float) =
       m_1691 = (create ():FadFloat.t) ;
       m_1689 = (create ():FadFloat.t) ;
       r_1684 = (false:bool) ;
-      s_1683 = (At_UpShifting_561:state__9111) ;
+      s_1683 = (At_UpShifting_561:state__9128) ;
       r_1682 = (false:bool) ;
-      s_1681 = (At_Fourth_558:state__9110) ;
+      s_1681 = (At_Fourth_558:state__9127) ;
       t0_1664 = (create ():FadFloat.t) ;
       t0_1663 = (create ():FadFloat.t) ;
       rob_1660 = (create ():FadFloat.t) ;
@@ -1543,9 +1544,9 @@ let autotrans_at54 (tstep_1716:float) =
       m_1790 = (create ():FadFloat.t) ;
       m_1788 = (create ():FadFloat.t) ;
       r_1783 = (false:bool) ;
-      s_1782 = (At_UpShifting_636:state__9113) ;
+      s_1782 = (At_UpShifting_636:state__9130) ;
       r_1781 = (false:bool) ;
-      s_1780 = (At_Fourth_633:state__9112) ;
+      s_1780 = (At_Fourth_633:state__9129) ;
       t0_1763 = (create ():FadFloat.t) ;
       t0_1762 = (create ():FadFloat.t) ;
       rob_1759 = (create ():FadFloat.t) ;
@@ -1788,9 +1789,9 @@ let autotrans_at6a (tstep_1815:float) =
       m_1887 = (create ():FadFloat.t) ;
       m_1885 = (create ():FadFloat.t) ;
       r_1880 = (false:bool) ;
-      s_1879 = (At_UpShifting_709:state__9115) ;
+      s_1879 = (At_UpShifting_709:state__9132) ;
       r_1878 = (false:bool) ;
-      s_1877 = (At_Fourth_706:state__9114) ;
+      s_1877 = (At_Fourth_706:state__9131) ;
       t0_1860 = (create ():FadFloat.t) ;
       t0_1859 = (create ():FadFloat.t) ;
       i_1910 = (false:bool) ; go_up_1909 = (false:bool);
@@ -2019,9 +2020,9 @@ let autotrans_at6b (tstep_1912:float) =
       m_1984 = (create ():FadFloat.t) ;
       m_1982 = (create ():FadFloat.t) ;
       r_1977 = (false:bool) ;
-      s_1976 = (At_UpShifting_782:state__9117) ;
+      s_1976 = (At_UpShifting_782:state__9134) ;
       r_1975 = (false:bool) ;
-      s_1974 = (At_Fourth_779:state__9116) ;
+      s_1974 = (At_Fourth_779:state__9133) ;
       t0_1957 = (create ():FadFloat.t) ;
       t0_1956 = (create ():FadFloat.t) ;
       i_2007 = (false:bool) ; go_up_2006 = (false:bool);
@@ -2249,9 +2250,9 @@ let autotrans_at6c (tstep_2009:float) =
       m_2081 = (create ():FadFloat.t) ;
       m_2079 = (create ():FadFloat.t) ;
       r_2074 = (false:bool) ;
-      s_2073 = (At_UpShifting_855:state__9119) ;
+      s_2073 = (At_UpShifting_855:state__9136) ;
       r_2072 = (false:bool) ;
-      s_2071 = (At_Fourth_852:state__9118) ;
+      s_2071 = (At_Fourth_852:state__9135) ;
       t0_2054 = (create ():FadFloat.t) ;
       t0_2053 = (create ():FadFloat.t) ;
       i_2104 = (false:bool) ; go_up_2103 = (false:bool);

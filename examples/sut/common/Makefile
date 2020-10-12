@@ -10,6 +10,10 @@ COMMON_ZLI = $(shell echo *.zli)
 
 all: $(COMMON_ML:.ml=.cmx) $(COMMON_ZLI:.zli=.zci) $(COMMON_ZLS:.zls=.cmx)
 
+$(COMMON_ZLS:.zls=.ml):
+	$(ZELUC) $(ZELUCFLAGS) $(@:.ml=.zls)
+	sed -i "s/Obj.magic ():FadFloat.t/create ():FadFloat.t/g" $@
+
 $(COMMON_ZLS:.zls=.ml): $(COMMON_ZLI:.zli=.zci)
 
 clean cleanall realclean:

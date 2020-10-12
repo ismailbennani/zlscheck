@@ -2,67 +2,10 @@ open Ztypes
 
 let verbose = ref false
 
-let pcwse_cste h control_points =
-  fun t ->
-  (* piecewise constant signal interpolation in 1D *)
-  let index = truncate (t /. h) in
-  let cp_n = Array.length control_points in
-  if index >= cp_n then [| control_points.(cp_n - 1) |]
-  else [| control_points.(index)|]
-
-let pcwse_cste2 h control_points =
-  fun t ->
-  (* piecewise constant signal interpolation in 2D
-     values for input 1 are in even cells of control_points and values for
-     input 2 are in odd cells.
-  *)
-
-  let index = truncate (t /. h) in
-  let cp_n = Array.length control_points in
-  if 2 * index + 1 >= cp_n then
-    [| control_points.(cp_n - 2); control_points.(cp_n - 1) |]
-  else
-    [| control_points.(2*index); control_points.(2*index+1) |]
-
-let pcwse_cste_variable_times times values t =
-  let i = Interp.ifind (FadFloat.make t) times in
-  if i = 0 then [| values.(0) |] else [| values.(i-1) |]
-
-let FadFloat_compare x y =
-  if FadFloat.(x < y) then -1
-  else if FadFloat.(x > y) then 1
-  else 0
-
-let pcwse_cste_variable_times_sa control_points =
-  let times = Array.sub control_points 12 11 in
-  Array.sort FadFloat_compare times;
-  let times' = Array.create 12 (FadFloat.make 0.) in
-  Array.blit times 0 times' 1 11;
-  Printf.printf "times: [%s]\n" (String.concat "; " (Array.to_list (Array.map string_of_float (Array.map FadFloat.get times))));
-  let values = Array.map (fun x -> FadFloat.scale x 0.001) (Array.sub control_points 0 12) in
-  fun t ->
-    let i = Interp.ifind (FadFloat.make t) times in
-    if i = 0 then [| values.(0) |] else [| values.(i-1) |]
-
-let pcwse_linear times values t =
-  [| Interp.interp1 (times, values) (FadFloat.make t) |]
-
-let pcwse_cste_afc h control_points =
-    fun t ->
-      (* first coordinate of control_points is the value of the second coordinate of
-         the input, the rest of the array is to be interpolated for first coordinate
-         of input *)
-      let index = truncate (t /. h) in
-      let cp_n = Array.length control_points in
-      if index + 1 >= cp_n then
-        [| control_points.(cp_n - 1); control_points.(0) |]
-      else
-        [| control_points.(1 + index); control_points.(0) |]
-
 module Autotrans =
 struct
   let tstep = 0.01
-  let bounds_online = [|0.,100.; 0.,350.|]
+  let bounds = [|0.,100.; 0.,350.|]
 
   let gd_alpha_high = 10000000.
   let gd_alpha_low = 100.
@@ -136,7 +79,7 @@ struct
   struct
     let name = Printf.sprintf "AT6a_inst%d" Instance.index
     let max_t = 30.
-    let sample_every = 5
+    let sample_every = Instance.sample_every
     let node = At.autotrans_at6a tstep
   end
 
@@ -158,13 +101,22 @@ struct
 
   module AutotransBench (Params: Params) =
   struct
-    module Optim = Params.Optim
-
     let name = "autotrans_" ^ Params.name
     let prop_name = Params.name
     let max_t = Params.max_t
+    let tstep = tstep
     let sample_every = Params.sample_every
+    let bounds = bounds
     let node = Params.node
+    let scenario : FadFloat.t Scenario.t =
+      let throttle =
+        Scenario.piecewise_constant 1
+          ((float sample_every) *. tstep) max_t
+      in
+      let brake =
+        Scenario.piecewise_constant 1
+          ((float sample_every) *. tstep) max_t
+      in Scenario.cross throttle brake
   end
 
   module Phi1_instance1 = AutotransBench(ParamsPhi1(Instance1))
@@ -201,77 +153,69 @@ struct
 
   module Phi =
   struct
-    module Optim = Params.Optim
-
     let name = "f16"
     let prop_name = "F16"
     let max_t = 15.0
+    let tstep = 0.01
     let sample_every = 10
-    let node = F16.f16 0.01
+    let bounds = bounds
+    let scenario : FadFloat.t Scenario.t = Scenario.constant 3 max_t
+    let node = F16.f16 tstep
   end
-
-  module ReplayDiscrete = Replay.Make (struct
-      let name = "ReplayDiscrete"
-      let max_t = 15.
-
-      let replay_node = Replay_models.f16
-      let scan_dump_inp ib =
-        Scanf.bscanf ib "%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g"
-          (fun phi0 theta0 psi0 alt alpha beta vt phi theta psi p q r rob ->
-             Array.map FadFloat.make
-               [| phi0; theta0; psi0; alt; alpha; beta; vt;
-                  phi; theta; psi; p; q; r; rob |])
-    end)
 end
 
 module CC =
 struct
-  let online_bounds = [| 0., 1.; 0., 1. |]
-  let offline_bounds = [| 0., 1.; 0., 1.; 0., 1.; 0., 1.; 0., 1.; 0., 1.;
-                          0., 1.; 0., 1.; 0., 1.; 0., 1.; 0., 1.; 0., 1.;
-                          0., 1.; 0., 1.; 0., 1.; 0., 1.; 0., 1.; 0., 1.;
-                          0., 1.; 0., 1.; 0., 1.; 0., 1.; 0., 1.; 0., 1.;
-                          0., 1.; 0., 1.; 0., 1.; 0., 1.; 0., 1.; 0., 1.;
-                          0., 1.; 0., 1.; 0., 1.; 0., 1.; 0., 1.; 0., 1.;
-                          0., 1.; 0., 1.; 0., 1.; 0., 1. |]
+  let tstep = 0.01
+  let bounds = [| 0., 1.; 0., 1. |]
 
   module type Params =
   sig
-    module Optim : Optim.S
     val index : int
     val node : (FadFloat.t array, float * FadFloat.t array * FadFloat.t) Ztypes.node
   end
 
   module ParamsPhi1 = struct
     let index = 1
-    let node = Cc.cc_cc1 0.01
+    let node = Cc.cc_cc1 tstep
   end
 
   module ParamsPhi2 = struct
     let index = 2
-    let node = Cc.cc_cc2 0.01
+    let node = Cc.cc_cc2 tstep
   end
 
   module ParamsPhi3 = struct
     let index = 3
-    let node = Cc.cc_cc3 0.01
+    let node = Cc.cc_cc3 tstep
   end
 
   module ParamsPhi4 = struct
     let index = 4
-    let node = Cc.cc_cc4 0.01
+    let node = Cc.cc_cc4 tstep
   end
 
   module ParamsPhi5 = struct
     let index = 5
-    let node = Cc.cc_cc5 0.01
+    let node = Cc.cc_cc5 tstep
   end
 
   module CCBench (Params: Params) = struct
     let name = "cc" ^ (string_of_int Params.index)
     let prop_name = "CC" ^ (string_of_int Params.index)
     let max_t = 100.0
+    let tstep = tstep
     let sample_every = 500
+    let bounds = bounds
+    let scenario : FadFloat.t Scenario.t =
+      let throttle =
+        Scenario.piecewise_constant 1
+          ((float sample_every) *. tstep) max_t
+      in
+      let brake =
+        Scenario.piecewise_constant 1
+          ((float sample_every) *. tstep) max_t
+      in Scenario.cross throttle brake
     let node = Params.node
   end
 
@@ -285,11 +229,9 @@ end
 module WT =
 struct
   let max_t = 630.
+  let tstep = 0.01
   let h = 5.
-  let dim = truncate (ceil (max_t /. h))
-
-  let online_bounds = [| 8., 16. |]
-  let offline_bounds = Array.make dim (online_bounds.(0))
+  let bounds = [| 8., 16. |]
 
   module type Params =
   sig
@@ -299,22 +241,22 @@ struct
 
   module ParamsPhi1 = struct
     let index = 1
-    let node = Wt.wt_wt1 0.01
+    let node = Wt.wt_wt1 tstep
   end
 
   module ParamsPhi2 = struct
     let index = 2
-    let node = Wt.wt_wt2 0.01
+    let node = Wt.wt_wt2 tstep
   end
 
   module ParamsPhi3 = struct
     let index = 3
-    let node = Wt.wt_wt3 0.01
+    let node = Wt.wt_wt3 tstep
   end
 
   module ParamsPhi4 = struct
     let index = 4
-    let node = Wt.wt_wt4 0.01
+    let node = Wt.wt_wt4 tstep
   end
 
   module WTBench (Params: Params) =
@@ -323,6 +265,11 @@ struct
     let prop_name = "WT" ^ (string_of_int Params.index)
     let max_t = max_t
     let sample_every = 500
+    let tstep = tstep
+    let bounds = bounds
+    let scenario : FadFloat.t Scenario.t =
+      Scenario.piecewise_constant 1
+        ((float sample_every) *. tstep) max_t
     let node = Params.node
   end
 
@@ -336,16 +283,11 @@ module AFC =
 struct
   let max_t = 50.
   let h = 5.
+  let tstep = 5e-5
   let dim = truncate (ceil (max_t /. h))
 
-  let online_bounds_normal_mode = [| 0., 61.1 |]
-  let offline_bounds_normal_mode =
-    [| 900., 1100.; 0., 61.1; 0., 61.1; 0., 61.1; 0., 61.1; 0., 61.1; 0., 61.1;
-       0., 61.1; 0., 61.1; 0., 61.1; 0., 61.1 |]
-  let online_bounds_power_mode = [| 61.2, 81.2; 900., 1100. |]
-  let offline_bounds_power_mode =
-    [| 900., 1100.; 61.2, 81.2; 61.2, 81.2; 61.2, 81.2; 61.2, 81.2; 61.2, 81.2;
-       61.2, 81.2; 61.2, 81.2; 61.2, 81.2; 61.2, 81.2; 61.2, 81.2 |]
+  let bounds_normal_mode = [| 900., 1100.; 0., 61.1 |]
+  let bounds_power_mode = [| 900., 1100.; 61.2, 81.2 |]
 
   module type Params =
   sig
@@ -357,35 +299,38 @@ struct
 
   module ParamsPhi27 = struct
     let index = 27
-    let bounds = online_bounds_normal_mode
-    let gd_alpha = 1000.
-    let sample_every = truncate (5. /. 5e-5)
-    let node = Afc.afc_afc1 5e-5
+    let bounds = bounds_normal_mode
+    let sample_every = truncate (h /. tstep)
+    let node = Afc.afc_afc1 tstep
   end
 
   module ParamsPhi29 = struct
     let index = 29
-    let bounds = offline_bounds_normal_mode
-    let gd_alpha = 1e7
-    let sample_every = 0
-    let node = Afc.afc_afc2 5e-5
+    let bounds = bounds_normal_mode
+    let sample_every = truncate (h /. tstep)
+    let node = Afc.afc_afc2 tstep
   end
 
   module ParamsPhi33 = struct
     let index = 33
-    let bounds = offline_bounds_power_mode
-    let gd_alpha = 1e9
-    let sample_every = 0
-    let node = Afc.afc_afc2 5e-5
+    let bounds = bounds_power_mode
+    let sample_every = truncate (h /. tstep)
+    let node = Afc.afc_afc2 tstep
   end
 
-  module AFCBench (Params: Params) S) =
+  module AFCBench (Params: Params) =
   struct
-
     let name = "afc" ^ (string_of_int Params.index)
     let prop_name = "AFC" ^ (string_of_int Params.index)
     let max_t = max_t
+    let tstep = tstep
     let sample_every = Params.sample_every
+    let bounds = Params.bounds
+    let scenario : FadFloat.t Scenario.t =
+      let engine_speed = Scenario.constant 1 max_t in
+      let throttle = Scenario.piecewise_constant 1
+          ((float sample_every) *. tstep) max_t in
+      Scenario.cross engine_speed throttle
     let node = Params.node
   end
 

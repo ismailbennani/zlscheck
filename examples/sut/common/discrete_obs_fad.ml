@@ -1,5 +1,5 @@
 (* The Zélus compiler, version 2.1
-  (vendredi 25 septembre 2020, 16:45:09 (UTC+0200)) *)
+  (vendredi 25 septembre 2020, 18:02:26 (UTC+0200)) *)
 open Ztypes
 type state__5532 = Discrete_obs_fad_Count_240 | Discrete_obs_fad_Stop_239 
 open FadFloat
@@ -156,7 +156,7 @@ type ('b , 'a) _q_up =
 let q_up  = 
   
   let q_up_alloc _ =
-    ();{ i_593 = (false:bool) ; m_590 = (Obj.magic ():FadFloat.t) } in
+    ();{ i_593 = (false:bool) ; m_590 = (create ():FadFloat.t) } in
   let q_up_reset self  =
     (self.i_593 <- true:unit) in 
   let q_up_step self (p_589:FadFloat.t) =
@@ -194,8 +194,8 @@ let counter (delay_599:float) =
     ();
     { r_607 = (false:bool) ;
       s_606 = (Discrete_obs_fad_Count_240:state__5532) ;
-      cpt_605 = (Obj.magic ():FadFloat.t) ;
-      i_611 = (false:bool) ; m_608 = (Obj.magic ():FadFloat.t) } in
+      cpt_605 = (create ():FadFloat.t) ;
+      i_611 = (false:bool) ; m_608 = (create ():FadFloat.t) } in
   let counter_reset self  =
     ((self.r_607 <- false ;
       self.s_606 <- Discrete_obs_fad_Stop_239 ; self.i_611 <- true):unit) in 
@@ -233,7 +233,7 @@ type ('b , 'a) _always =
 let always  = 
   
   let always_alloc _ =
-    ();{ i_617 = (false:bool) ; m_614 = (Obj.magic ():FadFloat.t) } in
+    ();{ i_617 = (false:bool) ; m_614 = (create ():FadFloat.t) } in
   let always_reset self  =
     (self.i_617 <- true:unit) in 
   let always_step self (p_612:FadFloat.t) =
@@ -259,7 +259,7 @@ type ('b , 'a) _once =
 let once  = 
   
   let once_alloc _ =
-    ();{ i_624 = (false:bool) ; m_621 = (Obj.magic ():FadFloat.t) } in
+    ();{ i_624 = (false:bool) ; m_621 = (create ():FadFloat.t) } in
   let once_reset self  =
     (self.i_624 <- true:unit) in 
   let once_step self (p_619:FadFloat.t) =
@@ -277,7 +277,7 @@ let sincefirst  =
   let sincefirst_alloc _ =
     ();
     { i_636 = (false:bool) ;
-      m_632 = (Obj.magic ():FadFloat.t) ; m_629 = (Obj.magic ():FadFloat.t);
+      m_632 = (create ():FadFloat.t) ; m_629 = (create ():FadFloat.t);
       i_855 = i_855_alloc () (* discrete *)  } in
   let sincefirst_reset self  =
     ((self.i_636 <- true ; i_855_reset self.i_855 ):unit) in 
@@ -300,7 +300,7 @@ type ('b , 'a) _sincelast =
 let sincelast  = 
   
   let sincelast_alloc _ =
-    ();{ i_644 = (false:bool) ; m_640 = (Obj.magic ():FadFloat.t) } in
+    ();{ i_644 = (false:bool) ; m_640 = (create ():FadFloat.t) } in
   let sincelast_reset self  =
     (self.i_644 <- true:unit) in 
   let sincelast_step self ((x_637:FadFloat.t) , (y_638:FadFloat.t)) =
@@ -528,7 +528,7 @@ let once_timed (delay_683:float) =
   let once_timed_alloc _ =
     ();
     { i_699 = (false:bool) ;
-      m_694 = (Obj.magic ():FadFloat.t) ; m_692 = (false:bool);
+      m_694 = (create ():FadFloat.t) ; m_692 = (false:bool);
       i_872 = i_872_alloc () (* discrete *)  ;
       i_871 = i_871_alloc () (* discrete *)  } in
   let once_timed_reset self  =
@@ -574,7 +574,7 @@ let always_timed (delay_700:float) =
   let always_timed_alloc _ =
     ();
     { i_716 = (false:bool) ;
-      m_711 = (Obj.magic ():FadFloat.t) ; m_709 = (false:bool);
+      m_711 = (create ():FadFloat.t) ; m_709 = (false:bool);
       i_874 = i_874_alloc () (* discrete *)  ;
       i_873 = i_873_alloc () (* discrete *)  } in
   let always_timed_reset self  =
@@ -1146,7 +1146,7 @@ let bounded_response (t_838:float) =
    in
   let bounded_response_alloc _ =
     ();
-    { result_840 = (Obj.magic ():FadFloat.t);
+    { result_840 = (create ():FadFloat.t);
       i_915 = i_915_alloc () (* discrete *)  ;
       i_914 = i_914_alloc () (* discrete *)  } in
   let bounded_response_reset self  =

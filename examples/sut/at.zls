@@ -89,6 +89,7 @@ node autotrans_at51 tstep inp = get next_t, outp, rob where
     and (rpm, gear, speed), rob_optim = Autotransd.autotrans (t, (throttle, brake))
     and outp = Array.of_list [rpm; gear; speed]
     and rob_spec = at51 (tstep', outp)
+    and _ = print_endline "autotrans_at51"
     and rob = if isFalse rob_spec then rob_spec else if isTrue rob_optim then rob_optim else rob_spec
 
 (* had an issue where sometimes a counter example with rob -9e-15 appears
