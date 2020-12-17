@@ -1,0 +1,48 @@
+open Diff
+
+hybrid system ((x, y0) : float * float) = (y : float) where
+    der y = 2. *. x init y0
+
+hybrid wrap_system (inps : float Array.t) = (outs : float Array.t) where
+    rec x = Array.get inps 0
+    and y0 = Array.get inps 1 
+    and y = system (x, y0)
+    and outs = Array.of_list [y]
+
+node disc_sys ((x, y0) : FadFloat.t * FadFloat.t) = ((time, y) : float * FadFloat.t) where
+    rec h = 0.1
+    and { time = time; status = status; result = output } =
+        Diff.solve wrap_system 20. (next_horizon, Array.of_list [x; y0])
+    and next_horizon =
+        h fby (if time >= next_horizon then next_horizon +. h else next_horizon)
+    and y = Array.get output 0
+
+node main () = 
+    let x = FadFloat.make 3. in
+    let y0 = FadFloat.make 0. in
+    FadFloat.diff x 0 1;
+    FadFloat.diff y0 1 2;
+    let t, y = disc_sys (x, y0) in
+    print_endline ("sys(x=" ^ 
+            (string_of_float (FadFloat.get x)) ^ ", y0=" ^
+            (string_of_float (FadFloat.get y0)) ^ ")(t=" ^
+            (string_of_float t) ^ ") = " ^
+            (FadFloat.to_string y));
+    input_line stdin
+
+(* node main () = 
+    let h = 0.1 in
+    let x = 3. in
+    let y0 = 0. in
+    let 
+    rec { Node.time = t; Node.status = status; Node.result = y } =
+        Node.solve system 20. (next_horizon, (x, y0))
+    and next_horizon =
+        h fby (if t >= next_horizon then next_horizon +. h else next_horizon)
+    in
+    print_endline ("sys(x=" ^ 
+            (string_of_float x) ^ ", y0=" ^
+            (string_of_float y0) ^ ")(t=" ^
+            (string_of_float t) ^ ") = " ^
+            (string_of_float y));
+    input_line stdin *)

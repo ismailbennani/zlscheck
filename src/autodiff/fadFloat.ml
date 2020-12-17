@@ -1,6 +1,6 @@
 (* FAD operators *)
 
-include Fadbad.OrderedF(Fadbad.OrderedFloat)
+include (Fadbad.OrderedF(Fadbad.OrderedFloat) : module type of Fadbad.OrderedF(Fadbad.OrderedFloat) with type elt := float)
 
 let infinity = make infinity
 let neg_infinity = make neg_infinity

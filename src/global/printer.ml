@@ -1,8 +1,8 @@
 let print_float ff f =
-  Printf.fprintf ff "%.8f" f
+  Printf.fprintf ff "%g" f
 
 let print_floatfloat ff (f1, f2) =
-  Printf.fprintf ff "(%.8f, %.8f)" f1 f2
+  Printf.fprintf ff "(%g, %g)" f1 f2
 
 let print_array print_content ff a =
   Printf.fprintf ff "[| %a |]"
@@ -15,10 +15,13 @@ let print_array print_content ff a =
     a
 
 let print_float_array ff a =
-  Printf.fprintf ff "%a" (print_array print_float) a
+  print_array print_float ff a
 
 let print_floatfloat_array ff a =
-  Printf.fprintf ff "%a" (print_array print_floatfloat) a
+  print_array print_floatfloat ff a
+
+let print_float_array_array ff a =
+  print_array (print_array (print_float)) ff a
 
 let string_of_float_array sep a =
   Printf.sprintf "%s"

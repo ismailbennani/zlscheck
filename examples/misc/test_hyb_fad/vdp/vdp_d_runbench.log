@@ -1,0 +1,10 @@
+name:test
+desc:test - offline - GD_Classic
+prop:test
+n_repet:50
+n_runs:300
+n_falsif:45
+best_rob:-1.37241e-05
+mean:50.5333
+median:4
+cumulative_time:91.2773

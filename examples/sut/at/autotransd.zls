@@ -66,8 +66,8 @@ let node shiftlogic(t, speed, throttle) = gear, rob where
 
   and automaton
       | SteadyState  ->
-          let init go_up = make (Random.float 1.) > make 0.5 in
-          (* let init tmp = print_endline (if go_up then "Aiming up!" else "Aiming down!") in *)
+          let init go_up = if gear < make 1.5 then true else if gear > make 3.5 then false else make (Random.float 1.) > make 0.5 in
+          let init tmp = print_endline (if go_up then "Aiming up!" else "Aiming down!") in
           do rob = if go_up then up_th - speed else speed - dn_th
           until (speed < dn_th)
             then
@@ -115,8 +115,10 @@ let node vehicle(t, out_torque, brake_torque) = (speed, trans_rpm) where
   and trans_rpm = scale wheel_speed p_final_drive_ratio
   and speed = mph
 
-let node autotrans(t, (throttle, brake_torque)) = (rpm, gear, speed), translate rob 0.5 where
+let node autotrans(t, (throttle, brake_torque)) = (rpm, gear, speed, up_th, dn_th), translate rob 0.5 where
   rec rpm = engine(t, ti, throttle)
   and gear, rob = shiftlogic(t, speed, throttle)
   and ti, out_torque = transmission (rpm, gear, trans_rpm)
   and speed, trans_rpm = vehicle(t, pre out_torque, brake_torque)
+  and up_th = lookup_interpup(throttle, gear)
+  and dn_th = lookup_interpdn(throttle, gear)

@@ -8,7 +8,7 @@ module Make
     (SUT : Deftypes.SUT)
     (Optim : Optim.S with type input = float array
                       and type output = float * float array)
-    (Logger : Logger.S with type input = float * float array * float array * float) =
+    (Logger : Logger.S) =
 struct
   include SUT
   module Optim = Optim

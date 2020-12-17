@@ -1,0 +1,18 @@
+val interp1 :
+    FadFloat.t Array.t (* x *)
+  * FadFloat.t Array.t (* y *)
+  -A->
+    (FadFloat.t -A-> FadFloat.t) (* lookup function (linear interpolation and extrapolation) *)
+
+val interp2 :
+    FadFloat.t Array.t       (* x *)
+  * FadFloat.t Array.t       (* y *)
+  * FadFloat.t Array.t Array.t (* z *)
+  -A->
+    (FadFloat.t * FadFloat.t -A-> FadFloat.t) (* lookup function (linear interpolation and extrapolation)*)
+
+val time_interp_couple :
+     float 
+  -> FadFloat.t Array.t
+  -A->
+    (float -A-> FadFloat.t * FadFloat.t)

@@ -1,7 +1,31 @@
-autodiff/diff.cmo :
-autodiff/diff.cmx :
 autodiff/fadFloat.cmo :
 autodiff/fadFloat.cmx :
+autodiff/lift_fad.cmo : \
+    autodiff/ztypes_fad.cmo \
+    autodiff/fadFloat.cmo
+autodiff/lift_fad.cmx : \
+    autodiff/ztypes_fad.cmx \
+    autodiff/fadFloat.cmx
+autodiff/nodes_fad.cmo : \
+    autodiff/ztypes_fad.cmo \
+    autodiff/sundials_cvodes.cmi \
+    autodiff/lift_fad.cmo \
+    autodiff/fadFloat.cmo
+autodiff/nodes_fad.cmx : \
+    autodiff/ztypes_fad.cmx \
+    autodiff/sundials_cvodes.cmx \
+    autodiff/lift_fad.cmx \
+    autodiff/fadFloat.cmx
+autodiff/sundials_cvodes.cmo : \
+    autodiff/sundials_cvodes.cmi
+autodiff/sundials_cvodes.cmx : \
+    autodiff/sundials_cvodes.cmi
+autodiff/zls_fad.cmo :
+autodiff/zls_fad.cmx :
+autodiff/ztypes_fad.cmo : \
+    autodiff/fadFloat.cmo
+autodiff/ztypes_fad.cmx : \
+    autodiff/fadFloat.cmx
 global/deftypes.cmo : \
     scenario/scenario.cmo \
     autodiff/fadFloat.cmo
@@ -26,8 +50,7 @@ hyperparams/smac_wrapper.cmo : \
     method/offline.cmo \
     method/method_types.cmo \
     global/logger.cmo \
-    global/deftypes.cmo \
-    optim/adaptativeGradient.cmo
+    global/deftypes.cmo
 hyperparams/smac_wrapper.cmx : \
     optim/simulatedAnnealing.cmx \
     scenario/scenario.cmx \
@@ -38,11 +61,16 @@ hyperparams/smac_wrapper.cmx : \
     method/offline.cmx \
     method/method_types.cmx \
     global/logger.cmx \
-    global/deftypes.cmx \
-    optim/adaptativeGradient.cmx
+    global/deftypes.cmx
 method/method_types.cmo : \
+    optim/optim_types.cmo \
+    optim/optim.cmo \
+    global/logger.cmo \
     global/deftypes.cmo
 method/method_types.cmx : \
+    optim/optim_types.cmx \
+    optim/optim.cmx \
+    global/logger.cmx \
     global/deftypes.cmx
 method/method_utils.cmo : \
     method/method_types.cmo \

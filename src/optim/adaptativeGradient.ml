@@ -252,6 +252,7 @@ struct
     restart_fn = (fun () -> ());
     meth = Method.default_params;
   }
+  let meth_params_of_array = Method.params_of_array
   let params_of_array a = { default_params with
                             meth = Method.params_of_array a }
   let mk_step_params _ = { t = 1; method_acc = Method.create_acc () }

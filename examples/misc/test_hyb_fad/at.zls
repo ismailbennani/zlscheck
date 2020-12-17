@@ -60,33 +60,72 @@ node at6c (tstep, outp) =
 
 
 
-node autotrans_at1 tstep inp = get next_t, outp, rob where
+node autotrans_at1 tstep inp = next_t, outp, rob where
     rec throttle = Array.get inp 0
     and brake = Array.get inp 1
-    and tstep' = make tstep
-    and next_t = tstep' fby (next_t + tstep')
-    and t = make 0. fby next_t
-    and (rpm, gear, speed, up_th, dn_th), _ = Autotransd.autotrans (t, (throttle, brake))
+    and init tstep' = make tstep
+    and next_t = t +. tstep
+    and (t, rpm, gear, speed, up_th, dn_th), _ = Autotransc.autotransd 100. tstep (throttle, brake)
     and outp = Array.of_list [rpm; gear; speed; up_th; dn_th]
     and rob = at1 (tstep', outp)
 
-node autotrans_at2 tstep inp = get next_t, outp, translate rob 40. where
+(* hybrid aux u = Array.of_list [y] where
+    rec u1 = Array.get u 0
+    and u2 = Array.get u 1
+    and dy = if switched then u2 else u1 
+    and der y_ = Fad_hacks.get dy init Fad_hacks.get (zero ())
+    and y = Fad_hacks.make y_
+    and switched = present (init) | (period(1.)) -> false fby true init false
+
+node aux_d tstep u = t, y where
+    rec u1 = Array.get u 0
+    and u2 = Array.get u 1 
+    and dy = if switched then u2 else u1
+    and y = zero () -> (pre y) + scale dy tstep
+    and t = 0. fby (t +. tstep)
+    and switched = t >= 1.
+
+open Nodes_fad
+node autotrans_at1 tstep inp = t, outp, rob where
+    rec 
+    let init u1 = 
+        let u = FadFloat.make 1. in
+        FadFloat.diff u 0 2;
+        u
+    and init u2 = 
+        let u = FadFloat.make 2. in
+        FadFloat.diff u 1 2;
+        u
+    in do
+        { time = t; status = _; result = result } = 
+            Nodes_fad.solve aux 20. (next_horizon, Array.of_list [ u1; u2 ])
+        (* and _ = print_endline ("t=" ^ (string_of_float t) ^ "; rob=" ^ (string_of_float rob))) *)
+        and next_horizon =
+        tstep fby (if t >= next_horizon then next_horizon +. tstep else next_horizon)
+        and rob = Array.get result 0
+        
+        (* and t, rob = aux_d tstep (Array.of_list [u1; u2 ]) *)
+
+        and outp = Array.of_list []
+    done *)
+
+
+
+node autotrans_at2 tstep inp = next_t, outp, translate rob 40. where
     rec throttle = Array.get inp 0
     and brake = Array.get inp 1
-    and tstep' = make tstep
-    and next_t = tstep' fby (next_t + tstep')
-    and t = make 0. fby next_t
-    and (rpm, gear, speed, up_th, dn_th), _ = Autotransd.autotrans (t, (throttle, brake))
+    and init tstep' = make tstep
+    and next_t = t +. tstep
+    and (t, rpm, gear, speed, up_th, dn_th), _ = Autotransc.autotransd 100. tstep (throttle, brake)
     and outp = Array.of_list [rpm; gear; speed; up_th; dn_th]
     and rob = at2 (tstep', outp)
 
-node autotrans_at51 tstep inp = get next_t, outp, rob where
+node autotrans_at51 tstep inp = next_t, outp, rob where
     rec throttle = Array.get inp 0
     and brake = Array.get inp 1
-    and tstep' = make tstep
-    and next_t = tstep' fby (next_t + tstep')
-    and t = make 0. fby next_t
-    and (rpm, gear, speed, up_th, dn_th), rob_optim = Autotransd.autotrans (t, (throttle, brake))
+    and init tstep' = make tstep
+    and next_t = t +. tstep
+    and (t, rpm, gear, speed, up_th, dn_th), rob_optim = Autotransc.autotransd 100. tstep (throttle, brake)
     and outp = Array.of_list [rpm; gear; speed; up_th; dn_th]
     and rob_spec = at51 (tstep', outp)
     and _ = print_endline "autotrans_at51"
@@ -94,65 +133,59 @@ node autotrans_at51 tstep inp = get next_t, outp, rob where
 
 (* had an issue where sometimes a counter example with rob -9e-15 appears
    and it is rejected by validation, so I add 0.1 to discard these *)
-node autotrans_at52 tstep inp = get next_t, outp, rob + (make 0.1) where
+node autotrans_at52 tstep inp = next_t, outp, rob + (make 0.1) where
     rec throttle = Array.get inp 0
     and brake = Array.get inp 1
-    and tstep' = make tstep
-    and next_t = tstep' fby (next_t + tstep')
-    and t = make 0. fby next_t
-    and (rpm, gear, speed, up_th, dn_th), rob_optim = Autotransd.autotrans (t, (throttle, brake))
+    and init tstep' = make tstep
+    and next_t = t +. tstep
+    and (t, rpm, gear, speed, up_th, dn_th), rob_optim = Autotransc.autotransd 100. tstep (throttle, brake)
     and outp = Array.of_list [rpm; gear; speed; up_th; dn_th]
     and rob_spec = at52 (tstep', outp)
     and rob = if isFalse rob_spec then rob_spec else if isTrue rob_optim then rob_optim else rob_spec
 
-node autotrans_at53 tstep inp = get next_t, outp, rob where
+node autotrans_at53 tstep inp = next_t, outp, rob where
     rec throttle = Array.get inp 0
     and brake = Array.get inp 1
-    and tstep' = make tstep
-    and next_t = tstep' fby (next_t + tstep')
-    and t = make 0. fby next_t
-    and (rpm, gear, speed, up_th, dn_th), rob_optim = Autotransd.autotrans (t, (throttle, brake))
+    and init tstep' = make tstep
+    and next_t = t +. tstep
+    and (t, rpm, gear, speed, up_th, dn_th), rob_optim = Autotransc.autotransd 100. tstep (throttle, brake)
     and outp = Array.of_list [rpm; gear; speed; up_th; dn_th]
     and rob_spec = at53 (tstep', outp)
     and rob = if isFalse rob_spec then rob_spec else if isTrue rob_optim then rob_optim else rob_spec
 
-node autotrans_at54 tstep inp = get next_t, outp, rob where
+node autotrans_at54 tstep inp = next_t, outp, rob where
     rec throttle = Array.get inp 0
     and brake = Array.get inp 1
-    and tstep' = make tstep
-    and next_t = tstep' fby (next_t + tstep')
-    and t = make 0. fby next_t
-    and (rpm, gear, speed, up_th, dn_th), rob_optim = Autotransd.autotrans (t, (throttle, brake))
+    and init tstep' = make tstep
+    and next_t = t +. tstep
+    and (t, rpm, gear, speed, up_th, dn_th), rob_optim = Autotransc.autotransd 100. tstep (throttle, brake)
     and outp = Array.of_list [rpm; gear; speed; up_th; dn_th]
     and rob_spec = at54 (tstep', outp)
     and rob = if isFalse rob_spec then rob_spec else if isTrue rob_optim then rob_optim else rob_spec
 
-node autotrans_at6a tstep inp = get next_t, outp, rob + (make 0.1) where
+node autotrans_at6a tstep inp = next_t, outp, rob + (make 0.1) where
     rec throttle = Array.get inp 0
     and brake = Array.get inp 1
-    and tstep' = make tstep
-    and next_t = tstep' fby (next_t + tstep')
-    and t = make 0. fby next_t
-    and (rpm, gear, speed, up_th, dn_th), _ = Autotransd.autotrans (t, (throttle, brake))
+    and init tstep' = make tstep
+    and next_t = t +. tstep
+    and (t, rpm, gear, speed, up_th, dn_th), _ = Autotransc.autotransd 100. tstep (throttle, brake)
     and outp = Array.of_list [rpm; gear; speed; up_th; dn_th]
     and rob = at6a (tstep', outp)
 
-node autotrans_at6b tstep inp = get next_t, outp, rob where
+node autotrans_at6b tstep inp = next_t, outp, rob where
     rec throttle = Array.get inp 0
     and brake = Array.get inp 1
-    and tstep' = make tstep
-    and next_t = tstep' fby (next_t + tstep')
-    and t = make 0. fby next_t
-    and (rpm, gear, speed, up_th, dn_th), _ = Autotransd.autotrans (t, (throttle, brake))
+    and init tstep' = make tstep
+    and next_t = t +. tstep
+    and (t, rpm, gear, speed, up_th, dn_th), _ = Autotransc.autotransd 100. tstep (throttle, brake)
     and outp = Array.of_list [rpm; gear; speed; up_th; dn_th]
     and rob = at6b (tstep', outp)
 
-node autotrans_at6c tstep inp = get next_t, outp, rob where
+node autotrans_at6c tstep inp = next_t, outp, rob where
     rec throttle = Array.get inp 0
     and brake = Array.get inp 1
-    and tstep' = make tstep
-    and next_t = tstep' fby (next_t + tstep')
-    and t = make 0. fby next_t
-    and (rpm, gear, speed, up_th, dn_th), _ = Autotransd.autotrans (t, (throttle, brake))
+    and init tstep' = make tstep
+    and next_t = t +. tstep
+    and (t, rpm, gear, speed, up_th, dn_th), _ = Autotransc.autotransd 100. tstep (throttle, brake)
     and outp = Array.of_list [rpm; gear; speed; up_th; dn_th]
     and rob = at6c (tstep', outp)

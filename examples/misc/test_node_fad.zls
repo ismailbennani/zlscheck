@@ -1,0 +1,70 @@
+open FadFloat
+open Nodes_fad
+
+hybrid system (x, y0) = out_y where
+    rec dy = FadFloat.scale x 2.
+    and der y = FadFloat.get dy init FadFloat.get y0
+    and out_y = FadFloat.make y
+
+    (* 
+       dy/dt = 2 * x
+       y(0) = y0 
+
+       y(t) = 2 * x * t + y0
+
+       dy/dx = 2 * t
+       dy/dy0 = 1
+    *)
+
+hybrid system2 (x, y0) = out_y where
+    rec dy = FadFloat.scale (x * out_y) 2.
+    and der y = FadFloat.get dy init FadFloat.get y0
+    and out_y = FadFloat.make y
+
+    (* 
+        dy/dt = 2 * x * y
+        y(0) = y0
+
+        y(t) = y0 * e^(2*x*t)
+
+        dy/dx = y0 * 2*t*e^(2*x*t)
+        dy/dy0 = e^(2*x*t)
+     *)
+
+hybrid wrapper inp = outp where
+    rec x = Array.get inp 0 
+    and y0 = Array.get inp 1
+    and y = system2 (x, y0)
+    and outp = Array.of_list [y]
+
+node discrete_system (x, y0) = t, y where
+    rec h = 0.01
+    and inp = Array.of_list [x; y0]
+    and { time = t; status = status; result = outp } =
+        Nodes_fad.solve wrapper 20. (next_horizon, inp)
+    and next_horizon =
+        h fby (if t >= next_horizon then next_horizon +. h else next_horizon)
+    and y_ = Array.get outp 0
+    and match status with
+    | Interpolate
+    | RootsFound
+    | Cascade
+    | StopTimeReached
+    | TimeHasPassed -> do emit y = y_ done
+    | Horizon _
+    | Success _
+    | Error -> do done
+
+node main () = 
+    let x = FadFloat.make 3. in
+    let y0 = FadFloat.make 1. in
+    FadFloat.diff x 0 1;
+    FadFloat.diff y0 1 2;
+    let t, y = discrete_system (x, y0) in
+    present y(res) -> 
+        (print_endline ("sys(x=" ^ 
+                (string_of_float (FadFloat.get x)) ^ ", y0=" ^
+                (string_of_float (FadFloat.get y0)) ^ ")(t=" ^
+                (string_of_float t) ^ ") = " ^
+                (FadFloat.to_string res));
+        input_line stdin)

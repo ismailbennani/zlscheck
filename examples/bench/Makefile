@@ -1,7 +1,7 @@
 include ../../config
 
-FOLDERS = $(shell find ../sut -type d)
-SUTFILES = $(shell find ../sut -name "*.ml")
+FOLDERS = $(shell find ../misc/test_hyb_fad -type d)
+SUTFILES = $(shell find ../misc/test_hyb_fad -name "*.ml")
 SORTED = $(shell ocamldep -sort $(FOLDERS:%=-I %) $(SUTFILES))
 CMXS = $(SORTED:.ml=.cmx)
 

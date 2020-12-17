@@ -15,7 +15,7 @@ zelus:
 	$(MAKE) -C $(ZLDIR)
 
 fadbadml:
-	$(MAKE) -C $(FADBADDIR)
+	cd $(FADBADDIR); dune build
 
 lib:
 	rm -rf lib
@@ -42,11 +42,12 @@ clean:
 
 clean_ext:
 	-$(MAKE) -C $(ZLDIR) cleanall
-	-$(MAKE) -C $(FADBADDIR) cleanall
+	cd $(FADBADDIR); dune clean
 
 realclean cleanall: clean_ext
 	-$(MAKE) -C src cleanall
 	-$(MAKE) -C arch cleanall
+	-$(MAKE) -C examples cleanall
 	-rm -rf lib
 
 .PHONY: src lib

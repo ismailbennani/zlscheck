@@ -10,7 +10,7 @@ module Make
     (SUT : Deftypes.SUT)
     (Optim : Optim.S with type input = float array
                       and type output = float * float array)
-    (Logger : Logger.S with type input = float * float array * float array * float) =
+    (Logger : Logger.S) =
 struct
   include SUT
 
@@ -65,6 +65,8 @@ struct
       (* model step *)
       for i = 1 to SUT.sample_every - 1 do
         let next_t, cur_out, rob = step wmem.mem inp_fad in
+        
+        wmem.time <- next_t;
 
         Logger.log wmem.logstate (wmem.time, inp,
                                   Array.map FadFloat.get cur_out,

@@ -1,0 +1,28 @@
+open FadFloat
+
+node integrate_d (tstep, x, y0) = y where
+    rec y = y0 -> pre y + tstep * x
+
+node vdp_d tstep max_t mu = t, x, y where
+    rec init tstep' = make tstep
+    and t = integrate_d (tstep', make 1., make 0.)
+    and x = integrate_d (tstep', y, make 1.)
+    and y = integrate_d (tstep', pre (mu * ((make 1.) - sqr x) * y - x), make 1.)
+
+hybrid integrate_c (x, y0) = Fad_hacks.make y where
+    der y = Fad_hacks.get x init Fad_hacks.get y0
+
+hybrid vdp_c_ inp = Array.of_list [ x; y ] where
+    rec mu = Array.get inp 0
+    and x = integrate_c (y, make 1.)
+    and y = integrate_c (mu * ((make 1.) - sqr x) * y - x, make 1.)
+
+open Nodes_fad
+
+node vdp_c tstep max_t mu = t, x, y where
+    rec { time = t; status = status; result = result } =
+        solve vdp_c_ max_t (next_horizon, Array.of_list [ mu ])
+    and next_horizon = tstep fby
+        if t >= next_horizon then next_horizon +. tstep else next_horizon
+    and x = Array.get result 0
+    and y = Array.get result 1

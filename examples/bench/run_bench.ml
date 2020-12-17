@@ -1,4 +1,5 @@
-module NoLogger = Logger.None(struct type t = float * float array * float array * float end)
+module NoLogger = Logger.None
+module LogAll = Logger.Combine(Logger.LogFals)(Logger.LogAll)
 
 (* return type of several repetitions of a benchmark *)
 type multiple_repet_result = {
@@ -18,7 +19,7 @@ type multiple_repet_result = {
 
 let print_result ff
     { bench; desc; prop; n_repet; n_runs; mean_n_runs; median_n_runs;
-       n_falsif; best_rob; total_time } =
+      n_falsif; best_rob; total_time } =
   Printf.fprintf ff "name:%s\n" bench;
   Printf.fprintf ff "desc:%s\n" desc;
   Printf.fprintf ff "prop:%s\n" prop;
@@ -94,8 +95,8 @@ let benches_at_inst2 :
   [| 136983.3607134996; 0.0038822759276849785; 0.26817747886434484; |];
 ]
 
-let benches_wt :
-  (string *
+(* let benches_wt :
+   (string *
    (module Deftypes.SUT) *
    (module Optim.S with type input = float array
                     and type output = float * float array) *
@@ -119,38 +120,38 @@ let benches_wt :
    (module Defsut.WT.Phi4),
    (module Optim.UR_GDAWARE),
    [| |];
- ]
+   ] *)
 
 let benches_cc :
-(string *
- (module Deftypes.SUT) *
- (module Optim.S with type input = float array
-                  and type output = float * float array) *
- float array) list = [
-   "online",
-   (module Defsut.CC.Phi1),
-   (module Optim.GDADAM),
-   [| 80777401.04129301; 0.974037952568933; 0.9757181377067947; |];
+  (string *
+   (module Deftypes.SUT) *
+   (module Optim.S with type input = float array
+                    and type output = float * float array) *
+   float array) list = [
+  "online",
+  (module Defsut.CC.Phi1),
+  (module Optim.GDADAM),
+  [| 80777401.04129301; 0.974037952568933; 0.9757181377067947; |];
 
-   "online",
-   (module Defsut.CC.Phi2),
-   (module Optim.GDADAM),
-   [| 94875197.23282649; 0.7067017949496157; 0.12379129595959801; |];
+  "online",
+  (module Defsut.CC.Phi2),
+  (module Optim.GDADAM),
+  [| 94875197.23282649; 0.7067017949496157; 0.12379129595959801; |];
 
-   "online",
-   (module Defsut.CC.Phi3),
-   (module Optim.GDAMSGRAD),
-   [| 138264.39331581187; 0.671260748689189; 0.4896204961228039; |];
+  "online",
+  (module Defsut.CC.Phi3),
+  (module Optim.GDAMSGRAD),
+  [| 138264.39331581187; 0.671260748689189; 0.4896204961228039; |];
 
-   "online",
-   (module Defsut.CC.Phi4),
-   (module Optim.GDADAM),
-   [| 0.3465831984869988; 0.9029926683301219; 0.9127255976308775; |];
+  "online",
+  (module Defsut.CC.Phi4),
+  (module Optim.GDADAM),
+  [| 0.3465831984869988; 0.9029926683301219; 0.9127255976308775; |];
 
-   "online",
-   (module Defsut.CC.Phi5),
-   (module Optim.GDADAM),
-   [| 2.5210896053993563; 0.9734377599334705; 0.8728999865865236; |];
+  "online",
+  (module Defsut.CC.Phi5),
+  (module Optim.GDADAM),
+  [| 2.5210896053993563; 0.9734377599334705; 0.8728999865865236; |];
 ]
 
 let run_offline max_n_runs
@@ -158,27 +159,29 @@ let run_offline max_n_runs
     (module Optim : Optim.S with type input = float array
                              and type output = float * float array)
     (params : float array) =
-  let (module Bench : Method_types.RunBench with type Logger.params = unit
+  let (module Bench : Method_types.RunBench with type Logger.params = string * string
                                              and type Optim.optim_params = Optim.optim_params) =
-    (module Offline.Make(SUT)(Optim)(NoLogger)) in
+    (module Offline.Make(SUT)(Optim)(LogAll)) in
   let optim_params = Optim.optim_params_of_array params in
-  let default_params = Optim.mk_params 300 SUT.bounds in
-  Bench.run () { default_params with optim = optim_params;
-                                     verbose = true; }
+  let default_params = Optim.mk_params max_n_runs SUT.bounds in
+  Bench.run ("log", "log/replay") { default_params with optim = optim_params;
+                                                        verbose = true;
+                                                        vverbose = true; }
 
 let run_online max_n_runs
     (module SUT : Deftypes.SUT)
     (module Optim : Optim.S with type input = float array
                              and type output = float * float array)
     (params : float array) =
-  let (module Bench : Method_types.RunBench with type Logger.params = unit
+  let (module Bench : Method_types.RunBench with type Logger.params = string * string
                                              and type Optim.optim_params = Optim.optim_params) =
-    (module Online.Make(SUT)(Optim)(NoLogger)) in
+    (module Online.Make(SUT)(Optim)(LogAll)) in
   let optim_params = Optim.optim_params_of_array params in
-  let default_params = Optim.mk_params 300 SUT.bounds in
-  Bench.run () { default_params with optim = optim_params;
-                                     max_n_runs;
-                                     verbose = true; }
+  let default_params = Optim.mk_params max_n_runs SUT.bounds in
+  Bench.run ("log", "log/replay") { default_params with optim = optim_params;
+                                                        max_n_runs;
+                                                        verbose = true;
+                                                        vverbose = true; }
 
 let compute_mean a =
   let n = Array.length a in
@@ -252,6 +255,8 @@ let repeat n_repet max_n_runs meth
   }
 
 let _ =
+  Random.self_init ();
+
   AdaptativeGradient.Classic.default_params.do_restart <- true;
   AdaptativeGradient.ADAGRAD.default_params.do_restart <- true;
   AdaptativeGradient.ADAM.default_params.do_restart <- true;
@@ -263,13 +268,23 @@ let _ =
           (module Optim : Optim.S with type input = float array
                                    and type output = float * float array),
           params) ->
-      let result = repeat 50 300 meth (module SUT) (module Optim) params in
+      let result = repeat 1 1 meth (module SUT) (module Optim) params in
       Printf.printf "%a\n" print_result result;
       let fd = open_out (result.bench ^ ".out") in
       Printf.fprintf fd "%a\n" print_result result;
       close_out fd)
     ["offline",
-    (module Defsut.Autotrans.Phi6a_instance1),
-    (module Optim.GDADAM),
-    [| 1.2841439490395001; 0.999908676405291; 0.8736518983634028; |];]
-    (* benches_wt *)
+     (module Defsut.Autotrans.Phi1_instance1),
+     (module Optim.GDClassic),
+     [| 7161212.647361056 |];
+    ]
+(* ["offline",
+   (module Defsut.Test.C),
+   (module Optim.GDClassic),
+   [| 100. |];
+   "offline",
+   (module Defsut.Test.D),
+   (module Optim.GDClassic),
+   [| 100. |];
+   ] *)
+(* benches_at_inst1 *)

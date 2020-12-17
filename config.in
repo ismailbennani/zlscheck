@@ -9,7 +9,7 @@ OCAMLDEP  ?= ocamldep
 OCAMLRUN  ?= ocamlrun
 OCAMLFIND ?= ocamlfind
 MENHIR    ?= menhir
-OTAGS	    ?= otags
+OTAGS	  ?= otags
 
 ZLDIR = @extdir@/zelus
 ZLLIB = $(ZLDIR)/lib
@@ -17,7 +17,7 @@ ZELUC = $(ZLDIR)/bin/zeluc
 ZELUCFLAGS = -I $(ZLLIB)
 
 FADBADDIR = @extdir@/fadbadml
-FADBADLIB = $(FADBADDIR)/lib
+FADBADLIB = $(FADBADDIR)/_build/install/default/lib/fadbadml
 
 CHECKLIB = @curdir@/lib
 
