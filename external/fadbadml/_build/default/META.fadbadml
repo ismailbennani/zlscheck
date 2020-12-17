@@ -1,7 +1,0 @@
-version = "0.1.2-5-gbd56684"
-description = ""
-requires = ""
-archive(byte) = "fadbad.cma"
-archive(native) = "fadbad.cmxa"
-plugin(byte) = "fadbad.cma"
-plugin(native) = "fadbad.cmxs"

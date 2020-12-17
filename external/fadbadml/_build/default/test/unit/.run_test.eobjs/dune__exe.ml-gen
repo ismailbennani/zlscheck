@@ -1,5 +1,0 @@
-(** @canonical Dune__exe.Run_test *)
-module Run_test = Dune__exe__Run_test
-
-(** @canonical Dune__exe.Test_cases *)
-module Test_cases = Dune__exe__Test_cases
