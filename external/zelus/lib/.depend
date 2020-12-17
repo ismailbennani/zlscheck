@@ -77,6 +77,14 @@ solvers/sundials_cvode.cmx : \
     solvers/sundials_cvode.cmi
 solvers/sundials_cvode.cmi : \
     zls.cmo
+solvers/sundials_cvodes.cmo : \
+    zls.cmo \
+    solvers/sundials_cvodes.cmi
+solvers/sundials_cvodes.cmx : \
+    zls.cmx \
+    solvers/sundials_cvodes.cmi
+solvers/sundials_cvodes.cmi : \
+    zls.cmo
 vbool.cmo : \
     ztypes.cmi
 vbool.cmx : \

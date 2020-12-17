@@ -271,7 +271,7 @@ fi
 graphics="${GRAPHICS:-${ocaml_libpath}}"
 if [ ${for_compile} -eq 1 ]; then
     if [ ! -e "${graphics}/graphics.cmi" ]; then
-        graphics="${ocaml_libpath}graphics"
+        graphics="${GRAPHICS:-${ocaml_libpath}graphics}"
         if [ ! -e "${graphics}/graphics.cmi" ]; then
             graphics="${ocaml_libpath}site-lib/graphics"
             if [ ! -e "${graphics}/graphics.cmi" ]; then

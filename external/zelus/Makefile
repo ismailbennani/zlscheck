@@ -10,31 +10,27 @@ all: depend
 byte: depend
 	(cd compiler; $(MAKE) -f Makefile byte)
 	(cd lib;      $(MAKE) -f Makefile byte)
-	(cd tools;    $(MAKE) -f Makefile all)
+	(cd tools;    $(MAKE) -f Makefile byte)
 
 withgtk.byte: depend
 	(cd compiler; $(MAKE) -f Makefile byte)
 	(cd lib;      $(MAKE) -f Makefile withgtk.byte)
-	(cd tools;    $(MAKE) -f Makefile all)
+	(cd tools;    $(MAKE) -f Makefile byte)
 
 opt: depend
 	(cd compiler; $(MAKE) -f Makefile opt)
 	(cd lib;      $(MAKE) -f Makefile opt)
-	(cd tools;    $(MAKE) -f Makefile all)
+	(cd tools;    $(MAKE) -f Makefile opt)
 
 withgtk.opt: depend
 	(cd compiler; $(MAKE) -f Makefile opt)
 	(cd lib;      $(MAKE) -f Makefile withgtk.opt)
-	(cd tools;    $(MAKE) -f Makefile all)
+	(cd tools;    $(MAKE) -f Makefile opt)
 
 debug: depend debug.txt
 	(cd compiler; $(MAKE) -f Makefile debug)
 	(cd lib;      $(MAKE) -f Makefile debug)
 	(cd tools;    $(MAKE) -f Makefile debug)
-
-tests: all
-	(cd test/good; $(MAKE) -f Makefile)
-	(cd test/bad;  $(MAKE) -f Makefile)
 
 depend:
 	(cd compiler; $(MAKE) -f Makefile depend)
@@ -109,8 +105,8 @@ makedist:
 
 dist-src-folder: distclean
 	mkdir -p dist-src
-	cp -r bin compiler examples lib man probabilistic test tools dist-src
-	cp config.in configure license.en.txt license.fr.txt Makefile readme.md dist-src
+	cp -r bin compiler examples lib man test tools dist-src
+	cp config.in configure LICENSE Makefile readme.md dist-src
 	cp zelus.docker dist-src
 
 dist-src: dist-src-folder
@@ -174,15 +170,15 @@ docker_save:
 
 # Clean up
 clean:
-	make -C compiler clean
-	make -C lib clean
-	make -C tools clean
+	(cd compiler;  make -f Makefile clean)
+	(cd lib;       make -f Makefile clean)
+	(cd tools;     make -f Makefile clean)
 	-@rm -rf dist-src anonymous-dist-src
 	-@rm -rf debug.txt
 
 realclean cleanall distclean:
-	make -C compiler cleanall
-	make -C lib cleanall
-	make -C tools cleanall
+	(cd compiler;  make -f Makefile cleanall)
+	(cd lib;       make -f Makefile cleanall)
+	(cd tools;     make -f Makefile cleanall)
 	-@rm -rf dist-src anonymous-dist-src
 	-@rm -rf debug.txt
