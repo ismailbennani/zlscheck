@@ -248,15 +248,15 @@ struct
     (* A factor relating simulation and wall clock times. *)
     val speedup       : Operator.t ref
 
-    val step  :    's Zls.f_alloc
-      -> 's Zls.f_csize
-      -> 's Zls.f_zsize
-      -> 's Zls.f_horizon
-      -> 's Zls.f_maxsize
-      -> 's Zls.f_ders
-      -> ('s, 'o) Zls.f_step
-      -> 's Zls.f_zero
-      -> 's Zls.f_reset
+    val step  :    's f_alloc
+      -> 's f_csize
+      -> 's f_zsize
+      -> 's f_horizon
+      -> 's f_maxsize
+      -> 's f_ders
+      -> ('s, 'o) f_step
+      -> 's f_zero
+      -> 's f_reset
       -> (unit -> 'o option * bool * Operator.t)
 
   end (* }}} *)

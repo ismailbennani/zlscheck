@@ -1,0 +1,5 @@
+common/discrete_obs_fad.ml
+*slprj/
+*.slxc
+
+.depend

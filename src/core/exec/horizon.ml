@@ -31,8 +31,6 @@ struct
         | None -> failwith "The model didn't return any value"
         | Some res -> res
     end
-
-  module Default = FloatSolver(Defaultsolver)
 end
 
 module Discrete(Type : sig type t end) =

@@ -8,8 +8,10 @@ core/autodiff/pervasives_ad.cmx : \
     core/autodiff/extended_FAD_float.cmx
 core/exec/exec.cmo :
 core/exec/exec.cmx :
-core/exec/execPeriodic.cmo :
-core/exec/execPeriodic.cmx :
+core/exec/execPeriodic.cmo : \
+    core/exec/myZls.cmo
+core/exec/execPeriodic.cmx : \
+    core/exec/myZls.cmx
 core/exec/horizon.cmo : \
     core/exec/sim.cmo \
     core/exec/execPeriodic.cmo
@@ -41,20 +43,22 @@ core/optim/adaptativeGradient.cmx : \
 core/optim/distribution.cmo :
 core/optim/distribution.cmx :
 core/optim/optim.cmo : \
-    core/optim/uniformRandom.cmo \
+    core/utils/zlscheck_utils.cmo \
     core/optim/uniformRandom_gdaware.cmo \
-    core/optim/simulatedAnnealing.cmo \
+    core/optim/uniformRandom.cmo \
     core/optim/simulatedAnnealing_gdaware.cmo \
+    core/optim/simulatedAnnealing.cmo \
     core/optim/optim_utils.cmo \
     core/optim/optim_types.cmo \
     core/optim/optim_globals.cmo \
     core/utils/misc_printers.cmo \
     core/optim/adaptativeGradient.cmo
 core/optim/optim.cmx : \
-    core/optim/uniformRandom.cmx \
+    core/utils/zlscheck_utils.cmx \
     core/optim/uniformRandom_gdaware.cmx \
-    core/optim/simulatedAnnealing.cmx \
+    core/optim/uniformRandom.cmx \
     core/optim/simulatedAnnealing_gdaware.cmx \
+    core/optim/simulatedAnnealing.cmx \
     core/optim/optim_utils.cmx \
     core/optim/optim_types.cmx \
     core/optim/optim_globals.cmx \
@@ -67,15 +71,9 @@ core/optim/optim_globals.cmx : \
 core/optim/optim_types.cmo :
 core/optim/optim_types.cmx :
 core/optim/optim_utils.cmo : \
-    core/utils/zlscheck_utils.cmo \
-    core/optim/optim_types.cmo \
-    core/optim/optim_globals.cmo \
-    core/utils/misc_printers.cmo
+    core/optim/optim_types.cmo
 core/optim/optim_utils.cmx : \
-    core/utils/zlscheck_utils.cmx \
-    core/optim/optim_types.cmx \
-    core/optim/optim_globals.cmx \
-    core/utils/misc_printers.cmx
+    core/optim/optim_types.cmx
 core/optim/particles.cmo : \
     core/utils/zlscheck_utils.cmo \
     core/optim/optim_utils.cmo \
@@ -169,10 +167,8 @@ core/spec/stl/stl.cmx : \
     core/spec/stl/stl_syntax.cmx \
     core/spec/stl/stl_semantic.cmx
 core/spec/stl/stl_semantic.cmo : \
-    core/utils/zlscheck_utils.cmo \
     core/spec/stl/stl_syntax.cmo
 core/spec/stl/stl_semantic.cmx : \
-    core/utils/zlscheck_utils.cmx \
     core/spec/stl/stl_syntax.cmx
 core/spec/stl/stl_syntax.cmo :
 core/spec/stl/stl_syntax.cmx :
@@ -182,5 +178,13 @@ core/utils/zlscheck_utils.cmo : \
     core/utils/misc_printers.cmo
 core/utils/zlscheck_utils.cmx : \
     core/utils/misc_printers.cmx
+staliro/staliro.cmo : \
+    core/optim/uniformRandom.cmo \
+    core/optim/simulatedAnnealing.cmo \
+    core/optim/optim.cmo
+staliro/staliro.cmx : \
+    core/optim/uniformRandom.cmx \
+    core/optim/simulatedAnnealing.cmx \
+    core/optim/optim.cmx
 zlscheck.cmo :
 zlscheck.cmx :

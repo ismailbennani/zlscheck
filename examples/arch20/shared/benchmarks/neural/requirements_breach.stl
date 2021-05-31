@@ -1,8 +1,0 @@
-param alph=0.005
-param bet=0.03
-
-close_ref := abs(Pos[t] - Ref[t]) < alph+ bet*abs(Ref[t])
-reach_ref := ev_[0, 2] (alw_[0, 1] (close_ref))
-
-# At all times, Output will be close to the reference signal in 2 seconds
-NNreq := alw_[1, 37] ((not close_ref) => reach_ref)

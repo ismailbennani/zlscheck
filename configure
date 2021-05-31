@@ -2,7 +2,22 @@
 
 # Configure script adapted from Zélus repository
 
+ext_libs=external
+
+while : ; do
+  case "$1" in
+    "") break;;
+
+    --external)
+	ext_libs=$2; shift;;
+    --external=*)
+	ext_libs=`expr "$1" : '--[^=]*=\(.*\)'`;;
+  esac
+  shift
+done
+
 curdir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd)"
 
 (printf "# # # THIS FILE IS GENERATED AUTOMATICALLY BY CONFIGURE # # #\n"; \
- sed "s#@curdir@#${curdir}#" config.in) > config
+ sed -e "s#@extdir@#${curdir}/${ext_libs}#;
+         s#@curdir@#${curdir}#;" config.in) > config

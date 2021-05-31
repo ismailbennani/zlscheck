@@ -1,8 +1,0 @@
-rise := (throttle[t] <  8.8) and (ev_[0, 0.05] (throttle[t] > 40.0))
-fall := (throttle[t] > 40.0) and (ev_[0, 0.05] (throttle[t] <  8.8))
-
-param bet=0.008
-AFC27 := alw_[11, 50] ((rise or fall) => (alw_[1,5] (abs(mu[t]) < bet)))
-
-param gam=0.007
-AFC29 := alw_[11, 50] (abs(mu[t]) < gam)

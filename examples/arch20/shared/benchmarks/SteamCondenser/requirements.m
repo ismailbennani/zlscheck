@@ -1,1 +1,0 @@
-SC    = 'always (30 35) (in pressure 87.0 87.5)';

@@ -36,7 +36,7 @@ zlscheck.cmxa: cmxs
 	   $(shell find * -mindepth 2 -name "*.zci") \
    	   $(shell find * -mindepth 2 -name "*.o") .
 	@# build .cmxa
-	ocamlopt -a -o $@ \
+	ocamlopt -a $(OCAMLOPTFLAGS) -o $@ \
 		$(notdir $(sorted_ml:.ml=.cmx)) zlscheck.ml
 
 zlscheck.cma: cmos
@@ -44,7 +44,7 @@ zlscheck.cma: cmos
 	   $(shell find * -mindepth 2 -name "*.cmi") \
 	   $(shell find * -mindepth 2 -name "*.zci") .
 	@# build .cmoa
-	ocamlc -a -o $@ \
+	ocamlc -a $(OCAMLOPTFLAGS) -o $@ \
 		$(notdir $(sorted_ml:.ml=.cmo)) zlscheck.ml
 
 # zlfalsif
@@ -53,9 +53,9 @@ DIR = core/spec/obs
 OBJ = assert discrete_obs hybrid_obs dual gen
 
 zlfalsif.cmxa: $(OBJ:%=$(DIR)/%.zci) $(OBJ:%=$(DIR)/%.cmx)
-	cd $(DIR); ocamlopt -a -o $@ $(OBJ:=.cmx)
+	cd $(DIR); ocamlopt -a $(OCAMLOPTFLAGS) -o $@ $(OBJ:=.cmx)
 zlfalsif.cma: $(OBJ:%=$(DIR)/%.zci) $(OBJ:%=$(DIR)/%.cmo)
-	cd $(DIR); ocamlc -a -o $@ $(OBJ:=.cmo)
+	cd $(DIR); ocamlc -a $(OCAMLOPTFLAGS) -o $@ $(OBJ:=.cmo)
 
 clean cleanall:
 	-find * -type f -name "*.zci" -delete

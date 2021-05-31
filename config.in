@@ -9,25 +9,29 @@ OCAMLDEP  ?= ocamldep
 OCAMLRUN  ?= ocamlrun
 OCAMLFIND ?= ocamlfind
 MENHIR    ?= menhir
-OTAGS	    ?= otags
+OTAGS	  ?= otags
 
-ZLLIB = @curdir@/zelus/lib
-ZELUC = @curdir@/zelus/bin/zeluc.byte
-ZELUCFLAGS = -I $(ZLLIB)
+ZLLIB = `ocamlfind query zelus`
+ZLLIBGTK = `ocamlfind query zelus-gtk`
+ZELUC = zeluc
+ZELUCFLAGS = -I `ocamlfind query zelus` -I `ocamlfind query zelus-gtk`
+
+LABLGTKLIB = `ocamlfind query lablgtk2`
 
 FADBADLIB = `ocamlfind query fadbadml`
 
 CHECKLIB = @curdir@/lib
 
-INCLUDES += \
-	unix.cma bigarray.cma \
-	-I $(shell ocamlfind query lablgtk2) lablgtk.cma \
-	-I $(shell ocamlfind query sundialsml) sundials.cma \
-	-I $(ZLLIB) -I $(ZLLIB)/solvers zllibgtk.cma \
-	-I $(FADBADLIB) fadbad.cma
+INCLUDES ?=
 
-OCAMLFLAGS ?=
-OCAMLOPTFLAGS ?=
+OCAMLFLAGS ?= unix.cma bigarray.cma \
+		-I $(LABLGTKLIB) lablgtk.cma \
+		-I $(ZLLIB) -I $(ZLLIBGTK) zlstdlib.cma \
+		-I $(FADBADLIB) fadbad.cma
+OCAMLOPTFLAGS ?= unix.cmxa bigarray.cmxa \
+		-I $(LABLGTKLIB) lablgtk.cmxa \
+		-I $(ZLLIB) -I $(ZLLIBGTK) zlstdlib.cmxa \
+		-I $(FADBADLIB) fadbad.cmxa
 
 # implicit rules
 
@@ -56,9 +60,8 @@ OCAMLOPTFLAGS ?=
 
 # set ZLEXTRALIBS to ZLGTKLIBS to compile examples that use gtk
 %.byte: %.ml
-	$(OCAMLC) $(OCAMLFLAGS) -o $@ \
-	    $(ZLSTDLIBS) $(ZLEXTRALIBS) \
-      $(INCLUDES) \
+	$(OCAMLC) $(OCAMLFLAGS) -o $@ $(ZLSTDLIBS) $(ZLEXTRALIBS) \
+      	$(INCLUDES) \
 	    $< $(<:.ml=_main.ml)
 
 # set ZLEXTRALIBS to ZLGTKLIBS to compile examples that use gtk
@@ -66,5 +69,5 @@ OCAMLOPTFLAGS ?=
 	$(OCAMLOPT) $(OCAMLOPTFLAGS) -o $@ \
 	    $(patsubst %.cma,%.cmxa,$(patsubst %.cmo,%.cmx,$(ZLSTDLIBS)))\
 			$(patsubst %.cma,%.cmxa,$(patsubst %.cmo,%.cmx,$(ZLEXTRALIBS)))\
-      $(patsubst %.cma,%.cmxa,$(patsubst %.cmo,%.cmx,$(INCLUDES)))\
+        $(patsubst %.cma,%.cmxa,$(patsubst %.cmo,%.cmx,$(INCLUDES)))\
 	    $< $(<:.ml=_main.ml)

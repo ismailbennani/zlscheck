@@ -30,6 +30,7 @@ type sa_params = {
 
 type gd_params = {
   mutable do_restart : bool;
+  mutable restart_fn : unit -> unit;
   mutable alpha : float;
   mutable beta1 : float;
   mutable beta2 : float;

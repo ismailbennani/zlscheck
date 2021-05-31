@@ -1,0 +1,81 @@
+open MyOp
+open Discrete_obs_fad
+
+(* always_[30, 630] BladePitchAngle_Deg <= 14.2 *)
+node wt1 (tstep, outp) =
+    let rec t = make 0. fby (t + tstep) in
+    let blade_pitch_angle = Array.get outp 4  in
+    always_timed 630. (tstep,
+                            implies (q_ge (t, (make 30.)),
+                                     q_le (blade_pitch_angle, make 14.2)))
+
+(* always_[30, 630] 21000 <= Mg_d <= 47500 *)
+node wt2 (tstep, outp) =
+    let rec t = make 0. fby (t + tstep) in
+    let mg_d = Array.get outp 5 in
+    always_timed 630. (tstep,
+                            implies (q_ge (t, (make 30.)),
+                                     q_and (q_ge (mg_d, make 21000.),
+                                            q_le (mg_d, make 47500.))))
+
+(* always_[30, 630] Omega_rpm <= 14.3 *)
+node wt3 (tstep, outp) =
+    let rec t = make 0. fby (t + tstep) in
+    let omega = Array.get outp 1 in
+    always_timed 630. (tstep,
+                            implies (q_ge (t, (make 30.)),
+                                     q_le (omega, make 14.3)))
+
+(* always_[30, 630](possibly_[0,5] |BladePitchAngle_Deg - Theta_d_deg| <= 1.6) *)
+node wt4 (tstep, outp) =
+    let rec t = make 0. fby (t + tstep) in
+    let theta_d = Array.get outp 3 in
+    let blade_pitch_angle = Array.get outp 4  in
+    let dif = abs (blade_pitch_angle - theta_d) in
+    always_timed 630. (tstep,
+            implies (q_ge (t, (make 35.)),
+                     bounded_recurrence 5. (tstep, q_le (dif, make 1.6))))
+
+node wt_wt1 tstep inp = get next_t, outp, translate rob 0.1 where
+    rec init tstep' = make tstep
+    and next_t = tstep' fby (next_t + tstep')
+    and t = make 0. fby next_t
+    and v0 = Array.get inp 0
+    and theta, omega, omega_g, theta_d, blade_pitch_angle, mg_d, _ =
+        Wt_d.wt (t, v0)
+    and outp = Array.of_list
+        [theta; omega; omega_g; theta_d; blade_pitch_angle; mg_d]
+    and rob = wt1 (tstep', outp)
+
+node wt_wt2 tstep inp = get next_t, outp, rob where
+    rec init tstep' = make tstep
+    and next_t = tstep' fby (next_t + tstep')
+    and t = make 0. fby next_t
+    and v0 = Array.get inp 0
+    and theta, omega, omega_g, theta_d, blade_pitch_angle, mg_d, _ =
+        Wt_d.wt (t, v0)
+    and outp = Array.of_list
+        [theta; omega; omega_g; theta_d; blade_pitch_angle; mg_d]
+    and rob = wt2 (tstep', outp)
+
+node wt_wt3 tstep inp = get next_t, outp, rob + make 0.1 where
+    rec init tstep' = make tstep
+    and next_t = tstep' fby (next_t + tstep')
+    and t = make 0. fby next_t
+    and v0 = Array.get inp 0
+    and theta, omega, omega_g, theta_d, blade_pitch_angle, mg_d, _ =
+        Wt_d.wt (t, v0)
+    and outp = Array.of_list
+        [theta; omega; omega_g; theta_d; blade_pitch_angle; mg_d]
+    and rob = wt3 (tstep', outp)
+
+node wt_wt4 tstep inp = get next_t, outp, rob where
+    rec init tstep' = make tstep
+    and next_t = tstep' fby (next_t + tstep')
+    and t = make 0. fby next_t
+    and v0 = Array.get inp 0
+    and theta, omega, omega_g, theta_d, blade_pitch_angle, mg_d, _ =
+        Wt_d.wt (t, v0)
+    and outp = Array.of_list
+        [theta; omega; omega_g; theta_d; blade_pitch_angle; mg_d]
+    and rob = wt4 (tstep', outp)
