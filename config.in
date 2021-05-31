@@ -15,7 +15,7 @@ ZLLIB = @curdir@/zelus/lib
 ZELUC = @curdir@/zelus/bin/zeluc.byte
 ZELUCFLAGS = -I $(ZLLIB)
 
-FADBADLIB = @curdir@/fadbadml/lib
+FADBADLIB = `ocamlfind query fadbadml`
 
 CHECKLIB = @curdir@/lib
 

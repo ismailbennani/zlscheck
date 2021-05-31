@@ -1,3 +1,8 @@
+(* This file defines all the benchmarks that can be ran with run_bench
+   A benchmark is built from a module of type Bench using either 
+   the Offline.Make or Online.Make functor defined in 
+   common/offline.ml and common/online.ml *)
+
 open Ztypes
 
 let verbose = ref false

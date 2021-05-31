@@ -30,6 +30,9 @@ struct
   let step (fn : input -> output) step_params =
     let incr_runs () = step_params.n_runs <- step_params.n_runs + 1 in
 
+    (* Print this only if in offline mode. In online mode, this step function
+       is called at every step of the simulation, this would be printed too 
+       often *)
     if not step_params.online then begin
       Printf.printf "[%s] Run %d/%d (Best rob so far: %g)\n"
         name step_params.n_runs Optim_globals.params.max_n_runs
@@ -37,12 +40,20 @@ struct
       flush stdout;
     end;
 
+    (* In offline mode, if we are falsifying and we found a negative robustness, 
+       we can stop here because we already found a falsifying input. 
+       In online mode, the robustness we compute are intermediate values, they 
+       can be negative for a while then become positive again at the end of the 
+       simulation. *)
     if ((not step_params.online) &&
         step_params.n_runs >= Optim_globals.params.max_n_runs) ||
        (step_params.mode = Falsify &&
         get_rob_from_output (snd step_params.best_result) < 0.) then
         true
     else
+      (* we retrieve the old best candidate to compare it to the new one
+         and compute the new best candidate after this step. *)
+
       let (old_best_inp, old_best_out) = step_params.best_result in
       OptimAlg.step step_params incr_runs fn;
       let (new_inp, new_out) = step_params.last_result in

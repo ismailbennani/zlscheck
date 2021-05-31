@@ -1,3 +1,7 @@
+(* This file defines a Falsification algorithm similar to that of S-Taliro. It applies the chosen 
+   optimization algorithm (implemented in OptimAlg) on a score function that corresponds to the 
+   robustness of a whole simulation of the model. *)
+
 open Optim
 
 (* for now, the function fn returns a float (a robustness)
