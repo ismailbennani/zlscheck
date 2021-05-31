@@ -1,0 +1,17 @@
+val exit : int -AD-> 'a
+val adc : FadFloat.t * FadFloat.t -> FadFloat.t * FadFloat.t
+val tgear : FadFloat.t -> FadFloat.t
+val thrust : FadFloat.t * FadFloat.t * FadFloat.t -> FadFloat.t
+val dampp : FadFloat.t -> FadFloat.t * FadFloat.t * FadFloat.t * FadFloat.t * FadFloat.t * FadFloat.t * FadFloat.t * FadFloat.t * FadFloat.t
+val rtau : FadFloat.t -> FadFloat.t
+
+val cx : FadFloat.t * FadFloat.t -> FadFloat.t
+val cy : FadFloat.t * FadFloat.t * FadFloat.t -> FadFloat.t
+val cz : FadFloat.t * FadFloat.t * FadFloat.t -> FadFloat.t
+val cl : FadFloat.t * FadFloat.t -> FadFloat.t
+val cm : FadFloat.t * FadFloat.t -> FadFloat.t
+val cn : FadFloat.t * FadFloat.t -> FadFloat.t
+val dlda : FadFloat.t * FadFloat.t -> FadFloat.t
+val dldr : FadFloat.t * FadFloat.t -> FadFloat.t
+val dnda : FadFloat.t * FadFloat.t -> FadFloat.t
+val dndr : FadFloat.t * FadFloat.t -> FadFloat.t

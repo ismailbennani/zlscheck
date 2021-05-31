@@ -1,0 +1,25 @@
+open FadFloat
+
+let pi = make 3.14159265359
+let rtod = make 57.29578    (* rad to deg coefficient *)
+let dtor = make 1.745329e-2 (* deg to rad coefficient *)
+
+(* subf16_morelli.zls *)
+
+let xcg = make 0.35
+let s = make 300.
+let b = make 30.
+let cbar = make 11.32
+let rm = make 1.57e-3
+let xcgr = make 0.35
+let he = make 160.0
+let c1 = make (-0.770)
+let c2 = make 0.02755
+let c3 = make 1.055e-4
+let c4 = make 1.642e-6
+let c5 = make 0.9604
+let c6 = make 1.759e-2
+let c7 = make 1.792e-5
+let c8 = make (-0.7336)
+let c9 = make 1.587e-5
+let g = make 32.17

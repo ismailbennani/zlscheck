@@ -1,0 +1,2 @@
+val make : float -> FadFloat.t
+val get : FadFloat.t -> float

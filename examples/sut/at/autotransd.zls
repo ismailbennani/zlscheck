@@ -1,0 +1,124 @@
+(*
+  This example is adapted from a Simulink model:
+  https://fr.mathworks.com/help/simulink/examples/modeling-an-automatic-transmission-controller.html
+
+  This is a discrete implementation of the automatic transmission controller.
+
+  Refer to the diff_plots folder to see comparisons between the continuous
+  and the discrete versions of this model.
+*)
+
+open FadFloat
+open At_common
+
+(** consts **)
+
+let gear1 = make 1.
+let gear2 = make 2.
+let gear3 = make 3.
+let gear4 = make 4.
+
+
+(** utils **)
+
+let node integrate_and_saturate(t, dx, x0, xmin, xmax) = x where
+  rec timestep = t -> (t - pre t)
+  and aux = x0 fby (x + dx * timestep)
+  and x = max xmin (min xmax aux)
+
+(** algorithm **)
+
+let node engine(t, ti, throttle) = rpm where
+  rec te = lookup_engine(throttle, rpm)
+  and drpm = te - ti
+  and timestep = t -> (t - pre t)
+  and rpm = integrate_and_saturate (t, scale drpm engine_feedback_gain, make 1000., make 600., make 6000.)
+
+let node gearlogic(shift) = gear where
+  rec init gear = gear1
+  and automaton
+      | First  ->
+          do
+          until shift(UP)
+            then do next gear = gear2 in Second
+      | Second ->
+          do
+          until shift(DOWN)
+            then do next gear = gear1 in First
+          else  shift(UP)
+            then do next gear = gear3 in Third
+      | Third  ->
+          do
+          until shift(DOWN)
+            then do next gear = gear2 in Second
+          else  shift(UP)
+            then do next gear = gear4 in Fourth
+      | Fourth ->
+          do
+          until shift(DOWN)
+            then do next gear = gear3 in Third
+
+let node shiftlogic(t, speed, throttle) = gear, rob where
+  rec up_th = lookup_interpup(throttle, gear)
+  and dn_th = lookup_interpdn(throttle, gear)
+
+  and gear = gearlogic(shift)
+
+  and automaton
+      | SteadyState  ->
+          let init go_up = if gear < make 1.5 then true else if gear > make 3.5 then false else make (Random.float 1.) > make 0.5 in
+          let init tmp = print_endline (if go_up then "Aiming up!" else "Aiming down!") in
+          do rob = if go_up then up_th - speed else speed - dn_th
+          until (speed < dn_th)
+            then
+            (* do _ = print_endline "Shifting down!" in  *)
+            DownShifting(t)
+          else (speed > up_th)
+            then
+            (* do _ = print_endline "Shifting up!" in  *)
+            UpShifting(t)
+      | DownShifting(t0) ->
+          do rob = make 0.
+          until (speed > dn_th)
+            then
+            (* do _ = print_endline "abort" in  *)
+            SteadyState
+          else (t > translate t0 twait)
+            then do emit shift = DOWN
+            (* and _ = print_endline "DOWN!"  *)
+            in SteadyState
+      | UpShifting(t0)   ->
+          do rob = make 0.
+          until (speed < up_th)
+            then
+            (* do _ = print_endline "abort" in  *)
+            SteadyState
+          else (t > translate t0 twait)
+            then do emit shift = UP
+            (* and _ = print_endline "UP!"  *)
+            in SteadyState
+
+let node vehicle(t, out_torque, brake_torque) = (speed, trans_rpm) where
+  rec timestep = t -> (t - pre t)
+  and final_drive_ratio = scale out_torque p_final_drive_ratio
+  and aux1 = final_drive_ratio - (pre signed_load)
+  and vehicle_inertia = scale aux1 iv_inv
+  and wheel_speed = make p_initial_wheel_speed ->
+    (pre wheel_speed + vehicle_inertia * timestep)
+  and linear_speed = scale wheel_speed l_speed_coef
+  and mph = scale linear_speed p_mph
+  and road_load = translate (scale (sqr mph) p_aerodynamic_drag) p_drag_friction
+  and sgn = if mph >= make 0. then make 1. else make (-1.)
+  and brake = brake_torque + road_load
+  and signed_load = sgn * brake
+
+  and trans_rpm = scale wheel_speed p_final_drive_ratio
+  and speed = mph
+
+let node autotrans(t, (throttle, brake_torque)) = (rpm, gear, speed, up_th, dn_th), translate rob 0.5 where
+  rec rpm = engine(t, ti, throttle)
+  and gear, rob = shiftlogic(t, speed, throttle)
+  and ti, out_torque = transmission (rpm, gear, trans_rpm)
+  and speed, trans_rpm = vehicle(t, pre out_torque, brake_torque)
+  and up_th = lookup_interpup(throttle, gear)
+  and dn_th = lookup_interpdn(throttle, gear)

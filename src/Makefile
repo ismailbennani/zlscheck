@@ -1,23 +1,25 @@
 include ../config
 
 dirs = $(shell find * -type d)
+OCAMLFLAGS += -I `ocamlfind query sundialsml` sundials.cma
+OCAMLOPTFLAGS += -I `ocamlfind query sundialsml` sundials.cmxa
 INCLUDES += $(dirs:%=-I %)
 ZELUCFLAGS += $(dirs:%=-I %)
 
 # find all .ml files in subdirectories
-ml = $(shell find * -mindepth 2 -name "*.ml")
+ml = $(shell find * -name "*.ml")
 
 sorted_ml = $(shell ocamldep -sort $(ml))
 cmx = $(sorted_ml:.ml=.cmx)
 cmo = $(sorted_ml:.ml=.cmo)
 
 # find all .zls files in subdirectories
-zls = $(shell find * -mindepth 2 -name "*.zls")
-zli = $(shell find * -mindepth 2 -name "*.zli")
+zls = $(shell find * -name "*.zls")
+zli = $(shell find * -name "*.zli")
 
 zls_ml = $(zls:.zls=.ml)
 
-libs = zlscheck.cmxa zlscheck.cma zlfalsif.cmxa zlfalsif.cma
+libs = zlscheck.cmxa zlscheck.cma
 
 all: $(libs)
 
@@ -31,43 +33,29 @@ cmos: $(zls_ml) $(zli:.zli=.zci)
 # zlscheck
 
 zlscheck.cmxa: cmxs
-	cp $(shell find * -mindepth 2 -name "*.cmx") \
-	   $(shell find * -mindepth 2 -name "*.cmi") \
-	   $(shell find * -mindepth 2 -name "*.zci") \
-   	   $(shell find * -mindepth 2 -name "*.o") .
+	cp $(shell find * -mindepth 1 -name "*.cmi") \
+	   $(shell find * -mindepth 1 -name "*.zci") .
 	@# build .cmxa
-	ocamlopt -a $(OCAMLOPTFLAGS) -o $@ \
-		$(notdir $(sorted_ml:.ml=.cmx)) zlscheck.ml
+	ocamlopt -a -opaque $(OCAMLOPTFLAGS) -o $@ $(dirs:%=-I %) \
+		$(notdir $(sorted_ml:.ml=.cmx))
 
 zlscheck.cma: cmos
-	cp $(shell find * -mindepth 2 -name "*.cmo") \
-	   $(shell find * -mindepth 2 -name "*.cmi") \
-	   $(shell find * -mindepth 2 -name "*.zci") .
+	cp $(shell find * -mindepth 1 -name "*.cmi") \
+	   $(shell find * -mindepth 1 -name "*.zci") .
 	@# build .cmoa
-	ocamlc -a $(OCAMLOPTFLAGS) -o $@ \
-		$(notdir $(sorted_ml:.ml=.cmo)) zlscheck.ml
-
-# zlfalsif
-
-DIR = core/spec/obs
-OBJ = assert discrete_obs hybrid_obs dual gen
-
-zlfalsif.cmxa: $(OBJ:%=$(DIR)/%.zci) $(OBJ:%=$(DIR)/%.cmx)
-	cd $(DIR); ocamlopt -a $(OCAMLOPTFLAGS) -o $@ $(OBJ:=.cmx)
-zlfalsif.cma: $(OBJ:%=$(DIR)/%.zci) $(OBJ:%=$(DIR)/%.cmo)
-	cd $(DIR); ocamlc -a $(OCAMLOPTFLAGS) -o $@ $(OBJ:=.cmo)
+	ocamlc -a -opaque $(OCAMLOPTFLAGS) -o $@ $(dirs:%=-I %) \
+		$(notdir $(sorted_ml:.ml=.cmo))
 
 clean cleanall:
 	-find * -type f -name "*.zci" -delete
 	-find * -type f -name "*.cm[iox]" -delete
 	-find * -type f -name "*.cm[x]a" -delete
 	-find * -type f -name "*.[ao]" -delete
-	-rm -f $(zls_ml)
 
 -include .zlsdeps
 -include .depend
 
 make_depend:
-	ocamldep $(INCLUDES) $(shell find * -name "*.ml") > .depend
+	ocamldep $(dirs:%=-I %) $(shell find * -name "*.ml") > .depend
 
 .PHONY: .zlsdeps .depend

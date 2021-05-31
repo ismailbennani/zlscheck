@@ -1,190 +1,178 @@
-core/autodiff/diff.cmo :
-core/autodiff/diff.cmx :
-core/autodiff/extended_FAD_float.cmo :
-core/autodiff/extended_FAD_float.cmx :
-core/autodiff/pervasives_ad.cmo : \
-    core/autodiff/extended_FAD_float.cmo
-core/autodiff/pervasives_ad.cmx : \
-    core/autodiff/extended_FAD_float.cmx
-core/exec/exec.cmo :
-core/exec/exec.cmx :
-core/exec/execPeriodic.cmo : \
-    core/exec/myZls.cmo
-core/exec/execPeriodic.cmx : \
-    core/exec/myZls.cmx
-core/exec/horizon.cmo : \
-    core/exec/sim.cmo \
-    core/exec/execPeriodic.cmo
-core/exec/horizon.cmx : \
-    core/exec/sim.cmx \
-    core/exec/execPeriodic.cmx
-core/exec/myZls.cmo :
-core/exec/myZls.cmx :
-core/exec/sample.cmo : \
-    core/exec/execPeriodic.cmo
-core/exec/sample.cmx : \
-    core/exec/execPeriodic.cmx
-core/exec/sim.cmo :
-core/exec/sim.cmx :
-core/interp/pchip.cmo :
-core/interp/pchip.cmx :
-core/optim/adaptativeGradient.cmo : \
-    core/utils/zlscheck_utils.cmo \
-    core/optim/optim_utils.cmo \
-    core/optim/optim_types.cmo \
-    core/optim/optim_globals.cmo \
-    core/utils/misc_printers.cmo
-core/optim/adaptativeGradient.cmx : \
-    core/utils/zlscheck_utils.cmx \
-    core/optim/optim_utils.cmx \
-    core/optim/optim_types.cmx \
-    core/optim/optim_globals.cmx \
-    core/utils/misc_printers.cmx
-core/optim/distribution.cmo :
-core/optim/distribution.cmx :
-core/optim/optim.cmo : \
-    core/utils/zlscheck_utils.cmo \
-    core/optim/uniformRandom_gdaware.cmo \
-    core/optim/uniformRandom.cmo \
-    core/optim/simulatedAnnealing_gdaware.cmo \
-    core/optim/simulatedAnnealing.cmo \
-    core/optim/optim_utils.cmo \
-    core/optim/optim_types.cmo \
-    core/optim/optim_globals.cmo \
-    core/utils/misc_printers.cmo \
-    core/optim/adaptativeGradient.cmo
-core/optim/optim.cmx : \
-    core/utils/zlscheck_utils.cmx \
-    core/optim/uniformRandom_gdaware.cmx \
-    core/optim/uniformRandom.cmx \
-    core/optim/simulatedAnnealing_gdaware.cmx \
-    core/optim/simulatedAnnealing.cmx \
-    core/optim/optim_utils.cmx \
-    core/optim/optim_types.cmx \
-    core/optim/optim_globals.cmx \
-    core/utils/misc_printers.cmx \
-    core/optim/adaptativeGradient.cmx
-core/optim/optim_globals.cmo : \
-    core/optim/optim_types.cmo
-core/optim/optim_globals.cmx : \
-    core/optim/optim_types.cmx
-core/optim/optim_types.cmo :
-core/optim/optim_types.cmx :
-core/optim/optim_utils.cmo : \
-    core/optim/optim_types.cmo
-core/optim/optim_utils.cmx : \
-    core/optim/optim_types.cmx
-core/optim/particles.cmo : \
-    core/utils/zlscheck_utils.cmo \
-    core/optim/optim_utils.cmo \
-    core/optim/optim_types.cmo \
-    core/optim/optim_globals.cmo \
-    core/optim/distribution.cmo
-core/optim/particles.cmx : \
-    core/utils/zlscheck_utils.cmx \
-    core/optim/optim_utils.cmx \
-    core/optim/optim_types.cmx \
-    core/optim/optim_globals.cmx \
-    core/optim/distribution.cmx
-core/optim/simulatedAnnealing.cmo : \
-    core/utils/zlscheck_utils.cmo \
-    core/optim/optim_utils.cmo \
-    core/optim/optim_types.cmo \
-    core/optim/optim_globals.cmo \
-    core/utils/misc_printers.cmo
-core/optim/simulatedAnnealing.cmx : \
-    core/utils/zlscheck_utils.cmx \
-    core/optim/optim_utils.cmx \
-    core/optim/optim_types.cmx \
-    core/optim/optim_globals.cmx \
-    core/utils/misc_printers.cmx
-core/optim/simulatedAnnealing_gdaware.cmo : \
-    core/utils/zlscheck_utils.cmo \
-    core/optim/optim_utils.cmo \
-    core/optim/optim_types.cmo \
-    core/optim/optim_globals.cmo \
-    core/utils/misc_printers.cmo
-core/optim/simulatedAnnealing_gdaware.cmx : \
-    core/utils/zlscheck_utils.cmx \
-    core/optim/optim_utils.cmx \
-    core/optim/optim_types.cmx \
-    core/optim/optim_globals.cmx \
-    core/utils/misc_printers.cmx
-core/optim/uniformRandom.cmo : \
-    core/utils/zlscheck_utils.cmo \
-    core/optim/optim_utils.cmo \
-    core/optim/optim_types.cmo \
-    core/optim/optim_globals.cmo \
-    core/utils/misc_printers.cmo
-core/optim/uniformRandom.cmx : \
-    core/utils/zlscheck_utils.cmx \
-    core/optim/optim_utils.cmx \
-    core/optim/optim_types.cmx \
-    core/optim/optim_globals.cmx \
-    core/utils/misc_printers.cmx
-core/optim/uniformRandom_gdaware.cmo : \
-    core/utils/zlscheck_utils.cmo \
-    core/optim/optim_utils.cmo \
-    core/optim/optim_types.cmo \
-    core/optim/optim_globals.cmo \
-    core/utils/misc_printers.cmo
-core/optim/uniformRandom_gdaware.cmx : \
-    core/utils/zlscheck_utils.cmx \
-    core/optim/optim_utils.cmx \
-    core/optim/optim_types.cmx \
-    core/optim/optim_globals.cmx \
-    core/utils/misc_printers.cmx
-core/spec/check.cmo :
-core/spec/check.cmx :
-core/spec/monitor.cmo :
-core/spec/monitor.cmx :
-core/spec/obs/assert.cmo :
-core/spec/obs/assert.cmx :
-core/spec/obs/discrete_obs.cmo :
-core/spec/obs/discrete_obs.cmx :
-core/spec/obs/dual.cmo : \
-    core/spec/obs/assert.cmo
-core/spec/obs/dual.cmx : \
-    core/spec/obs/assert.cmx
-core/spec/obs/gen.cmo :
-core/spec/obs/gen.cmx :
-core/spec/obs/hybrid_obs.cmo :
-core/spec/obs/hybrid_obs.cmx :
-core/spec/obs/vbool.cmo :
-core/spec/obs/vbool.cmx :
-core/spec/spec.cmo : \
-    core/spec/stl/stl.cmo \
-    core/spec/monitor.cmo \
-    core/spec/check.cmo
-core/spec/spec.cmx : \
-    core/spec/stl/stl.cmx \
-    core/spec/monitor.cmx \
-    core/spec/check.cmx
-core/spec/stl/stl.cmo : \
-    core/spec/stl/stl_syntax.cmo \
-    core/spec/stl/stl_semantic.cmo
-core/spec/stl/stl.cmx : \
-    core/spec/stl/stl_syntax.cmx \
-    core/spec/stl/stl_semantic.cmx
-core/spec/stl/stl_semantic.cmo : \
-    core/spec/stl/stl_syntax.cmo
-core/spec/stl/stl_semantic.cmx : \
-    core/spec/stl/stl_syntax.cmx
-core/spec/stl/stl_syntax.cmo :
-core/spec/stl/stl_syntax.cmx :
-core/utils/misc_printers.cmo :
-core/utils/misc_printers.cmx :
-core/utils/zlscheck_utils.cmo : \
-    core/utils/misc_printers.cmo
-core/utils/zlscheck_utils.cmx : \
-    core/utils/misc_printers.cmx
+autodiff/fadFloat.cmo :
+autodiff/fadFloat.cmx :
+autodiff/lift_fad.cmo : \
+    autodiff/ztypes_fad.cmo \
+    autodiff/fadFloat.cmo
+autodiff/lift_fad.cmx : \
+    autodiff/ztypes_fad.cmx \
+    autodiff/fadFloat.cmx
+autodiff/nodes_fad.cmo : \
+    autodiff/ztypes_fad.cmo \
+    autodiff/sundials_cvodes.cmi \
+    autodiff/lift_fad.cmo \
+    autodiff/fadFloat.cmo
+autodiff/nodes_fad.cmx : \
+    autodiff/ztypes_fad.cmx \
+    autodiff/sundials_cvodes.cmx \
+    autodiff/lift_fad.cmx \
+    autodiff/fadFloat.cmx
+autodiff/sundials_cvodes.cmo : \
+    autodiff/sundials_cvodes.cmi
+autodiff/sundials_cvodes.cmx : \
+    autodiff/sundials_cvodes.cmi
+autodiff/zls_fad.cmo :
+autodiff/zls_fad.cmx :
+autodiff/ztypes_fad.cmo : \
+    autodiff/fadFloat.cmo
+autodiff/ztypes_fad.cmx : \
+    autodiff/fadFloat.cmx
+global/deftypes.cmo : \
+    scenario/scenario.cmo \
+    autodiff/fadFloat.cmo
+global/deftypes.cmx : \
+    scenario/scenario.cmx \
+    autodiff/fadFloat.cmx
+global/logger.cmo : \
+    global/printer.cmo
+global/logger.cmx : \
+    global/printer.cmx
+global/printer.cmo :
+global/printer.cmx :
+global/zlscheck_utils.cmo :
+global/zlscheck_utils.cmx :
+hyperparams/smac_wrapper.cmo : \
+    optim/simulatedAnnealing.cmo \
+    scenario/scenario.cmo \
+    global/printer.cmo \
+    optim/optim_types.cmo \
+    optim/optim.cmo \
+    method/online.cmo \
+    method/offline.cmo \
+    method/method_types.cmo \
+    global/logger.cmo \
+    global/deftypes.cmo
+hyperparams/smac_wrapper.cmx : \
+    optim/simulatedAnnealing.cmx \
+    scenario/scenario.cmx \
+    global/printer.cmx \
+    optim/optim_types.cmx \
+    optim/optim.cmx \
+    method/online.cmx \
+    method/offline.cmx \
+    method/method_types.cmx \
+    global/logger.cmx \
+    global/deftypes.cmx
+method/method_types.cmo : \
+    optim/optim_types.cmo \
+    optim/optim.cmo \
+    global/logger.cmo \
+    global/deftypes.cmo
+method/method_types.cmx : \
+    optim/optim_types.cmx \
+    optim/optim.cmx \
+    global/logger.cmx \
+    global/deftypes.cmx
+method/method_utils.cmo : \
+    method/method_types.cmo \
+    autodiff/fadFloat.cmo \
+    global/deftypes.cmo
+method/method_utils.cmx : \
+    method/method_types.cmx \
+    autodiff/fadFloat.cmx \
+    global/deftypes.cmx
+method/offline.cmo : \
+    scenario/scenario.cmo \
+    optim/optim_types.cmo \
+    optim/optim.cmo \
+    method/method_utils.cmo \
+    method/method_types.cmo \
+    global/logger.cmo \
+    autodiff/fadFloat.cmo \
+    global/deftypes.cmo
+method/offline.cmx : \
+    scenario/scenario.cmx \
+    optim/optim_types.cmx \
+    optim/optim.cmx \
+    method/method_utils.cmx \
+    method/method_types.cmx \
+    global/logger.cmx \
+    autodiff/fadFloat.cmx \
+    global/deftypes.cmx
+method/online.cmo : \
+    optim/optim_types.cmo \
+    optim/optim.cmo \
+    method/method_utils.cmo \
+    method/method_types.cmo \
+    global/logger.cmo \
+    autodiff/fadFloat.cmo \
+    global/deftypes.cmo
+method/online.cmx : \
+    optim/optim_types.cmx \
+    optim/optim.cmx \
+    method/method_utils.cmx \
+    method/method_types.cmx \
+    global/logger.cmx \
+    autodiff/fadFloat.cmx \
+    global/deftypes.cmx
+optim/adaptativeGradient.cmo : \
+    global/zlscheck_utils.cmo \
+    global/printer.cmo \
+    optim/optim_utils.cmo \
+    optim/optim_types.cmo
+optim/adaptativeGradient.cmx : \
+    global/zlscheck_utils.cmx \
+    global/printer.cmx \
+    optim/optim_utils.cmx \
+    optim/optim_types.cmx
+optim/optim.cmo : \
+    global/zlscheck_utils.cmo \
+    optim/uniformRandom.cmo \
+    optim/simulatedAnnealing.cmo \
+    global/printer.cmo \
+    optim/optim_utils.cmo \
+    optim/optim_types.cmo \
+    optim/adaptativeGradient.cmo
+optim/optim.cmx : \
+    global/zlscheck_utils.cmx \
+    optim/uniformRandom.cmx \
+    optim/simulatedAnnealing.cmx \
+    global/printer.cmx \
+    optim/optim_utils.cmx \
+    optim/optim_types.cmx \
+    optim/adaptativeGradient.cmx
+optim/optim_types.cmo :
+optim/optim_types.cmx :
+optim/optim_utils.cmo : \
+    optim/optim_types.cmo
+optim/optim_utils.cmx : \
+    optim/optim_types.cmx
+optim/simulatedAnnealing.cmo : \
+    global/zlscheck_utils.cmo \
+    global/printer.cmo \
+    optim/optim_utils.cmo \
+    optim/optim_types.cmo
+optim/simulatedAnnealing.cmx : \
+    global/zlscheck_utils.cmx \
+    global/printer.cmx \
+    optim/optim_utils.cmx \
+    optim/optim_types.cmx
+optim/uniformRandom.cmo : \
+    global/zlscheck_utils.cmo \
+    global/printer.cmo \
+    optim/optim_utils.cmo \
+    optim/optim_types.cmo
+optim/uniformRandom.cmx : \
+    global/zlscheck_utils.cmx \
+    global/printer.cmx \
+    optim/optim_utils.cmx \
+    optim/optim_types.cmx
+scenario/scenario.cmo :
+scenario/scenario.cmx :
 staliro/staliro.cmo : \
-    core/optim/uniformRandom.cmo \
-    core/optim/simulatedAnnealing.cmo \
-    core/optim/optim.cmo
+    optim/uniformRandom.cmo \
+    optim/simulatedAnnealing.cmo \
+    optim/optim.cmo
 staliro/staliro.cmx : \
-    core/optim/uniformRandom.cmx \
-    core/optim/simulatedAnnealing.cmx \
-    core/optim/optim.cmx
-zlscheck.cmo :
-zlscheck.cmx :
+    optim/uniformRandom.cmx \
+    optim/simulatedAnnealing.cmx \
+    optim/optim.cmx

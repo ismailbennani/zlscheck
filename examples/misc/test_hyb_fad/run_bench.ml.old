@@ -1,0 +1,18 @@
+module SUT = Defsut.CC.Phi1
+module Optim = Optim.GDADAM
+
+module Bench = Online.Make(SUT)(Optim)(Logger.LogAll)
+
+let _ = 
+  Random.self_init ();
+
+  let default_params = Optim.mk_params 300 SUT.bounds in
+  Bench.run ("test") { default_params with
+                 (* AT2 *)
+                 (* optim = Optim.optim_params_of_array [| 66951196.73450878; 0.2217670900991342; 0.704381383294684 |]; *)
+
+                 (* CC1 *)
+                 optim = Optim.optim_params_of_array [| 80777401.04129301; 0.974037952568933; 0.9757181377067947; |];
+
+                 verbose = true;
+                 vverbose = true; }

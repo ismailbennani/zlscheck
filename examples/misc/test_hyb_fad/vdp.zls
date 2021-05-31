@@ -1,0 +1,21 @@
+open FadFloat
+open Discrete_obs_fad
+
+node prop (x, y) = rob where
+    rob = always (q_and (q_lt (x, make 2.02), q_gt (x, make (-2.02))))
+
+node vdp_d tstep max_t inp = get next_t, outp, rob where
+    rec mu = Array.get inp 0
+    and tstep' = make tstep
+    and next_t = tstep' fby (next_t + tstep')
+    and t = make 0. fby next_t
+    and _, x, y = Van_der_pol.vdp_d tstep max_t mu
+    and outp = Array.of_list [x; y]
+    and rob = prop (x, y)
+
+node vdp_c tstep max_t inp = next_t, outp, rob where
+    rec mu = Array.get inp 0
+    and next_t = t +. tstep
+    and t, x, y = Van_der_pol.vdp_c tstep max_t mu
+    and outp = Array.of_list [x; y]
+    and rob = prop (x, y)

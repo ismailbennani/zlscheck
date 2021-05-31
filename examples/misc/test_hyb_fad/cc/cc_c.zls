@@ -1,0 +1,116 @@
+open FadFloat
+
+let d0 = integer 20
+let d1 = integer 15
+let d2 = integer 10
+let d3 = integer 5
+
+hybrid integrate (x, y0) = y where
+    rec der y_ = get x init get y0
+    and y = make y_
+
+hybrid xup(e) =
+    present (init) on (e >= zero ()) | up(get e) | (disc e) on (e >= zero ()) -> ()
+
+hybrid leader_car (y0, v0, throttle, brake) = y where
+    rec y = integrate (v, y0)
+    and v = integrate (- throttle - brake * v, v0)
+
+hybrid follower_car (y0, v0, leader_y) = y, rob, switch where
+    rec v = integrate (dv, v0)
+    and y = integrate (dy, y0)
+    (* and _ =
+        present (period(0.1)) ->
+            print_endline ("\nleader_y (y0=" ^ (string_of_float (get y0)) ^ "): " ^ (string_of_float (d leader_y 0)) ^ ", " ^ (string_of_float (d leader_y 1)) ^ "\n") *)
+    and automaton
+    | Chasing ->
+        do
+                dv = integer 1
+            and dy = - v
+            and rob = y - leader_y - d2
+        until (xup(d2 - (y - leader_y)))() then do emit switch in Keeping
+    | Keeping ->
+        let init chase = make (Random.float 1.) > make 0.5 in
+        do
+                dv = zero ()
+            and dy = v
+            and rob = if chase then d1 - (y - leader_y) else y - leader_y - d3
+        until (xup(y - leader_y - d1))() then do emit switch in Chasing
+        else (xup(d3 - (y - leader_y)))() then do emit switch in Braking
+    | Braking ->
+        do
+                dv = - v
+            and dy = - v
+            and rob = d0 - (y - leader_y)
+        until (xup(y - leader_y - d0))() then do emit switch in Chasing
+
+hybrid chasing_cars inp = Array.of_list [c1; c2; c3; c4; c5; rob_trans] where
+    rec throttle = Array.get inp 0
+    and brake = Array.get inp 1
+    and c1 = leader_car (zero (), zero (), throttle, brake)
+    and c2, rob2, switch2 = follower_car (integer 10, zero (), c1)
+    and c3, rob3, switch3 = follower_car (integer 20, zero (), c2)
+    and c4, rob4, switch4 = follower_car (integer 30, zero (), c3)
+    and c5, rob5, switch5 = follower_car (integer 40, zero (), c4)
+    
+    and automaton
+        | Choose(i) ->
+            let init chose2 = Stdlib.( = ) i 2 in
+            let init chose3 = Stdlib.( = ) i 3 in
+            let init chose4 = Stdlib.( = ) i 4 in
+            do
+                rob_trans, switch_trans =
+                    if chose2 then (rob2, switch2)
+                    else if chose3 then (rob3, switch3)
+                    else if chose4 then (rob4, switch4)
+                    else (rob5, switch5)
+            until (switch_trans)() then Choose(2)
+        init Choose(2)
+
+open Nodes_fad
+
+let node chasing_carsd max_t h (throttle, brake_torque) = (c1, c2, c3, c4, c5), rob_trans where
+  rec { time = t; status = status; result = result } =
+      solve chasing_cars 100. (next_horizon, Array.of_list [ throttle; brake_torque ])
+  and next_horizon =
+      h fby (if t >= next_horizon then next_horizon +. h else next_horizon)
+  and c1 = Array.get result 0
+  and c2 = Array.get result 1
+  and c3 = Array.get result 2
+  and c4 = Array.get result 3
+  and c5 = Array.get result 4
+  and rob_trans = Array.get result 5
+
+(* open Scope
+
+let static max_t = 100.
+let static h = 0.1
+
+node main () =
+    let throttle = 
+        let throttle = integer 1 in
+        diff throttle 0 2;
+        throttle
+    in
+    let brake = 
+        let brake = integer 0 in
+        diff brake 1 2;
+        brake
+    in
+
+    let t, (c1, c2, c3, c4, c5), rob = 
+        chasing_carsd max_t h (throttle, brake)
+    in
+
+    let s1 = scope2(0., 1., ("throttle", linear, get throttle),
+                            ("brake", linear, get brake)) in
+    let s2 = scopen(-5000., 50., [("c1", linear, get c1); ("c2", linear, get c2);
+                                  ("c3", linear, get c3); ("c4", linear, get c4);
+                                  ("c5", linear, get c5); ("rob", linear, get rob)]) in
+    let s3 = scopen(-5000., 50., [("dc1/dth", linear, d c1 0); ("dc2/dth", linear, d c2 0);
+                                  ("dc3/dth", linear, d c3 0); ("dc4/dth", linear, d c4 0);
+                                  ("dc5/dth", linear, d c5 0); ("drob/dth", linear, d rob 0)]) in
+    let s4 = scopen(-5000., 50., [("dc1/dbr", linear, d c1 1); ("dc2/dbr", linear, d c2 1);
+                                  ("dc3/dbr", linear, d c3 1); ("dc4/dbr", linear, d c4 1);
+                                  ("dc5/dbr", linear, d c5 1); ("drob/dbr", linear, d rob 1)]) in
+    window4 ("Chasing cars", max_t, t, s1, s2, s3, s4) *)

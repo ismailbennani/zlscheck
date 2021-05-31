@@ -1,0 +1,112 @@
+open Constants
+open F16_types
+open FadFloat
+
+type state = Start | Roll | Pull | Done
+let string_of_state state =
+    match state with
+    | Start -> "Start" | Roll -> "Roll" | Pull -> "Pull" | Done -> "Done"
+    end
+
+let eps_phi = scale dtor 5.
+let eps_p = scale dtor 1.
+let path_goal = scale dtor 0.
+let man_start = make 2.
+let twopi = scale pi 2.
+
+let node state_logic (tstep, alpha, phi, theta, p) =
+    let t = F16_utils.integrate(make 0., make 1., tstep) in
+
+    let automaton
+    | Start ->
+        do state = Start
+        until (t > man_start &&
+            (theta - alpha) - twopi * F16_utils.round ((theta - alpha) / twopi) > path_goal)
+            then do emit trans = Done in Done
+        else (t > man_start && abs p < eps_p &&
+                (abs (phi - pi * (F16_utils.round (phi / pi))) < eps_phi))
+                then do emit trans = Pull in Pull
+        else (t > man_start) then do emit trans = Roll in Roll
+    | Roll ->
+        let radsFromWingsLevel = F16_utils.round (phi / twopi) in
+        let wings_are_level =
+            abs (phi - twopi * radsFromWingsLevel) < eps_phi
+        and rate_is_small = abs p < eps_p
+        in
+        do state = Roll
+        (* and present (period(0.1)) -> do
+            () = print_endline ("at t = " ^ (string_of_float t) ^ ", STATE : Roll" ^
+                    "\n\tphi = " ^ (string_of_float phi) ^
+                    "\n\teps_phi = " ^ (string_of_float eps_phi) ^
+                    "\n\tp = " ^ (string_of_float p) ^
+                    "\n\teps_p = " ^ (string_of_float eps_p) ^
+                    "\n\tradsFromWingsLevel = " ^ (string_of_float radsFromWingsLevel) ^ "\n"
+                )
+        done *)
+        until (wings_are_level && rate_is_small)
+        then do emit trans = Pull in Pull
+    | Pull ->
+        let radsFromNoseLevel = F16_utils.round ((theta - alpha) / twopi) in
+        do state = Pull
+        (* and present (period(0.1)) -> do
+            () = print_endline ("at t = " ^ (string_of_float t) ^ ", STATE : Pull" ^
+                    "\n\ttheta = " ^ (string_of_float theta) ^
+                    "\n\talpha = " ^ (string_of_float alpha) ^
+                    "\n\ttheta - alpha = " ^ (string_of_float (theta - alpha)) ^
+                    "\n\tradsFromNoseLevel = " ^ (string_of_float radsFromNoseLevel)
+                )
+        done *)
+        until (theta - alpha - twopi * radsFromNoseLevel > path_goal)
+        then do emit trans = Done in Done
+    | Done -> do state = Done done
+    in
+
+    (* let present trans(new_state) -> do
+        () = print_endline ("At t = " ^ (string_of_float t) ^
+                    ", state switched from " ^ (string_of_state state) ^
+                    " to " ^ (string_of_state new_state))
+    done in *)
+
+    state, (present trans(_) -> true else false)
+
+let discrete get_u_ref (state, ctrlLimits, x_equil, x) = u_ref where rec
+
+    match state with
+    | Start -> do nz = make 0. and ps = make 0. done
+    | Roll ->
+        local radsFromWingsLevel, k_prop, k_der
+        do
+            radsFromWingsLevel = F16_utils.round (x.phi / twopi)
+            and k_prop = make 4.
+            and k_der = scale k_prop 0.3
+            and ps = - (x.phi - twopi * radsFromWingsLevel) * k_prop - x.p * k_der
+            and nz = make 0.
+        done
+    | Pull ->
+        do
+            nz = min (make 5.) ctrlLimits.F16_types.nzMax
+            and ps = make 0.
+        done
+    | Done ->
+        local radsFromWingsLevel, radsFromNoseLevel,
+              k_prop, k_der, k_prop2, k_der2
+        do
+            k_prop = make 1.
+            and k_der = scale k_prop 0.3
+            and radsFromWingsLevel = F16_utils.round (x.phi / twopi)
+            and ps = - (x.phi - twopi * radsFromWingsLevel) * k_prop - x.p * k_der
+            and k_prop2 = make 2.
+            and k_der2 = scale k_prop2 0.3
+            and radsFromNoseLevel = F16_utils.round ((x.theta - x.alpha) / pi)
+            and nz = - (x.theta - x.alpha - pi * radsFromNoseLevel) * k_prop2
+                     - x.p * k_der2
+        done
+
+    and ny_r = make 0.
+
+    and k_vt = make 0.25
+    and throttle = - k_vt * (x.vt - x_equil.vt)
+
+    and u_ref = {
+        thtlc_ref = throttle; nz_ref = nz; ps_ref = ps; ny_r_ref = ny_r
+    }

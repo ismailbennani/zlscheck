@@ -1,0 +1,92 @@
+(** constants, initial state **)
+
+open FadFloat
+
+type shift = UP | DOWN
+
+let pi = 4.0 *. Stdlib.atan 1.0
+
+let iei = 0.0219914882835559         (* moment of inertia of the engine and the impeller *)
+let engine_feedback_gain = 1. /. iei
+
+
+let p_final_drive_ratio = 3.23
+let p_drag_friction = 40.
+let p_aerodynamic_drag = 0.02
+let p_wheel_radius = 1.
+let p_vehicle_inertia = 12.09414785731247
+
+let iv_inv = 1. /. p_vehicle_inertia
+
+let p_initial_transmission_out_speed = 0. /. p_wheel_radius *. p_final_drive_ratio
+
+let initial_speed = 0.               (* initial speed of the vehicle (mph) *)
+
+let p_mph = 60. /. 5280.             (* ft.min-1 to mph ratio *)
+let l_speed_coef = 2. *. pi *. p_wheel_radius
+let p_initial_wheel_speed = make (initial_speed /. p_mph /. l_speed_coef)
+
+let init_rpm = FadFloat.make 1000.
+let min_rpm = FadFloat.make 600.
+let max_rpm = FadFloat.make 6000.
+
+let gear1 = FadFloat.make 1.
+let gear2 = FadFloat.make 2.
+let gear3 = FadFloat.make 3.
+let gear4 = FadFloat.make 4.
+
+(* in Simulink, this value is 0.08
+   when I set 0.08 here, sometimes the transition was triggered in Zélus
+   sim and not in Simulink sim. To prevent this behavior, it is slightly bigger *)
+(* let static twait = 0.08 *)
+let static twait = 0.08
+
+(** utils **)
+
+let lookup_engine    (l, c) =
+  Interp.interp2 (At_consts.line_engine,
+                  At_consts.col_engine,
+                  At_consts.vals_engine)
+                  (l, c)
+let lookup_interpup  (l, c) =
+  Interp.interp2 (At_consts.line_interpup,
+                  At_consts.col_interpup,
+                  At_consts.vals_interpup)
+                  (l, c)
+let lookup_interpdn  (l, c) =
+  Interp.interp2 (At_consts.line_interpdn,
+                  At_consts.col_interpdn,
+                  At_consts.vals_interpdn)
+                  (l, c)
+let lookup_factork   (l)    =
+  Interp.interp1 (At_consts.line_factork,
+                  At_consts.vals_factork)
+                  l
+let lookup_torkratio (l)    =
+  Interp.interp1 (At_consts.line_torkratio,
+                  At_consts.vals_torkratio)
+                  l
+let lookup_gear      (l)    =
+  Interp.interp1 (At_consts.line_gear,
+                  At_consts.vals_gear)
+                  l
+
+(** algorithm **)
+
+let torque_converter(ne, nin) = (ti, tt) where
+  rec speedratio = nin / ne
+  and factorK = lookup_factork speedratio
+  and torqueratio = lookup_torkratio speedratio
+  and quotient = ne / factorK
+  and impeller = quotient * quotient
+  and turbine = impeller * torqueratio
+  and ti = impeller and tt = turbine
+
+let transmissionratio(tin, gear, nout) = (tout, nin) where
+  rec gear_lookup = lookup_gear gear
+  and tout = tin * gear_lookup
+  and nin  = nout * gear_lookup
+
+let transmission(ne, gear, nout) = (ti, tout) where
+  rec ti, turbine_torque = torque_converter(ne, nin)
+  and tout, nin = transmissionratio(turbine_torque, gear, nout)

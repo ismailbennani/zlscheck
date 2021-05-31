@@ -1,28 +1,26 @@
 # Zlscheck
 
-A random testing tool for Zélus
+A random testing tool for Zélus.
 
-Branch master contains the version of zlscheck that has been used for the ARCH20 competition, in ARCH20 you can find the exact code that was used to obtain the results for zlscheck. In `rework` there is a wip version of zlscheck that also handles hybrid Zélus models, the important difference here between a discrete and a hybrid model is that the hybrid one uses SundialsML to solve ODEs. The bulk of the work was to connect gradients computed by SundialsML using their sensitivity analysis tools to the gradients propagated with FADBADml.
+`master` has been merged with `rework` and now contains both the discrete and hybrid falsification tool. The important difference here between a discrete and a hybrid model is that the hybrid one uses SundialsML to solve ODEs. The bulk of the work was to connect gradients computed by SundialsML using their sensitivity analysis tools to the gradients propagated with FADBADml. This connection is made by a module called `Nodes_fad` and based on Marc's `Node` module.
 
 # Compile
 
 ## On your machine
 
-You will need `ocaml>=4.08` and `opam`, please refer to [opam website](https://opam.ocaml.org/doc/Install.html).
+You will need `ocaml>=4.08.1` and `opam`, please refer to [opam website](https://opam.ocaml.org/doc/Install.html).
 
 Install required libraries:
 
 ```
 sudo apt-get install -y build-essential sudo m4 libgtk2.0-dev
-opam install -y graphics ocamlfind menhir lablgtk ocamlfind
+opam install -y graphics ocamlfind menhir lablgtk sundialsml fadbadml zelus zelus-gtk
 ```
 
 Additionnal dependencies:
 
 - zelus
 - fadbadml
-
-Both libraries can be found under `external/` and can be compiled by running `make ext`.
 
 Run `make` then go to `arch/arch20` and run `make` again. You will generate executables `run_bench.opt` and `replay_bench.opt`.
 

@@ -14,7 +14,7 @@ OTAGS	  ?= otags
 ZLLIB = `ocamlfind query zelus`
 ZLLIBGTK = `ocamlfind query zelus-gtk`
 ZELUC = zeluc
-ZELUCFLAGS = -I `ocamlfind query zelus` -I `ocamlfind query zelus-gtk`
+#ZELUCFLAGS = -I $(ZLLIB) -I $(ZLLIBGTK)
 
 LABLGTKLIB = `ocamlfind query lablgtk2`
 

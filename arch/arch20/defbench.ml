@@ -108,9 +108,10 @@ struct
     let set_optim_params () =
       Optim_globals.params.meth.gd.alpha <- gd_alpha_high;
       Optim_globals.params.meth.gd.do_restart <- true;
-      Optim_globals.params.bounds <-
+      (* Optim_globals.params.bounds <-
         Array.init (truncate (ceil (max_t /. ((float sample_every) *. tstep))) * 2)
-          (fun i -> bounds_online.(i mod 2));
+          (fun i -> bounds_online.(i mod 2)); *)
+      Optim_globals.params.bounds <- bounds_online;
       Optim_globals.params.verbose <- !verbose;
       Optim_globals.params.vverbose <- !verbose
 
@@ -132,9 +133,10 @@ struct
     let set_optim_params () =
       Optim_globals.params.meth.gd.alpha <- gd_alpha_high;
       Optim_globals.params.meth.gd.do_restart <- true;
-      Optim_globals.params.bounds <-
+      (* Optim_globals.params.bounds <-
       Array.init (truncate (ceil (max_t /. ((float sample_every) *. tstep))) * 2)
-        (fun i -> bounds_online.(i mod 2));
+         (fun i -> bounds_online.(i mod 2)); *)
+      Optim_globals.params.bounds <- bounds_online;
       Optim_globals.params.verbose <- !verbose;
       Optim_globals.params.vverbose <- !verbose
 
@@ -233,16 +235,17 @@ struct
     let max_t = 30.
 
     let instance = Instance.index
-    let sample_every = if Instance.index = 1 then 500 else Instance.sample_every
+    let sample_every = 5
 
     let prop_name_in_matlab = "AT{7}"
 
     let set_optim_params () =
-      Optim_globals.params.meth.gd.alpha <- 100.;
+      Optim_globals.params.meth.gd.alpha <- 10000.;
       Optim_globals.params.meth.gd.do_restart <- true;
-      Optim_globals.params.bounds <-
+      (* Optim_globals.params.bounds <-
       Array.init (truncate (ceil (max_t /. ((float sample_every) *. tstep))) * 2)
-        (fun i -> bounds_online.(i mod 2));
+        (fun i -> bounds_online.(i mod 2)); *)
+      Optim_globals.params.bounds <- bounds_online;
       Optim_globals.params.verbose <- !verbose;
       Optim_globals.params.vverbose <- !verbose
 
@@ -257,16 +260,17 @@ struct
     let max_t = 30.
 
     let instance = Instance.index
-    let sample_every = if Instance.index = 1 then 1000 else Instance.sample_every
+    let sample_every = Instance.sample_every
 
     let prop_name_in_matlab = "AT{8}"
 
     let set_optim_params () =
-      Optim_globals.params.meth.gd.alpha <- 100.;
-      Optim_globals.params.meth.gd.do_restart <- true;
-      Optim_globals.params.bounds <-
+      Optim_globals.params.meth.gd.alpha <- 1000000.;
+      Optim_globals.params.meth.gd.do_restart <- false;
+      (* Optim_globals.params.bounds <-
       Array.init (truncate (ceil (max_t /. ((float sample_every) *. tstep))) * 2)
-        (fun i -> bounds_online.(i mod 2));
+        (fun i -> bounds_online.(i mod 2)); *)
+      Optim_globals.params.bounds <- bounds_online;
       Optim_globals.params.verbose <- !verbose;
       Optim_globals.params.vverbose <- !verbose
 
@@ -330,14 +334,14 @@ struct
     let interp_fn = pcwse_cste2 (float sample_every *. tstep)
   end
 
-  module Phi1_instance1 = Offline.Make (AutotransBench(ParamsPhi1(Optim.GDClassic)(Instance1)))
-  module Phi2_instance1 = Offline.Make (AutotransBench(ParamsPhi2(Optim.GDClassic)(Instance1)))
+  module Phi1_instance1 = Online.Make (AutotransBench(ParamsPhi1(Optim.GDClassic)(Instance1)))
+  module Phi2_instance1 = Online.Make (AutotransBench(ParamsPhi2(Optim.GDClassic)(Instance1)))
   module Phi51_instance1 = Online.Make (AutotransBench(ParamsPhi51(Optim.GDClassic)(Instance1)))
   module Phi52_instance1 = Online.Make (AutotransBench(ParamsPhi52(Optim.GDClassic)(Instance1)))
   module Phi53_instance1 = Online.Make (AutotransBench(ParamsPhi53(Optim.GDClassic)(Instance1)))
   module Phi54_instance1 = Online.Make (AutotransBench(ParamsPhi54(Optim.GDClassic)(Instance1)))
-  module Phi6a_instance1 = Offline.Make (AutotransBench(ParamsPhi6a(Optim.GDClassic)(Instance1)))
-  module Phi6b_instance1 = Offline.Make (AutotransBench(ParamsPhi6b(Optim.GDClassic)(Instance1)))
+  module Phi6a_instance1 = Online.Make (AutotransBench(ParamsPhi6a(Optim.GDClassic)(Instance1)))
+  module Phi6b_instance1 = Online.Make (AutotransBench(ParamsPhi6b(Optim.GDClassic)(Instance1)))
   module Phi6c_instance1 = Offline.Make (AutotransBench(ParamsPhi6c(Optim.GDClassic)(Instance1)))
 
   module Phi1UR_instance1 = Offline.Make (AutotransBench(ParamsPhi1(Optim.UR_GDAWARE)(Instance1)))

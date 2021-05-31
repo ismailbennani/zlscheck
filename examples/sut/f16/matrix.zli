@@ -1,0 +1,11 @@
+type 'a t
+
+val create : int -> int -> 'a -> 'a t
+val get : 'a t -> int -> int -> 'a
+val set : 'a t -> int -> int -> 'a -> unit
+
+val set_row_from_list : 'a t -> int -> 'a list -> unit
+
+val lut1d_row : FadFloat.t t -> FadFloat.t -> int -> FadFloat.t -> FadFloat.t
+val lut1d_col : FadFloat.t t -> int -> FadFloat.t -> FadFloat.t
+val lut2d : FadFloat.t t -> FadFloat.t -> FadFloat.t -> FadFloat.t

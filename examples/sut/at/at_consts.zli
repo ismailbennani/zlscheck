@@ -1,0 +1,20 @@
+val col_engine    : FadFloat.t Array.t
+val line_engine   : FadFloat.t Array.t
+val vals_engine   : FadFloat.t Array.t Array.t
+
+val col_interpup  : FadFloat.t Array.t
+val line_interpup : FadFloat.t Array.t
+val vals_interpup : FadFloat.t Array.t Array.t
+
+val col_interpdn  : FadFloat.t Array.t
+val line_interpdn : FadFloat.t Array.t
+val vals_interpdn : FadFloat.t Array.t Array.t
+
+val line_factork   : FadFloat.t Array.t
+val vals_factork   : FadFloat.t Array.t
+
+val line_torkratio : FadFloat.t Array.t
+val vals_torkratio : FadFloat.t Array.t
+
+val line_gear      : FadFloat.t Array.t
+val vals_gear      : FadFloat.t Array.t

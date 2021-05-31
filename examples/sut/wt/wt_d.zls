@@ -1,0 +1,172 @@
+(* implementation of
+    Hybrid Modelling of a Wind Turbine -
+    Simone Schuler, Fabiano Daher Adegas, and Adolfo Anta
+   adapted from Simulink
+*)
+
+open FadFloat
+open Wt_common
+open Wt_params
+
+let saturate (low, high, v) = min (max v low) high
+
+(* not implemented !! *)
+node transport_delay (t, delay, y0) = y where
+    rec y = y0
+
+node rate_limiter (t, rising, falling, y0, x) = y where
+    rec tstep = t -> (t - pre t)
+    and rate = (x - (pre y)) / tstep
+    and y = x ->
+        (if rate > rising then tstep * rising + (pre y)
+         else if rate < falling then tstep * falling + (pre y)
+         else x)
+
+node collective_pitch_with_anti_windup (t, e, gs, params) = theta_d where
+    rec tstep = t -> (t - pre t)
+    and theta_d = saturate (params.pitch.min, params.pitch.max, theta_d')
+    and theta_d' = gs * e4
+    and e4 = e1 + e3
+    and e3 = integrate (tstep, e2 / params.pitch.cpc.tI,
+        params.pitch.theta0*(translate (params.pitch.theta0/params.pitch.cpc.gS_factor) 1.))
+    and e2 = e1 - (theta_d' - theta_d) * params.pitch.cpc.antiWindUp
+    and e1 = e * params.pitch.cpc.kP
+
+node coll_pitch_controller (t, omega_g, theta_in, omega_g_rated, params) = theta_d where
+    rec e = omega_g - omega_g_rated
+    and gs = inv (translate ((params.pitch.theta0 fby theta_in) / params.pitch.cpc.gS_factor) 1.)
+    and theta_d = collective_pitch_with_anti_windup (t, e, gs, params)
+
+node filter_pitch (t, u, params) = y where
+    rec tstep = t -> (t - pre t)
+    and dy = (u - y) / params.pitch.pitch_filterConstant
+    and y = integrate (tstep, dy, params.pitch.theta0)
+
+node filter_drehzahl (t, u, params) = y where
+    rec tstep = t -> (t - pre t)
+    and dy = (u - y) / params.vscontrol.vs_filterConstant
+    and y = integrate (tstep, dy, params.omega_g0)
+
+discrete torque_controller (omega_g, theta_d, params) = mg_d where
+    mg_d =
+        if omega_g >= params.vscontrol.rtGnSp ||
+           theta_d >= params.vscontrol.rgn3MP then
+            (* We are in region 3 - power is constant *)
+            params.vscontrol.rtPwr / omega_g
+        else if omega_g <= params.vscontrol.ctInSp then
+            (* We are in region 1 - torque is zero *)
+            make 0.
+        else if omega_g < params.vscontrol.rgn2Sp then
+            (* We are in region 1 1/2 - linear ramp in torque from zero to optimal *)
+            params.vscontrol.slope15 * (omega_g - params.vscontrol.ctInSp)
+        else if omega_g < params.vscontrol.trGnSp then
+            (* We are in region 2 - optimal torque is proportional to the square of the generator speed *)
+            params.vscontrol.rgn2K * omega_g * omega_g
+        else
+            (* We are in region 2 1/2 - simple induction generator transition region *)
+            params.vscontrol.slope25 * (omega_g - params.vscontrol.sySp)
+
+node scnd_order_lag_pitch (t, theta_d, params) = theta where
+    rec tstep = t -> (t - pre t)
+    and theta = integrate (tstep, dtheta, params.pitch.theta0)
+    and dtheta = integrate (tstep, ddtheta, params.pitch.thetaDot0)
+    and ddtheta = ((theta_d - theta) * (pow params.pitch.omega 2.)) -
+                  (dtheta * (scale params.pitch.xi 2.) * params.pitch.omega)
+
+node fst_order_lag_pitch (t, theta_d, params) = theta where
+    rec tstep = t -> (t - pre t)
+    and theta = integrate (tstep, dtheta, params.pitch.theta0)
+    and dtheta = (theta_d - theta) * params.pitch.omega / (scale params.pitch.xi 2.)
+
+(* transport_delay not implemented !! *)
+node time_delay_pitch (t, theta_d, params) = theta where
+    rec theta = transport_delay (t, params.pitch.delay, params.pitch.theta0)
+
+node pitch_actuator_subsystem (t, actuatorType, theta_d, params) = theta where
+    theta =
+        match actuatorType with
+        | 1 -> scnd_order_lag_pitch (t, theta_d, params)
+        | 2 -> fst_order_lag_pitch (t, theta_d, params)
+        | 3 -> time_delay_pitch (t, theta_d, params) (* not implemented !! *)
+        | _ -> make 0. (* should not happen *)
+
+node servo_elastic_subsystem (t, mg_d, ma, fa, params) = omega, xT_dot where
+    rec tstep = t -> (t - pre t)
+    and omega = integrate (tstep, domega, params.omega0)
+    and domega = (ma - mg_d / params.gBRatio) / params.inertia
+    and xT_dot = integrate (tstep, dxT_dot, params.xt_dot0)
+    and dxT_dot =
+        (fa - xT_dot * params.cTe - (xT - params.xT0) * params.kTe)
+        / params.mTe
+    and xT = integrate (tstep, xT_dot, params.xT0)
+
+let cP_aeromapsPoly (lambda, theta) =
+    scale (pow lambda 3.) (-0.000464550681271132) +
+    scale ((pow lambda 2.) * theta) (-0.0747804872950038) +
+    scale (pow lambda 2.) (-0.00245817585906700) +
+    scale (lambda * (pow theta 2.)) (-0.372740535667247) +
+    scale (lambda * theta) 0.0711147525908799 +
+    scale lambda 0.175932463831508 +
+    scale (pow theta 3.) 3.89808785329087 +
+    scale (pow theta 2.) (-3.51436345740801) +
+    scale theta 1.59939029665458 +
+    make (-0.404129012120541)
+
+let cT_aeromapsPoly (lambda, theta) =
+    scale (pow lambda 3.) 0.00168223358976263 +
+    scale ((pow lambda 2.) * theta) (-0.00515118049598468) +
+    scale (pow lambda 2.) (-0.0472197248103825) +
+    scale (lambda * (pow theta 2.)) 1.16475825684817 +
+    scale (lambda * theta) (-1.52576164855595) +
+    scale lambda 0.553206918519747 +
+    scale (pow theta 3.) 6.91427835250700 +
+    scale (pow theta 2.) (-10.9675429628383) +
+    scale theta 6.00063627824827 +
+    make (-0.980172788618940)
+
+node aeromapsPoly (lambda, theta) = cP, cT where
+    rec cP = cP_aeromapsPoly(lambda, theta)
+    and cT = cT_aeromapsPoly(lambda, theta)
+
+node aero_elastic_subsystem (v0, theta, omega, xT_dot, params) = ma, fa where
+    rec ma = ma' * v_rel * v_rel
+    and fa = fa' * v_rel * v_rel
+    and v_rel = v0 - xT_dot
+    and ma' = (cP * (scale params.rho 0.5) * pi_t * (pow params.rotor 3.)) / lambda
+    and lambda = (omega * params.rotor) / v_rel
+    and fa' = cT * (scale params.rho 0.5) * pi_t * (pow params.rotor 2.)
+    and cP, cT = aeromapsPoly (lambda, theta)
+
+node wind_turbine (t, v0, theta_d, mg_d, params) = blade_pitch_angle, omega where
+    rec blade_pitch_angle =
+        pitch_actuator_subsystem (t, params.pitch.actuatorType, theta_d, params)
+    and omega, xT_dot = servo_elastic_subsystem (t, mg_d, ma, fa, params)
+    and ma, fa = aero_elastic_subsystem (v0, blade_pitch_angle, omega, xT_dot, params)
+
+node wt (t, v0) = rad2deg theta,
+                  radPs2rpm omega,
+                  radPs2rpm omega_g,
+                  rad2deg theta_d,
+                  rad2deg blade_pitch_angle,
+                  mg_d,
+                  rob_optim
+    where
+    rec init v0_0 = v0
+    and params = get_default v0_0
+    and blade_pitch_angle, omega = wind_turbine (t, v0, theta_d, torque, params)
+    and mg_d = torque_controller (omega_g, theta_d, params)
+    and torque = saturate (neg_infinity, params.vscontrol.maxTq, torque_aux)
+    and torque_aux =
+        rate_limiter (t,
+                      params.vscontrol.maxRat, -params.vscontrol.maxRat,
+                      make 0., mg_d)
+    and theta_d =
+        rate_limiter (t,
+                      params.pitch.rateLimit, -params.pitch.rateLimit,
+                      params.pitch.thetaDot0, theta_d_aux)
+    and theta_d_aux =
+        coll_pitch_controller (t, omega_g, blade_pitch_angle, params.omega_g_rated, params)
+    and theta = filter_pitch (t, blade_pitch_angle, params)
+    and omega_g = filter_drehzahl (t, omega / params.gBRatio, params)
+
+    and rob_optim = make 0. (* ignored *)

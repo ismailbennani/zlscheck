@@ -1,0 +1,37 @@
+#!/usr/bin/env python3
+
+from sys import argv
+from os import path
+import json
+
+def rec_of_dict(d):
+    res = "{ "
+    for k,v in d.items():
+        if type(v) == dict:
+            res += "%s = %s; " % (k, rec_of_dict(v))
+        else:
+            res += "%s = %s; " % (k, "\"%s\"" % v if type(v) == str else str(v))
+    res += " }"
+    return res;
+
+
+if __name__ == "__main__":
+    jsonfile = argv[1]
+
+    if not path.exists(jsonfile):
+        print("file", jsonfile, "does not exist")
+        exit(1)
+
+    with open(jsonfile) as f:
+      lastline = f.readlines()[-1]
+      traj = json.loads(lastline)
+      incumbent = traj["incumbent"]
+      config = dict()
+      config["method"] = incumbent["method"]
+      config["optim"] = incumbent["optim"]
+      config["params"] = dict()
+      for k,v in incumbent.items():
+          if k != "method" and k != "optim":
+              config["params"][k] = v
+
+      print("let params =", rec_of_dict(config))
